@@ -15,7 +15,7 @@ module.exports = function lib_games()
 			    var struct_sql = new (require(app.getBase()+'/app/lib/struct_sql.js'))();
 			    var lib_amount = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("member2",struct_sql);
 			    struct_sql.select.mem006 = "1";
-			    struct_sql.where.mem001 = mid;
+			    struct_sql.where.mem002 = mid;
 			    lib_amount.Select(function(id){
 			      cb(null,id);
 			    });
@@ -31,7 +31,8 @@ module.exports = function lib_games()
 			 			var struct_sql = new (require(app.getBase()+'/app/lib/struct_sql.js'))();
 					    var lib_amount = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("member2",struct_sql);
 					    struct_sql.params.mem006 = "mem006-"+money;
-					   	struct_sql.where.mem001 = mid;
+					   	struct_sql.where.mem002 = mid;
+					   	struct_amount.params.from_balance = param[0]['mem006'];
 					    lib_amount.Update2(function(resDao){
 					      cb(null,resDao);
 					    });
@@ -69,7 +70,7 @@ module.exports = function lib_games()
 			  		var struct_sql = new (require(app.getBase()+'/app/lib/struct_sql.js'))();
 				    var lib_amount = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("member2",struct_sql);
 				    struct_sql.params.mem006 = "mem006+"+money;
-				   	struct_sql.where.mem001 = mid;
+				   	struct_sql.where.mem002 = mid;
 				    lib_amount.Update2(function(resDao){
 				      cb(-4,''); //寫log失敗
 				    });

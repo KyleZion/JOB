@@ -23,10 +23,10 @@ var bypass = {
 
 Filter.prototype.before = function (msg, session, next) {
   var gameID = 0;
-  var checkStatus;
+  var checkStatus = false;
   var betData;
   var lockAccount = 0;
-  if(msg.route=="fruitWheel.fruitWheelHandler.bet"){
+  if(msg.route=="fruitWheel.fruitWheelHandler.B"){
     async.series({
       lockAccount: function(callback){ //redis修正
         redis.hexists("lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
@@ -37,6 +37,7 @@ Filter.prototype.before = function (msg, session, next) {
             {
               if(res==1)
               {
+                console.log('aaaaaaa');
                 lockAccount=res;
                 callback(null,200);
               }else
@@ -46,11 +47,12 @@ Filter.prototype.before = function (msg, session, next) {
             });
           }
           else
-          { //若redis異常斷線
+          { //
             redis.hget("lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
               var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
               if(timeDiff>10)
               {
+                console.log('bbbbbbbbbbb');
                 lockAccount=1;
                 redis.hset("lockAccount:"+session.uid, "BET_TIME", new Date());
                 callback(null,200);
@@ -64,11 +66,11 @@ Filter.prototype.before = function (msg, session, next) {
       },
       checkStatus: function(callback_0){
         redis.hget('GS:GAMESERVER:fruitWheel', "Status", function (err, res) {
-          if(err){
-            
+          if(!err){
+            callback_0(0,500);
           }else{
             if(!res){
-              
+              callback_0(0,500);
             }else{ //success
               if(res!='T'){
                 checkStatus=false;
@@ -77,7 +79,6 @@ Filter.prototype.before = function (msg, session, next) {
                 checkStatus=true;
                 callback_0(null,200);
               }
-
             }
           }
         });
@@ -109,11 +110,11 @@ Filter.prototype.before = function (msg, session, next) {
             else
             {
               //dbslave.query('SELECT mem100 from member where mem001 = ?',[session.uid],function(data){ //nsc
-              dbslave.query('SELECT mem006 from member2 where mem002 = ?',[session.uid],function(data)
-              { //egame
+              dbslave.query('SELECT mem006 from member2 where mem002 = ?',[session.uid],function(data)//egame
+              {
                 if(data.ErrorCode==0)
                 {
-                  //var sessionCash=data.rows[0].mem100;
+                  //var sessionMoney=data.rows[0].mem100;
                   var sessionMoney=data.rows[0].mem006;
                   //var amount=0;//下注總金額
                   var betDataCheck=false;
@@ -180,7 +181,7 @@ Filter.prototype.before = function (msg, session, next) {
       }
     }
     )
-  }else{
+  }else{ //非下注route
    var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
   }
 };

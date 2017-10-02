@@ -85,9 +85,16 @@ for (var i = 0; i < games.length ; i++) {
 var lib_games = new (require(app.getBase()+'/app/lib/lib_games.js'))();
 
 var struct_amount = new (require(app.getBase()+'/app/lib/struct_sql.js'))();
+struct_amount.params.transfer_type = 20;
 struct_amount.params.from_gkey = 'MAIN';
-                     //mid,金額
-lib_games.DeductMoney('5',50,struct_amount,function(result)
+struct_amount.params.to_gkey = 'CTL';
+struct_amount.params.operator = 62748;
+struct_amount.params.uip = '127.0.0.1';
+struct_amount.params.otype = 'm';
+struct_amount.params.gameid = '51';
+
+                   //mid,金額
+lib_games.DeductMoney(62748,50,struct_amount,function(result)
 {
   switch(result)
   {

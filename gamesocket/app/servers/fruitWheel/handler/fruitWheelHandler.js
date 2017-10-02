@@ -1,5 +1,6 @@
 var pomelo=require('pomelo');
 var logger = require('pomelo-logger').getLogger(__filename);
+
 module.exports = function(app) {
   return new Handler(app);
 };
@@ -19,7 +20,8 @@ var sessionService = pomelo.app.get('sessionService');
 var gid='051';
 var channel = pomelo.app.get('channelService').getChannel('connect',false);
 var gameDao = require('../../../dao/gameDao');
-var betDao = require('../../../dao/betDao');
+var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
+var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
@@ -31,30 +33,14 @@ handler.bet = function(msg,session,next){
 	var sessionMoney= 0 ;//原始帳戶餘額
 	var betValue =[0,0,0,0,0,0,0]; //各注數 
 	var betSqls=[];//寫入bet_g51的SQL Value
-	var amountlogSqls=[20,session.uid,'MAIN',sessionMoney,0,'CTL',0,amount,session.uid,session.get('memberdata').ip,'m','51',formatDate()];;//寫入amount_log的SQL Value
 	var betkey=''; 
 	var bet2='';
 	var trans_no='';
 	var logId = 0;
+
+
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	async.series({
-	Y: function(callback_Y){
-		async.waterfall([
-			function(cb) {
-				gameDao.getMoney(session.uid, cb);
-			}
-		],
-			function(err,resDao) {
-				if(err) {
-					logger.error('getMoneyError');
-					callback_Y(1,0);
-				}else{
-					sessionMoney=resDao;
-					callback_Y(null,0);
-				}
-			}
-		);
-	},
 	Z: function(callback_Z){
 		for(var i=0;i<=6;i++){
 			if(betData[i]!=0){
@@ -67,22 +53,50 @@ handler.bet = function(msg,session,next){
 	//=============================================================
 	A:function(callback_A){
 		
-		gameDao.lowerMoney(amount,session.uid,function(err,res){
+		struct_amount.params.transfer_type = 20;
+		struct_amount.params.from_gkey = 'MAIN';
+		struct_amount.params.to_gkey = 'CTL';
+		struct_amount.params.operator = session.uid;
+		struct_amount.params.uip = session.get('memberdata').ip;
+		struct_amount.params.otype = 'm';
+		struct_amount.params.gameid = '51';
+		struct_amount.params.bydate = formatDate();
+	    //mid,金額,amountlogSQL
+		lib_games.DeductMoney(session.uid,amount,struct_amount,function(result)
+		{
+		  switch(result)
+		  {
+		    case -1:
+		      console.log('查無此id');
+		      callback_A(-1,result);
+		      break;
+		    case -2:
+		      console.log('餘額不足');
+		      callback_A(-2,result);
+		      break;
+		    case -3:
+		      console.log('扣款失敗');
+		      callback_A(-3,result);
+		      break;
+		    case -4:
+		      console.log('寫log失敗');
+		      callback_A(-4,result);
+		      break;
+		    default:
+		       // result  是扣款成功後 寫入amount 的id
+		      console.log(result);
+		      logId=result;
+		      callback_A(0,result);
+		      break;
+		  }
+		});
+		/*gameDao.lowerMoney(amount,session.uid,function(err,res){
 			if(!err){
 				callback_A(0,0);
 			}
-		});
-        /*//dbmaster.update('UPDATE member SET mem100 = mem100 - ? where mem001 = ?',[betData.total,session.uid],function(data){ //nsc
-        dbmaster.update('UPDATE member2 SET mem006 = mem006 - ? where mem002 = ?',[betData.total,session.uid],function(data){ //egame
-          if(data.ErrorCode==0){
-            	console.log('已扣款');
-            	callback_A(null,0);
-            }else{
-				callback_A(1,data.ErrorMessage);
-			}
-          });*/
+		});*/
 	},
-	B:function(callback_B){
+	/*B:function(callback_B){
 		var sql="INSERT INTO member_amount_log (transfer_type, from_mid, from_gkey, from_balance, to_mid, to_gkey, to_balance, amount, operator, uip, otype, gameid, bydate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		dbmaster.insert(sql,amountlogSqls,function(data){
 			if(data.ErrorCode==0)
@@ -99,8 +113,8 @@ handler.bet = function(msg,session,next){
 				
 			}
 		});
-	},
-	C: function(callback_C){
+	},*/
+	B: function(callback_B){
 		betValue=betValue.join(',');
 		betkey=gid+getSn(13);
 		var checkSn=true; 
@@ -119,7 +133,6 @@ handler.bet = function(msg,session,next){
 							bet2=betkey+'0001';
 							trans_no=bet2;
 							betSqls=[betkey,0,0,formatDate()+" "+formatDateTime(),formatDate()+" "+formatDateTime(),bet2,0,session.uid,gameID,1151,0,1,betValue,1,1,amount,170000,md5(Date.now()),formatDate()];
-							//amountlogSqls=[20,trans_no,session.uid,'MAIN',sessionMoney,0,'CTL',0,amount,session.uid,session.get('memberdata').ip,'m','51',formatDate()];
 							callback(null,checkSn);
 						}else{
 							betkey=gid+getSn(13);
@@ -130,18 +143,18 @@ handler.bet = function(msg,session,next){
 			function (err, checkSn){
 				if(!checkSn)
 				{
-					callback_C(null,0);
+					callback_B(null,0);
 				}
 			}
 		);
 	},
-	D: function(callback_D){
+	C: function(callback_C){
 		var sql="INSERT INTO bet_g51 (betkey,betstate,betwin,betgts,bet000,bet002,bet003,bet005,bet009,bet011,bet012,bet013,bet014,bet015,bet016,bet017,bet018,bet034,bydate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		dbmaster.insert(sql,betSqls,function(data){
 			if(data.ErrorCode==0)
 			{
 				console.log('insert betg51 success');
-				callback_D(0,0);
+				callback_C(0,0);
 			}else{
 				console.log('Insert betg51 fail');
 				logger.error('Insert betg51 Error');
@@ -156,10 +169,10 @@ handler.bet = function(msg,session,next){
 				function(err,results){
 					if(err){
 						logger.error('gameDao Error');
-						callback_D(1,data.ErrorMessage);
+						callback_C(1,data.ErrorMessage);
 						//next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 					}else{
-						callback_D(1,data.ErrorMessage);
+						callback_C(1,data.ErrorMessage);
 						//next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 					}
 				});
@@ -167,12 +180,12 @@ handler.bet = function(msg,session,next){
 			}
 		});
 	},
-	E: function(callback_E){
+	D: function(callback_D){
 		dbmaster.update("UPDATE member_amount_log SET transfer_no = ? where id = ?",[trans_no,logId],function(data){
 			if(data.ErrorCode==0)
 			{
 				console.log('UPDATE transfer_no success');
-				callback_E(null,0);
+				callback_D(null,0);
 			}else{
 				logger.error('UPDATE member_amount_log Error');
 				async.parallel([
@@ -189,10 +202,10 @@ handler.bet = function(msg,session,next){
 				function(err,results){
 					if(err){
 						logger.error('gameDao Error');
-						callback_E(1,data.ErrorMessage);
+						callback_D(1,data.ErrorMessage);
 						//next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 					}else{
-						callback_E(1,data.ErrorMessage);
+						callback_D(1,data.ErrorMessage);
 						//next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 					}
 				});
@@ -207,7 +220,19 @@ handler.bet = function(msg,session,next){
 		}else{
 			console.log("下注完成");
 			//UnlockAmount
-	 		next(null,{'ErrorCode':0,'ErrorMessage':'','bet': sessionMoney-amount});
+			async.waterfall([
+				function(cb) {
+					gameDao.getMoney(session.uid, cb);
+					}
+				], 
+					function(err,resDao) {
+						if(err) {
+							next(new Error('SQL error'),500);
+						}else{
+							next(null,{'ErrorCode':0,'ErrorMessage':'','bet': resDao});
+						}
+					}
+				);
 		}
 	});
 	
