@@ -37,7 +37,6 @@ Filter.prototype.before = function (msg, session, next) {
             {
               if(res==1)
               {
-                console.log('aaaaaaa');
                 lockAccount=res;
                 callback(null,200);
               }else
@@ -52,7 +51,6 @@ Filter.prototype.before = function (msg, session, next) {
               var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
               if(timeDiff>10)
               {
-                console.log('bbbbbbbbbbb');
                 lockAccount=1;
                 redis.hset("lockAccount:"+session.uid, "BET_TIME", new Date());
                 callback(null,200);
@@ -66,15 +64,15 @@ Filter.prototype.before = function (msg, session, next) {
       },
       checkStatus: function(callback_0){
         redis.hget('GS:GAMESERVER:fruitWheel', "Status", function (err, res) {
-          if(!err){
-            callback_0(0,500);
+          if(err){
+            callback_0(1,500);
           }else{
             if(!res){
-              callback_0(0,500);
+              callback_0(1,500);
             }else{ //success
               if(res!='T'){
                 checkStatus=false;
-                callback_0(0,500);
+                callback_0(0,200);
               }else{
                 checkStatus=true;
                 callback_0(null,200);
@@ -87,13 +85,13 @@ Filter.prototype.before = function (msg, session, next) {
         betData = (JSON.parse(msg.bet)).data; //將C2傳來的下注內容string轉JSON
         redis.hget('GS:GAMESERVER:fruitWheel', "GameID", function (err, res) {
           if(err){
-
+            callback_1(1,500);
           }else{
             if(res==null){
-
+              callback_1(1,500);
             }else{
               gameID=res;
-              callback_1(null,res);
+              callback_1(null,200);
             }
           }
         });
@@ -172,11 +170,20 @@ Filter.prototype.before = function (msg, session, next) {
         });
       }
     },
-    function(err, res) {
-      if(err){
-        next(new Error('BetQuestion'),res.checkBet);
-      }else{
-        //console.log(res); //OK
+    function(err, res)
+    {
+      if(err)
+      {
+        if(res.lockAccount==500 || res.checkStatus==500 || res.checkGameID == 500)
+        {
+          next(new Error('ServerQuestion'),'網路連線異常');
+        }else{
+          next(new Error('BetQuestion'),res.checkBet);
+        }
+        
+      }else
+      {
+        console.log(res); //OK
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
       }
     }

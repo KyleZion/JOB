@@ -78,7 +78,7 @@ module.exports = function lib_games()
 		  	}
 		],
 		function(err,resDao) {
-		  	console.error(resDao);
+		  	console.warn(resDao);
 		  	if(err==null)
 		  		callback(resDao);
 		  	else{

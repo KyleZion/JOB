@@ -21,7 +21,6 @@ var gid='051';
 var channel = pomelo.app.get('channelService').getChannel('connect',false);
 var gameDao = require('../../../dao/gameDao');
 var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
-var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
@@ -37,8 +36,7 @@ handler.bet = function(msg,session,next){
 	var bet2='';
 	var trans_no='';
 	var logId = 0;
-
-
+	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	async.series({
 	Z: function(callback_Z){
@@ -52,7 +50,7 @@ handler.bet = function(msg,session,next){
 	},
 	//=============================================================
 	A:function(callback_A){
-		
+		var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
 		struct_amount.params.transfer_type = 20;
 		struct_amount.params.from_gkey = 'MAIN';
 		struct_amount.params.to_gkey = 'CTL';
@@ -83,37 +81,13 @@ handler.bet = function(msg,session,next){
 		      callback_A(-4,result);
 		      break;
 		    default:
-		       // result  是扣款成功後 寫入amount 的id
-		      console.log(result);
+		       //result  是扣款成功後 寫入amount 的id
 		      logId=result;
 		      callback_A(0,result);
 		      break;
 		  }
 		});
-		/*gameDao.lowerMoney(amount,session.uid,function(err,res){
-			if(!err){
-				callback_A(0,0);
-			}
-		});*/
 	},
-	/*B:function(callback_B){
-		var sql="INSERT INTO member_amount_log (transfer_type, from_mid, from_gkey, from_balance, to_mid, to_gkey, to_balance, amount, operator, uip, otype, gameid, bydate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		dbmaster.insert(sql,amountlogSqls,function(data){
-			if(data.ErrorCode==0)
-			{
-				console.log('insert amount_log success');
-				logId=data.rows.insertId
-				callback_B(null,0);
-				//console.log(amountlogSqls);
-			}else{
-				logger.error('Insert member_amount_log error');
-				gameDao.addMoney(amount,session.uid,function(err,res){
-					callback_B(1,data.ErrorMessage);
-				});
-				
-			}
-		});
-	},*/
 	B: function(callback_B){
 		betValue=betValue.join(',');
 		betkey=gid+getSn(13);
@@ -132,7 +106,25 @@ handler.bet = function(msg,session,next){
 							checkSn=false;
 							bet2=betkey+'0001';
 							trans_no=bet2;
-							betSqls=[betkey,0,0,formatDate()+" "+formatDateTime(),formatDate()+" "+formatDateTime(),bet2,0,session.uid,gameID,1151,0,1,betValue,1,1,amount,170000,md5(Date.now()),formatDate()];
+							struct_bet.params.betkey = betkey;
+							struct_bet.params.betstate = 0;
+							struct_bet.params.betwin = 0;
+							struct_bet.params.betgts = formatDate()+" "+formatDateTime();
+							struct_bet.params.bet000 = formatDate()+" "+formatDateTime();
+							struct_bet.params.bet002 = bet2;
+							struct_bet.params.bet003 = 0;
+							struct_bet.params.bet005 = session.uid;
+							struct_bet.params.bet009 = gameID;
+							struct_bet.params.bet011 = 1151;
+							struct_bet.params.bet012 = 0;
+							struct_bet.params.bet013 = 1;
+							struct_bet.params.bet014 = betValue;
+							struct_bet.params.bet015 = 1;
+							struct_bet.params.bet016 = 1;
+							struct_bet.params.bet017 = amount;
+							struct_bet.params.bet018 = 170000;
+							struct_bet.params.bet034 =md5(Date.now());
+							struct_bet.params.bydate =formatDate();
 							callback(null,checkSn);
 						}else{
 							betkey=gid+getSn(13);
@@ -149,10 +141,12 @@ handler.bet = function(msg,session,next){
 		);
 	},
 	C: function(callback_C){
-		var sql="INSERT INTO bet_g51 (betkey,betstate,betwin,betgts,bet000,bet002,bet003,bet005,bet009,bet011,bet012,bet013,bet014,bet015,bet016,bet017,bet018,bet034,bydate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		dbmaster.insert(sql,betSqls,function(data){
-			if(data.ErrorCode==0)
+		var lib_bet = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("bet_g51",struct_bet);
+		lib_bet.Insert(function(res)
+		{
+			if(!!res)
 			{
+				console.log(res);
 				console.log('insert betg51 success');
 				callback_C(0,0);
 			}else{
@@ -176,18 +170,22 @@ handler.bet = function(msg,session,next){
 						//next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 					}
 				});
-				
 			}
+
 		});
 	},
 	D: function(callback_D){
-		dbmaster.update("UPDATE member_amount_log SET transfer_no = ? where id = ?",[trans_no,logId],function(data){
-			if(data.ErrorCode==0)
-			{
-				console.log('UPDATE transfer_no success');
-				callback_D(null,0);
-			}else{
-				logger.error('UPDATE member_amount_log Error');
+		var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
+		struct_amount.params.transfer_no = trans_no;
+		struct_amount.where.id=logId;
+		var lib_amount = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("member_amount_log",struct_amount);
+		lib_amount.Update(function(res)
+		{
+		    if(res===0)
+		    {
+			    console.log('UPDATE transfer_no success');
+				callback_D(null,res);	
+		    }else{
 				async.parallel([
 					function(cb){
 						gameDao.delBet(session.uid,gameID,cb);
@@ -202,14 +200,15 @@ handler.bet = function(msg,session,next){
 				function(err,results){
 					if(err){
 						logger.error('gameDao Error');
-						callback_D(1,data.ErrorMessage);
+						callback_D(1,'網路連線異常');
 						//next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 					}else{
-						callback_D(1,data.ErrorMessage);
+						callback_D(1,'網路連線異常');
 						//next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 					}
 				});
-			}
+		    }
+		    
 		});
 	}
 	},
@@ -221,18 +220,20 @@ handler.bet = function(msg,session,next){
 			console.log("下注完成");
 			//UnlockAmount
 			async.waterfall([
-				function(cb) {
+				function(cb)
+				{
 					gameDao.getMoney(session.uid, cb);
-					}
+				}
 				], 
-					function(err,resDao) {
-						if(err) {
-							next(new Error('SQL error'),500);
-						}else{
-							next(null,{'ErrorCode':0,'ErrorMessage':'','bet': resDao});
-						}
+				function(err,resDao)
+				{
+					if(err) {
+						next(new Error('SQL error'),500);
+					}else{
+						next(null,{'ErrorCode':0,'ErrorMessage':'','bet': resDao});
 					}
-				);
+				}
+			);
 		}
 	});
 	

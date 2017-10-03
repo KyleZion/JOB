@@ -9,8 +9,8 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 	var dbslave=pomelo.app.get('dbslave');
 	this.Insert = function(callback)
 	{
-		//console.error(translate_sql.GetInsertSQL());
-		//console.error(translate_sql.GetValues());
+		//console.warn(translate_sql.GetInsertSQL());
+		//console.warn(translate_sql.GetValues());
 		var sql = translate_sql.GetInsertSQL();
 		var values = translate_sql.GetValues();
 		async.waterfall([
@@ -49,8 +49,8 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 
 	this.Update = function(callback)
 	{
-		console.error(translate_sql.GetUpdateSQL());
-		console.error(translate_sql.GetValues());
+		//console.warn(translate_sql.GetUpdateSQL());
+		//console.warn(translate_sql.GetValues());
 
 		var sql = translate_sql.GetUpdateSQL();
 		var values = translate_sql.GetValues();
@@ -65,8 +65,9 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 			function(data,cb) {
 				if(data.ErrorCode==0)
 				{
+					//console.log(data);
 					logId=data.rows.insertId
-					cb(null,logId);
+					cb(null,data.ErrorCode);
 				}else{
 					logger.error('Update error');
 					cb(1,data.ErrorMessage);
@@ -93,7 +94,7 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 
 	this.Update2 = function(callback)
 	{
-		console.error(translate_sql.GetUpdateSQL2());
+		//console.warn(translate_sql.GetUpdateSQL2());
 		//console.error(translate_sql.GetValues());
 
 		var sql = translate_sql.GetUpdateSQL2();
@@ -136,7 +137,7 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 	}
 	this.Select = function(callback)
 	{
-		console.error(translate_sql.GetSelectSQL());
+		//console.warn(translate_sql.GetSelectSQL());
 		var sql = translate_sql.GetSelectSQL();
 		var values = [];
 		async.waterfall([
@@ -176,8 +177,8 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 
 	this.Delete = function(callback)
 	{
-		console.error('Delete');
-		console.error(translate_sql.GetDeleteSQL());
+		console.warn('Delete');
+		console.warn(translate_sql.GetDeleteSQL());
 		var sql = translate_sql.GetDeleteSQL();
 		callback(1);
 		// var values = [];
