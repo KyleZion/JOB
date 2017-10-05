@@ -80,10 +80,12 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 							MLcallback(1,'網路連線異常');
 						}
 						else{
-							if(res.indexOf(GameName) > -1)
+							if(res.indexOf(GameName) > -1){
 								MLcallback(null,0);
-							else
+							}
+							else{
 								MLcallback(1,'type error');
+							}
 						}
 					}
 				});
@@ -203,12 +205,12 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 			}
 		},function(err, results) {
 			if(!!err)
-			{
-				if(results.S!=null){
+			{		
+				if(results.S!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.S});
-				}else if(results.A!=null){
+				}else if(results.A!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.A});
-				}else if(results.F!=null){
+				}else if(results.F!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.F});
 				}
 				

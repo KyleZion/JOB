@@ -15,7 +15,6 @@ var dbmaster=pomelo.app.get('dbmaster');
 var dbslave=pomelo.app.get('dbslave');
 var async=require('async');
 var md5 = require('md5');
-var backendSessionService = pomelo.app.get('backendSessionService');
 var sessionService = pomelo.app.get('sessionService');
 var gid='051';
 var channel = pomelo.app.get('channelService').getChannel('connect',false);
@@ -146,7 +145,7 @@ handler.bet = function(msg,session,next){
 		{
 			if(!!res)
 			{
-				console.log(res);
+				//console.log(res);
 				console.log('insert betg51 success');
 				callback_C(0,0);
 			}else{
@@ -402,16 +401,13 @@ handler.GetBetTotal = function(msg,session,next){ //Redis
 				NowBetTotal[i]=Math.floor(Math.random() *21+5)
 			}
 			cb(null,NowBetTotal.join())
-		},
-		function(cb){
-			betDao.betSQLEX(cb);
 		}
 	], 
 		function(err,res) {
 			if(err) {
 				next(new Error('random error'),500);
 			}else{
-				next(null,{'ErrorCode':0,'ErrorMessage':'','GetBetTotal':1});
+				next(null,{'ErrorCode':0,'ErrorMessage':'','GetBetTotal':res});
 			}
 		}
 	);

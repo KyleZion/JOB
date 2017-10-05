@@ -1,3 +1,5 @@
+var pomelo = require('pomelo');
+
 module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 {
 	var gameService = require('./gameService.js');
@@ -21,6 +23,18 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 				status = 'F';
 				redis.hset('GS:GAMESERVER:fruitWheel', "Status", 'F');
 				//關盤DB
+				var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+				var lib_sql = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_games);
+				struct_games.params.gas009 = 1;
+				struct_games.where.gas003 = Period;
+				lib_sql.Update(function(res){
+					if(!!res){
+						gameID=res
+						console.log('insert games_51 success');
+						callback_2(null,gameID);
+					}
+					
+				});
 				dbmaster.update('UPDATE games_51 SET gas009 = ? where gas003  = ?',[1,Period],function(data){
 					if(data.ErrorCode==0){
 						console.log('關盤'+Period);
@@ -29,7 +43,7 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 				});
 			}
 			if(Timeout)
-			{                                                                                                                                                                                                                                                                                                                                                                                              
+			{
 				clearInterval(CheckTime);
 				var gameopx = setTimeout(function()
 				{

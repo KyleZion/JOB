@@ -177,8 +177,8 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 
 	this.Delete = function(callback)
 	{
-		console.warn('Delete');
-		console.warn(translate_sql.GetDeleteSQL());
+		//console.warn('Delete');
+		//console.warn(translate_sql.GetDeleteSQL());
 		var sql = translate_sql.GetDeleteSQL();
 		callback(1);
 		// var values = [];

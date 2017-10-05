@@ -48,8 +48,6 @@ var gameMade = function(dbmaster,dbslave,redis){
 			var end_s = (end.getSeconds()<10 ? '0' : '')+end.getSeconds(); 
 			var c_Day = end_yyyy+'-'+end_MM+'-'+end_dd;
 			var c_Time = end_h+':'+end_m+':'+end_s;
-			
-			var gasSQL=[];
 			endtime = c_Day+" "+c_Time;
 			//009 開關盤 010強制關 011停押 012已計算結果
 			//Period
@@ -59,19 +57,30 @@ var gameMade = function(dbmaster,dbslave,redis){
 			//c_Time關盤時間
 			//o_Day歸屬日期
 			Period=yyyy+MM+dd+h+m+s;
-			gasSQL=[51,Period,o_Day,o_Time,c_Day,c_Time,0,o_Day];
-			callback_1(null,Period,gasSQL);
+
+			var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+			struct_games.params.gas002 = 51;
+			struct_games.params.gas003 = Period;
+			struct_games.params.gas004 = o_Day;
+			struct_games.params.gas005 = o_Time;
+			struct_games.params.gas006 = c_Day;
+			struct_games.params.gas007 = c_Time;
+			struct_games.params.gas009 = 0;
+			struct_games.params.gas013 = o_Day;
+			callback_1(null,Period,struct_games);
 		},
-		function(Period,gasSQL,callback_2){
-			var sql="INSERT INTO games_51 (gas002,gas003,gas004,gas005,gas006,gas007,gas009,gas013) VALUES (?,?,?,?,?,?,?,?)";
-			dbmaster.insert(sql,gasSQL,function(data){
-				if(data.ErrorCode==0){
+		function(Period,struct_games,callback_2){
+			var init_Game = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_games);
+			init_Game.Insert(function(res){
+				if(!!res){
+					gameID=res
 					console.log('insert games_51 success');
-					callback_2(null);
+					callback_2(null,gameID);
 				}
+				
 			});
 		},
-		function(callback_3){ //多CONCAT就undefined????? 改用字串組成
+		/*function(callback_3){ //多CONCAT就undefined????? 改用字串組成
 			//dbclient.query('SELECT gas003,CONCAT(gas006," ",gas007)as endtime FROM games_51 WHERE gas002  = ? AND CONCAT(gas004," ",gas005 )<= NOW() AND CONCAT(gas006," ",gas007)>= NOW() ORDER BY gas001 DESC LIMIT 1',[51],function(data){
 			dbslave.query('SELECT gas001 FROM games_51 where gas002 = ? order by gas001 desc limit 1',[51],function(data){
 				if(data.ErrorCode==0){
@@ -79,7 +88,7 @@ var gameMade = function(dbmaster,dbslave,redis){
 					callback_3(null,gameID)
 				}
 			});
-		},
+		},*/
 		function(gameID,callback_4){
 			var sql='SELECT gas001,gas008 FROM games_51 where gas008 <> ? order by gas001 desc limit ?';
 			var args=["",10];
@@ -91,7 +100,7 @@ var gameMade = function(dbmaster,dbslave,redis){
 					gameHistory=gameHistory.substring(0,gameHistory.length-1);
 					callback_4(null,gameID);
 				}
-			});						
+			});
 		},
 		function(gameID,callback_5){
 			var sql='SELECT gas001,gas008 FROM games_51 where gas008 <> ? order by gas001 desc limit ?';

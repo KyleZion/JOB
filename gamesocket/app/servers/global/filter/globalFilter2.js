@@ -91,9 +91,8 @@ Filter.prototype.before = function (msg, session, next) {
             route: msg.route,
             serverType: ts[0],
             handler: ts[1],
-            method: ts[2],
+            method: ts[2]
         };
-        console.log(routeRecord)
         next(null,routeRecord);
       }
 
