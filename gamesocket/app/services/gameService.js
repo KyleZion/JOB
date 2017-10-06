@@ -1,9 +1,10 @@
 var exp = module.exports;
 var async = require('async');
+var pomelo = require('pomelo');
 var asyncLoop = require('node-async-loop');
 var serverIP='127.0.0.1';
 
-exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback){
+exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback_Calculate){
 	async.waterfall([
 		function(callback){
 			var multiple=1;
@@ -56,6 +57,9 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback){
 				if(data.ErrorCode==0){
 					console.log("開獎完畢進入派獎");
 					callback(null,winResult,multiple);
+				}else{
+					console.log("開獎錯誤");
+					callback(-1,'開獎錯誤');
 				}
 			});
 			
@@ -63,19 +67,26 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback){
 		function(winResult,multiple,callback){
 			if(winResult.length!=0){
 				idWinMoneysResult(dbmaster,dbslave,winResult,multiple,function(data){
-					if(data.ErrorCode==0)
-					callback(null,data.result);
+					if(data.ErrorCode==0){
+						callback(null,data.result);
+					}else{
+						callback(-2,data.ErrorMessage);
+					}
 				});	
 			}else{
 				callback(null,'No One Win and No Enter idWinMoneysResult');
 			}
-
 		}
 	],
 		function(err,value){
-			console.log("idWinMoneysResultCallBack:")
-			console.log(value);
-			callback( {'ErrorCode': 0,'ErrorMessage': '','result':value});
+			if(err){
+				callback_Calculate({'ErrorCode':err,'ErrorMessage':value});
+			}else{
+				console.log("idWinMoneysResultCallBack:")
+				console.log(value);
+				callback_Calculate({'ErrorCode': 0,'ErrorMessage': '','result':value});
+			}
+
 		});
 }
 
@@ -97,6 +108,8 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,callback_Win)
 	    			if(data.ErrorCode==0){
 	    				//console.log("資料庫派獎betg更新成功");
 	    				callback(null,award);
+	    			}else{
+	    				callback(1,'派獎betg錯誤')
 	    			}
 	  	 		});
 			},
@@ -107,12 +120,41 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,callback_Win)
 					if(data.ErrorCode==0){//開始結算
 						//callback(null,data.rows[0].mem100,award); //nsc
 						callback(null,data.rows[0].mem006,award); //egame
+					}else{
+						callback(1,'取得中獎注單帳號餘額錯誤');
 					}
 				});
 			},
 			//寫入amount_log
 			function(memmoney, award, callback){
-				var amountlogSqls=[];
+				var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
+				struct_amount.params.transfer_type = 22;
+				struct_amount.params.transfer_no = item.bet002;
+				struct_amount.params.from_mid = 0;
+				struct_amount.params.from_gkey = 'CTL';
+				struct_amount.params.from_balance = 0;
+				struct_amount.params.to_mid = item.bet005;
+				struct_amount.params.to_gkey = 'MAIN';
+				struct_amount.params.to_balance = memmoney;
+				struct_amount.params.amount = award;
+				struct_amount.params.operator = 0;
+				struct_amount.params.uip = serverIP;
+				struct_amount.params.otype = 'c';
+				struct_amount.params.gameid = '51';
+				struct_amount.params.bydate = formatDate();
+				var lib_amount = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("member_amount_log",struct_amount);
+				lib_amount.Insert(function(id){
+					if(!!id){
+						//amountlogid = id;
+				    	//console.log('insert amount_log_new success');
+				      	callback(null,award);
+					}else{
+						console.log('insert amount_log_ fail');
+				      	callback(1,'insert amount_log_ fail');
+					}
+			    	
+			    });
+				/*var amountlogSqls=[];
 				amountlogSqls=[22,item.bet002, 0,'CTL',0,item.bet005,'MAIN',memmoney,award,0,serverIP,'c','51',formatDate()];
 				var sql="INSERT INTO member_amount_log (transfer_type, transfer_no, from_mid, from_gkey, from_balance, to_mid, to_gkey, to_balance, amount, operator, uip, otype, gameid, bydate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 				dbmaster.insert(sql,amountlogSqls,function(data){
@@ -120,8 +162,10 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,callback_Win)
 					//console.log('insert amount_log success');
 					callback(null,award);
 					//console.log(amountlogSqls);
+					}else{
+						callback(1,'派獎amount_log錯誤');
 					}
-				});
+				});*/
 			},
 			//最後再更新帳號餘額
 			function(award, callback){
@@ -130,13 +174,15 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,callback_Win)
 	 		 		if(data.ErrorCode==0){
 	   		 			//console.log('UPDATE mem success');
 	   		 			callback(null,200);
+	   		 		}else{
+	   		 			callback(1,'餘額更新錯誤');
 	   		 		}
 	   		 	});
 			}
 			//錯誤則顯示沒有則返回
 		],	function (err, result) {
 			if(err){
-				callback_Win(1,err);
+				callback_Win({'ErrorCode': 1,'ErrorMessage': result});
 			}
 
 		});
@@ -146,7 +192,7 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,callback_Win)
 	    next();
 	}, function ()
 	{
-		callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result': 200});
+		callback_Win({'ErrorCode': 0,'ErrorMessage': '','result': 200});
 	});
 }
 

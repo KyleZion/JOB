@@ -4,6 +4,7 @@ var GameName="";
 var co = require('co');
 var thunkify = require('thunkify');
 var pomelo = require('pomelo');
+var logger = require('pomelo-logger').getLogger(__filename);
 var Base_Param = require('../../../consts/Base_Param.js');
 var GPB = new Base_Param();
 var sessions=[];
@@ -76,6 +77,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					} 
 					else{
 						if(res==null){ 
+							logger.error('GameType ERROR'+GameName);
 							console.log('no data in redis2:');
 							MLcallback(1,'網路連線異常');
 						}
@@ -84,6 +86,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 								MLcallback(null,0);
 							}
 							else{
+								logger.error('GameType ERROR'+GameName);
 								MLcallback(1,'type error');
 							}
 						}
@@ -99,6 +102,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					} 
 					else{
 						if(res==null){ //是否判斷res.id ?
+							logger.error('Token not Exits'+ Token);
 							GPB.ShowLog(2,'no data in redis:'+Token);
 							StopClient(session);
 							MLcallback(1,'網路連線異常');

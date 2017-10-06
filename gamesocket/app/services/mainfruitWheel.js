@@ -24,23 +24,21 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 				redis.hset('GS:GAMESERVER:fruitWheel', "Status", 'F');
 				//關盤DB
 				var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
-				var lib_sql = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_games);
+				var lib_gameClose = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_games);
 				struct_games.params.gas009 = 1;
 				struct_games.where.gas003 = Period;
-				lib_sql.Update(function(res){
-					if(!!res){
-						gameID=res
-						console.log('insert games_51 success');
-						callback_2(null,gameID);
-					}
-					
-				});
-				dbmaster.update('UPDATE games_51 SET gas009 = ? where gas003  = ?',[1,Period],function(data){
-					if(data.ErrorCode==0){
+				lib_gameClose.Update(function(res){
+					if(!res){
 						console.log('關盤'+Period);
 						messageService.broadcast('connector','GetStatus',{'status':status});
 					}
 				});
+				/*dbmaster.update('UPDATE games_51 SET gas009 = ? where gas003  = ?',[1,Period],function(data){
+					if(data.ErrorCode==0){
+						console.log('關盤'+Period);
+						messageService.broadcast('connector','GetStatus',{'status':status});
+					}
+				});*/
 			}
 			if(Timeout)
 			{
@@ -69,14 +67,25 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 							callback(null,gameNum);//將gameNum傳到第二層
 						},
 						function(gameNum,callback){
-	    					dbmaster.update('UPDATE games_51 SET gas008 = ? where gas003  = ?',[gameNum,Period],function(data){
+							var struct_gameop = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+							var lib_gameop = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_gameop);
+							struct_gameop.params.gas008 = gameNum;
+							struct_gameop.where.gas003 = Period;
+							lib_gameop.Update(function(res){
+								if(!res){
+									console.log('寫獎號完成:'+gameNum);
+									setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':gameNum});}, 20000);
+									callback(null,gameNum);
+								}
+							});
+	    					/*dbmaster.update('UPDATE games_51 SET gas008 = ? where gas003  = ?',[gameNum,Period],function(data){
 								//寫獎號到games_51
 								if(data.ErrorCode==0){
 									console.log('寫獎號完成:'+gameNum);
 									setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':gameNum});}, 20000);
 									callback(null,gameNum);
 								}
-							});
+							});*/
 						},
 						function(gameNum,callback){
 							//select 本期下注成功的注單
@@ -88,6 +97,8 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 										if(data.ErrorCode==0){
 											callback(null,gameNum);
 											console.log('結算完成');
+										}else{
+											callback(data.ErrorCode,data.ErrorMessage);
 										}
 									});
 								//DB amountlog

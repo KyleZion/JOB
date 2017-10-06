@@ -22,6 +22,7 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 			function(data,cb) {
 				if(data.ErrorCode==0)
 				{
+					//console.log(data);
 					logId=data.rows.insertId
 					cb(null,logId);
 				}else{
