@@ -98,6 +98,7 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 											callback(null,gameNum);
 											console.log('結算完成');
 										}else{
+											console.log('結算錯誤');
 											callback(data.ErrorCode,data.ErrorMessage);
 										}
 									});
@@ -118,7 +119,7 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 						}
 					],function(err, results) {
 						if(err){
-							console.log(err);
+							console.log('結算失敗20秒後送獎號到前台:'+results);
 						}else{
 							console.log('結算完20秒後送獎號到前台:'+results);
 							//setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':results});}, 20000);
