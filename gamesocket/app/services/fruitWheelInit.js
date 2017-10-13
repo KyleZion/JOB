@@ -113,7 +113,7 @@ var gameMade = function(dbmaster,dbslave,redis){
 					lobbyHistory=lobbyHistory.substring(0,lobbyHistory.length-1);
 					callback_5(null,gameID);
 				}
-			});						
+			});
 		}
 	],
 		function(err,result){

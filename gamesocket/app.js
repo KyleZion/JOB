@@ -3,8 +3,6 @@ var redis = require('redis');
 var async = require('async');
 var configUtil = require('./app/util/configUtil.js');
 var fruitWheelInit = require('./app/services/fruitWheelInit.js');
-/*var GameProc_Base = require('./app/lib/GameProc_Base.js');
-var GPB = new GameProc_Base(3010,"fruitWheel","水果盤");*/
 /**
  * Init app for client.
  */
@@ -41,7 +39,7 @@ app.configure('production|development', function(){
   
 
   app.filter(pomelo.filters.serial());
-  var globalFilter = require('./app/servers/global/filter/globalFilter2');
+  var globalFilter = require('./app/servers/global/filter/globalFilter');
   app.globalFilter(globalFilter());
   //GlobalFilter錯誤皆會送來此
   var globalErrorHandler = function(err, msg, resp , session, next){
@@ -59,7 +57,7 @@ app.configure('production|development', function(){
   app.set("globalErrorHandler",globalErrorHandler); //globalErrorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
 });
 //=====================================connector configure=====================================
-var games = ['connector','fruitWheel'];
+var games = ['connector','fruitWheel','transfer'];
 for (var i = 0; i < games.length ; i++) {
 
   var path = app.getBase() + "/gameStart/"+ games[i]+".js";
