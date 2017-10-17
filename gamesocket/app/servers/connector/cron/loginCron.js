@@ -20,9 +20,9 @@ Cron.prototype.CheckLogin = function () {
         {
             var d = new Date(session.get('Connectime'));
             var seconds = parseInt((nowDT-d)/1000);
-            if(d==null || isNaN(seconds)){ //修正!seconds
+            /*if(d==null || isNaN(seconds)){ //修正!seconds
                 Close(session);
-            }
+            }*/
             console.log("Unlogin : "+seconds);
             //GPB.ShowLog(1,"Unlogin : "+seconds);
             if(seconds>30){

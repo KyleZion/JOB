@@ -64,7 +64,7 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback_Calcul
 			dbmaster.update('UPDATE bet_g51 SET betstate=1 where bet009 = ? and bet003 = ? ',[gamesID,0],function(data){
 				if(data.ErrorCode==0){
 					console.log("開獎完畢進入派獎");
-					console.log(winResult);
+					//console.log(winResult);
 					callback(null,winResult,multiple);
 				}else{
 					console.log("開獎錯誤");
