@@ -92,7 +92,6 @@ Handler.prototype.Transfer = function(msg,session,next){
 			    ON: logId, 
 			    ID: session.uid,
 			    AM: msg.amount};//這是需要提交到ToCBIN的Data 
-			    console.log(data);
 			var content = qs.stringify(data); 
 			var options = { 
 			    hostname: "lobby.fa88999.com", 
@@ -102,8 +101,8 @@ Handler.prototype.Transfer = function(msg,session,next){
 			}; 
 			var req = http.request(options, function (res) { 
 				//console.log(res);
-			    console.log('STATUS: ' + res.statusCode); 
-			    console.log('HEADERS: ' + JSON.stringify(res.headers)); 
+			    //console.log('STATUS: ' + res.statusCode); 
+			    //console.log('HEADERS: ' + JSON.stringify(res.headers)); 
 			    res.setEncoding('utf8'); 
 			    res.on('data', function (chunk) {
 			        console.log('BODY: ' + chunk);
@@ -111,10 +110,10 @@ Handler.prototype.Transfer = function(msg,session,next){
 			        if(data.ErrorCode==0){
 			            callback_B(null,0);
 			        }else{
-			        	callback_B(1,data.ErrorMessage);
+			    		callback_B(1,data.ErrorMessage);
 			        }
-			    }); 
-			}); 
+			    });
+			});
 			req.on('error', function (e) { 
 			    console.log('problem with request: ' + e.message); 
 			}); 
@@ -128,7 +127,7 @@ Handler.prototype.Transfer = function(msg,session,next){
 		{
 			next(null,results.B);
 		}else{
-			next(null,'轉出成功已扣除電子遊戲帳戶！');
+			next(null,{'ErrorCode':0,'ErrorMessage':'轉出成功已扣除電子遊戲帳戶！'});
 		}
 		
 	});

@@ -22,7 +22,11 @@ var bypass = {
 
 Filter.prototype.before = function (msg, session, next) {
   //doshomething
-  var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"ConnectorFilter"); //放在最後一行
+  if(msg.amount<10){
+  	next(new Error('amountError'),'轉帳額度需在10元以上');
+  }else{
+	var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"transferFilter"); //放在最後一行
+  }
 };
 
 Filter.prototype.after = function (err, msg, session, resp, next) {

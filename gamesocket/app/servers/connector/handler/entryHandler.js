@@ -219,7 +219,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 				}
 				
 			}else{
-				channel.add(uid,session.frontendId);
+				//channel.add(uid,session.frontendId);
 				/*var a=sessionService.getClientAddressBySessionId(session.id);
 				console.log('getClient!!!')
 				console.log(a);*/
@@ -333,9 +333,13 @@ function Task2_Init_Session(callback,session)
 	        return;
 	    }
 	    redis.hget(GPB.rKey_USER+session.uid, "GAMETYPE", function (err, obj) {
-		//ShowLog(0,'Game onDisconnect GameName ::::'+obj);
+		GPB.ShowLog(0,'Game onDisconnect GameName ::::'+obj);
 			if(obj!=null && obj== GameName  ){
-				redis.hset(GPB.rKey_USER+session.uid, "GAMETYPE", "000", function(err,value){});
+				redis.hset(GPB.rKey_USER+session.uid, "GAMETYPE", "000", function(err,value){
+					console.log(111111111111111111111111111111111111111111111111);
+					console.log(err);
+					console.log(value);
+				});
 			}
 		});
 	    console.log(session.uid + '斷線');
