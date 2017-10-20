@@ -1,3 +1,5 @@
+var pomelo = require('pomelo');
+
 module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 {
 	var diceBaoService = require('./diceBaoService.js');
@@ -6,8 +8,6 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 	var async =require('async')
 	var status='';
 		//進入流程控制 
-		//console.log(data);
-		//var Period = data.rows[0].gas003;
 		var EndTime = Date.parse(endtime);//Date.parse(data.rows[0].endtime);
 		console.log("GameControl");
 		CheckTime = setInterval(function() 
@@ -21,8 +21,12 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 				status = 'F';
 				redis.hset('GS:GAMESERVER:diceBao', "Status", 'F');
 				//關盤DB
-				dbmaster.update('UPDATE games_52 SET gas009 = ? where gas003  = ?',[1,Period],function(data){
-					if(data.ErrorCode==0){
+				var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+				var lib_gameClose = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_52",struct_games);
+				struct_games.params.gas009 = 1;
+				struct_games.where.gas003 = Period;
+				lib_gameClose.Update(function(res){
+					if(!res){
 						console.log('關盤'+Period);
 						messageService.broadcast('connector','GetStatus',{'status':status});
 					}
@@ -55,14 +59,18 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 								
 								}
 							}
-							console.log("52開獎號:"+gameNum);
+							//console.log("52開獎號:"+gameNum);
 							callback(null,gameNum);//將gameNum傳到第二層
 						},
 						function(gameNum,callback){
-	    					dbmaster.update('UPDATE games_52 SET gas008 = ? where gas003  = ?',[gameNum[0]+','+gameNum[1]+','+gameNum[2],Period],function(data){
-								//寫獎號到games_51
-								if(data.ErrorCode==0){
+							var struct_gameop = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+							var lib_gameop = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_52",struct_gameop);
+							struct_gameop.params.gas008 = gameNum[0]+','+gameNum[1]+','+gameNum[2];
+							struct_gameop.where.gas003 = Period;
+							lib_gameop.Update(function(res){
+								if(!res){
 									console.log('寫獎號完成:'+gameNum);
+									setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':gameNum});}, 20000);
 									callback(null,gameNum);
 								}
 							});

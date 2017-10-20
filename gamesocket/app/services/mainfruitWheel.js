@@ -8,8 +8,6 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 	var async =require('async');
 	var status='';
 		//進入流程控制 
-		//console.log(data);
-		//var Period = data.rows[0].gas003;
 		var EndTime = Date.parse(endtime);//Date.parse(data.rows[0].endtime);
 		console.log("GameControl");
 		CheckTime = setInterval(function() 

@@ -14,7 +14,6 @@ exp.init = function () {
 	var dbmaster =pomelo.app.get('dbmaster');
 	var redis =pomelo.app.get('redis');
 	//先開盤
-	//gameMade(dbclient,redis);
 	gameMade(dbmaster,dbslave,redis);
 	//觸發局數流程控制 Control
 }
@@ -80,15 +79,6 @@ var gameMade = function(dbmaster,dbslave,redis){
 				
 			});
 		},
-		/*function(callback_3){ //多CONCAT就undefined????? 改用字串組成
-			//dbclient.query('SELECT gas003,CONCAT(gas006," ",gas007)as endtime FROM games_51 WHERE gas002  = ? AND CONCAT(gas004," ",gas005 )<= NOW() AND CONCAT(gas006," ",gas007)>= NOW() ORDER BY gas001 DESC LIMIT 1',[51],function(data){
-			dbslave.query('SELECT gas001 FROM games_51 where gas002 = ? order by gas001 desc limit 1',[51],function(data){
-				if(data.ErrorCode==0){
-					gameID=data.rows[0].gas001;
-					callback_3(null,gameID)
-				}
-			});
-		},*/
 		function(gameID,callback_4){
 			var sql='SELECT gas001,gas008 FROM games_51 where gas008 <> ? order by gas001 desc limit ?';
 			var args=["",10];

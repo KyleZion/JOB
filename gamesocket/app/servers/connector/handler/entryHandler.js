@@ -32,6 +32,8 @@ var redis=pomelo.app.get('redis');
  * @param  {Function} next    next step callback
  * @return {Void}
  */
+
+
 Handler.prototype.Connect = function (msg, session, next) {
 	Async_Connection(session);
 	next(null,{'ErrorCode':0,'ErrorMessage':''});
@@ -216,13 +218,13 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.A});
 				}else if(results.F!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.F});
-				}
-				
+				}				
 			}else{
 				//channel.add(uid,session.frontendId);
 				/*var a=sessionService.getClientAddressBySessionId(session.id);
 				console.log('getClient!!!')
 				console.log(a);*/
+				console.log(session);
 				next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata});
 			}
 		});

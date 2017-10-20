@@ -20,24 +20,6 @@ var Handler = function (app) {
  
 var redis=pomelo.app.get('redis');
 
-Handler.prototype.Connect = function (msg, session, next) {
-	Async_Connection(session);
-	next(null,{'ErrorCode':0,'ErrorMessage':''});
-};
-
-function Async_Connection(session){
-	iasync.series({
-		Init_Session: function(callback){
-			Task2_Init_Session(callback,session);
-		}
-	},
-	function(err, results) {
-		console.log(results);
-	});
-}
-
-
-
 Handler.prototype.Transfer = function(msg,session,next){
 	var async = require('async');
 	var logId=0;
