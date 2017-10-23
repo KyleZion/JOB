@@ -11,7 +11,8 @@ var Filter = function() {
 var bypass = {
   "ce":'connector.entryHandler.',
   "fw":"fruitWheel.fruitWheelHandler.",
-  "tt":"transfer.transferHandler."
+  "tt":"transfer.transferHandler.",
+  "dd":"diceBao.diceBaoHandler."
 }
 
 
@@ -43,7 +44,7 @@ Filter.prototype.before = function (msg, session, next) {
       {
         if(session.uid == null)
         {
-          if(routeFilter=='ceC' || routeFilter=='ceM' || routeFilter=='ttC' || routeFilter=='ttM')
+          if(routeFilter=='ceC' || routeFilter=='ceM')
             callback_2(null,'OK');
           else
             callback_2(1,'請登入遊戲！!!!!!!!!!!!!!!!!!!!!!!!!!!!');
