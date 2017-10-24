@@ -20,7 +20,12 @@ exp.CalculateBet=function(dbclient,gamesID,gameNum,opBet,callback)
 				//var playType = opBet[i].bet011;
 				switch(opBet[i].bet011){
 					
-					case 8001://三同骰單一
+					case 8001:
+					case 8002:
+					case 8003:
+					case 8004:
+					case 8005:
+					case 8006://三同骰單一
 						var playData=opBet[i].bet014.split(',')
 						if(playData[0]==gameNum[0] && playData[1]==gameNum[1] && playData[2]==gameNum[2])
 						{
@@ -30,7 +35,7 @@ exp.CalculateBet=function(dbclient,gamesID,gameNum,opBet,callback)
 							item++;
 						}
 					break;
-					case 8002://三同骰全骰
+					case 8007://三同骰全骰
 						if(gameNum[0]==gameNum[1] && gameNum[1]==gameNum[2] && gameNum[2]==gameNum[0])
 						{
 							winResult[item]=opBet[i];
@@ -39,7 +44,12 @@ exp.CalculateBet=function(dbclient,gamesID,gameNum,opBet,callback)
 							item++;
 						}
 					break;
-					case 8003://二同骰
+					case 8008:
+					case 8009:
+					case 8010:
+					case 8011:
+					case 8012:
+					case 8013://二同骰
 					//先檢查開獎號是否
 					if((gameNum[0]==gameNum[1]) || (gameNum[1]==gameNum[2] ))
 					{
@@ -61,7 +71,20 @@ exp.CalculateBet=function(dbclient,gamesID,gameNum,opBet,callback)
 						}
 					}
 					break;
-					case 8004://和值
+					case 8014:
+					case 8015:
+					case 8016:
+					case 8017:
+					case 8018:
+					case 8019:
+					case 8020:
+					case 8021:
+					case 8022:
+					case 8023:
+					case 8024:
+					case 8025:
+					case 8026:
+					case 8027://和值
 						var playData=opBet[i].bet014;
 						if(playData==numSum)
 						{
@@ -71,7 +94,21 @@ exp.CalculateBet=function(dbclient,gamesID,gameNum,opBet,callback)
 							item++;
 						}
 					break;
-					case 8005://二不同骰
+					case 8028:
+					case 8029:
+					case 8030:
+					case 8031:
+					case 8032:
+					case 8033:
+					case 8034:
+					case 8035:
+					case 8036:
+					case 8037:
+					case 8038:
+					case 8039:
+					case 8040:
+					case 8041:
+					case 8042://二不同骰
 						var playData=opBet[i].bet014.split(',');
 						if((playData[0]==gameNum[0] || playData[0]==gameNum[1] || playData[0]==gameNum[2]) && (playData[1]==gameNum[0] || playData[1]==gameNum[1] || playData[1]==gameNum[2]) )
 						{
@@ -81,7 +118,12 @@ exp.CalculateBet=function(dbclient,gamesID,gameNum,opBet,callback)
 							item++;
 						}
 					break;
-					case 8006://單一骰
+					case 8043:
+					case 8044:
+					case 8045:
+					case 8046:
+					case 8047:
+					case 8048://單一骰
 						var playData=opBet[i].bet014;
 						for(var key in gameNum)
 						{
@@ -94,7 +136,10 @@ exp.CalculateBet=function(dbclient,gamesID,gameNum,opBet,callback)
 							}
 						}
 					break;
-					case 8007://大小單雙
+					case 8049:
+					case 8050:
+					case 8051:
+					case 8052://大小單雙
 						var playData=opBet[i].bet014;
 						var WinZone_1 =0;
 						var WinZone_2 =0;
@@ -166,7 +211,7 @@ function idWinMoneysResult(dbclient,winResult,callback_Win)
 		// Get associated value with: item.value 
 		asyncLoop(winResult, function (item, next)
 		{
-			award=item.Val * item.multiple;
+			award=(item.Val * item.multiple)+ Number(item.Val);
 			//var tmp=[item.bet002,item.bet005];
 			async.waterfall([
 				//先更新注單並寫入中獎金額
