@@ -208,6 +208,7 @@ module.exports = function GameProc_Base(weport,GameName,GameShowName)
 				},
 				B: function(callback){
 					var i = 0;
+					
 					iasync.whilst(
 						function () { 
 							return i < keys.length; 

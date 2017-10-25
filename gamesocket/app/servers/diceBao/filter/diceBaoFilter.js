@@ -194,13 +194,7 @@ Filter.prototype.before = function (msg, session, next) {
 };
 
 Filter.prototype.after = function (err, msg, session, resp, next) {
-  /*redis.srem('lockAccount:',session.uid,function(err,res){
-    if(res==1){
-      next(err, resp);
-    }else{
-      next(err, resp);
-    }
-  });*/
+  
   next(err, resp);
 };
 

@@ -3,7 +3,6 @@ var exp = module.exports;
 var asyncLoop = require('node-async-loop');
 var co =require('co');
 var serverIP='127.0.0.1';
-var playType=0;
 var numSum=0;
 exp.CalculateBet=function(dbclient,gamesID,gameNum,opBet,callback)
 {

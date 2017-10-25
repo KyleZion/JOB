@@ -87,7 +87,7 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 						},
 						function(gameNum,callback){
 							//select 本期下注成功的注單
-							dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g51 where bet009 = ? and bet003 = ? order by bet008',[gameID,0],function(data){
+							dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g51 where bet009 = ? and bet003 = ? order by id',[gameID,0],function(data){
 								if(data.ErrorCode==0){
 									//開始結算
 									//var opBet =data.rows;

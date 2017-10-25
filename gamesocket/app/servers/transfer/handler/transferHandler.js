@@ -27,7 +27,7 @@ Handler.prototype.Transfer = function(msg,session,next){
 	async.series({
 		A: function(callback_A){
 			var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
-			struct_amount.params.transfer_type = 51;
+			/*struct_amount.params.transfer_type = 51;
 			struct_amount.params.transfer_no = '';
 			struct_amount.params.from_gkey = 'MAIN';
 			struct_amount.params.to_gkey = 'CTL';
@@ -35,7 +35,10 @@ Handler.prototype.Transfer = function(msg,session,next){
 			struct_amount.params.uip = session.get('memberdata').ip;
 			struct_amount.params.otype = 'm';
 			struct_amount.params.gameid = '0';
-			struct_amount.params.bydate = formatDate();
+			struct_amount.params.bydate = formatDate();*/
+			struct_amount.params.type = 51;
+			struct_amount.params.game_id = 0;
+			struct_amount.params.game_name = 0;
 		    //mid,金額,amountlogSQL
 			lib_games.DeductMoney(session.uid,msg.amount,struct_amount,function(result)
 			{
@@ -100,16 +103,25 @@ Handler.prototype.Transfer = function(msg,session,next){
 			    console.log('problem with request: ' + e.message); 
 			}); 
 			req.end();
-
+		},
+		C: function(callback_C){
+			var struct_mem100 = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+			    //var lib_amount = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("member2",struct_sql);
+			    var lib_mem100 = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("users",struct_mem100);
+			    struct_mem100.select.mem100 = "1";
+			    struct_mem100.where.mid = session.uid;
+			    lib_mem100.Select(function(data){
+			    	callback_C(null,data[0].mem100);
+			});
 		}
 	},
 	function(err, results)
 	{
 		if(err)
 		{
-			next(null,results.B);
+			next(null,{'ErrorCode':1,'ErrorMessage':'發生錯誤:000'});
 		}else{
-			next(null,{'ErrorCode':0,'ErrorMessage':'轉出成功已扣除電子遊戲帳戶！'});
+			next(null,{'ErrorCode':0,'ErrorMessage':'轉出成功已扣除電子遊戲帳戶！','Newbalance':results.C});
 		}
 		
 	});
@@ -126,4 +138,17 @@ function formatDate() { //日期格式化
     if (day.length < 2) day = '0' + day;
 
     return [year, month, day].join('-');
+}
+
+function formatDateTime() { //時間格式化
+    var d = new Date(),
+        h = d.getHours(),
+        m = d.getMinutes(),
+        s = d.getSeconds();
+
+    if (h.length < 2) h = '0' + h;
+    if (m.length < 2) m = '0' + m;
+    if (s.length < 2) s = '0' + s;
+
+    return [h, m, s].join(':');
 }

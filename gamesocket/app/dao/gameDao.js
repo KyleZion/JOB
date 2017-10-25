@@ -27,7 +27,8 @@ gameDao.getGameId = function(CasinoId,cb){
 gameDao.getMoney = function(mid,cb){
 	dbslave = pomelo.app.get('dbslave');
 	//var sql = 'SELECT mem100 from member where mem001 = ?'; //nsc 
-	var sql = 'SELECT mem006 from member2 where mem002 = ?'; //egame
+	//var sql = 'SELECT mem006 from member2 where mem002 = ?'; //egame
+	var sql = 'SELECT mem100 from users where mid = ?'; //duegame
 	var args = [mid];
 	dbslave.query(sql,args,function(res) {
 		//console.log(res);
