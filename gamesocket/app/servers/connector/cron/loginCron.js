@@ -37,11 +37,9 @@ Cron.prototype.CheckLogin = function () {
             var seconds = parseInt((nowDT-d)/1000);
             console.log(session.uid+'STOP');
             console.log("Stop : "+seconds);
-            //GPB.ShowLog(1,"Stop : "+seconds);
             if(seconds>5){
                 Close(session);
                 console.log("Stop : x");
-                //GPB.ShowLog(1,"Stop : x");
             }
         }
     });

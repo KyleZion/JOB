@@ -50,14 +50,10 @@ handler.bet = function(msg,session,next){
 		//=============================================================
 		A:function(callback_A){
 			var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
-			struct_amount.params.transfer_type = 20;
-			struct_amount.params.from_gkey = 'MAIN';
-			struct_amount.params.to_gkey = 'CTL';
-			struct_amount.params.operator = session.uid;
-			struct_amount.params.uip = session.get('memberdata').ip;
-			struct_amount.params.otype = 'm';
-			struct_amount.params.gameid = '51';
-			struct_amount.params.bydate = formatDate();
+			struct_amount.params.type = 3;
+			struct_amount.params.game_id = '51';
+			struct_amount.params.game_name = gameID;
+			struct_amount.params.mid = session.uid;
 		    //mid,金額,amountlogSQL
 			lib_games.DeductMoney(session.uid,amount,struct_amount,function(result)
 			{
@@ -96,7 +92,7 @@ handler.bet = function(msg,session,next){
 				function() //test function: while test is true
 				{ return checkSn; },
 				function(callback) {
-					dbslave.query('SELECT bet001 from bet_g51 where bet002 = ?',[betkey+'0001'],function(data){
+					dbslave.query('SELECT id from bet_g51 where bet002 = ?',[betkey+'0001'],function(data){
 						if(data.ErrorCode== 0)
 						{ //如果有資料則return true 無則return false
 							if(data.rows.length== 0)
@@ -108,15 +104,12 @@ handler.bet = function(msg,session,next){
 								struct_bet.params.betkey = betkey;
 								struct_bet.params.betstate = 0;
 								struct_bet.params.betwin = 0;
-								struct_bet.params.betgts = formatDate()+" "+formatDateTime();
-								struct_bet.params.bet000 = formatDate()+" "+formatDateTime();
 								struct_bet.params.bet002 = bet2;
 								struct_bet.params.bet003 = 0;
 								struct_bet.params.bet005 = session.uid;
 								struct_bet.params.bet009 = gameID;
 								struct_bet.params.bet011 = 1151;
 								struct_bet.params.bet012 = 0;
-								struct_bet.params.bet013 = 1;
 								struct_bet.params.bet014 = betValue;
 								struct_bet.params.bet015 = 1;
 								struct_bet.params.bet016 = 1;
@@ -124,6 +117,8 @@ handler.bet = function(msg,session,next){
 								struct_bet.params.bet018 = 170000;
 								struct_bet.params.bet034 =md5(Date.now());
 								struct_bet.params.bydate =formatDate();
+								struct_bet.params.created_at = formatDate()+" "+formatDateTime();
+								struct_bet.params.updated_at = formatDate()+" "+formatDateTime();
 								callback(null,checkSn);
 							}else{
 								betkey=gid+getSn(13);
@@ -177,7 +172,7 @@ handler.bet = function(msg,session,next){
 			var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
 			struct_amount.params.transfer_no = trans_no;
 			struct_amount.where.id=logId;
-			var lib_amount = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("member_amount_log",struct_amount);
+			var lib_amount = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("amount_log",struct_amount);
 			lib_amount.Update(function(res)
 			{
 			    if(res===0)

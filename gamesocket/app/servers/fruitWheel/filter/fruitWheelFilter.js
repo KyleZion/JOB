@@ -108,17 +108,18 @@ Filter.prototype.before = function (msg, session, next) {
             else
             {
               //dbslave.query('SELECT mem100 from member where mem001 = ?',[session.uid],function(data){ //nsc
-              dbslave.query('SELECT mem006 from member2 where mem002 = ?',[session.uid],function(data)//egame
+              //dbslave.query('SELECT mem006 from member2 where mem002 = ?',[session.uid],function(data)//egame
+              dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
               {
                 if(data.ErrorCode==0)
                 {
                   //var sessionMoney=data.rows[0].mem100;
-                  var sessionMoney=data.rows[0].mem006;
+                  var sessionMoney=data.rows[0].mem100;
                   //var amount=0;//下注總金額
                   var betDataCheck=false;
                   //計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
                   async.series({
-                    Z: function(callback_Z){
+                    Z:function(callback_Z){
                       for(var i=0;i<=6;i++){
                         if(betData[i]!=0){
                           //amount= amount+betData[i]; //計算下注總金額
@@ -127,7 +128,7 @@ Filter.prototype.before = function (msg, session, next) {
                       }
                       callback_Z(null,0);
                     },
-                    A: function(callback_A){
+                    A:function(callback_A){
                       if(!betDataCheck){
                         //檢查沒有押注就送出
                         callback_A(1,'未下注');

@@ -120,8 +120,10 @@ Handler.prototype.Transfer = function(msg,session,next){
 		if(err)
 		{
 			next(null,{'ErrorCode':1,'ErrorMessage':'發生錯誤:000'});
+			Close(session);
 		}else{
 			next(null,{'ErrorCode':0,'ErrorMessage':'轉出成功已扣除電子遊戲帳戶！','Newbalance':results.C});
+			Close(session);
 		}
 		
 	});
@@ -151,4 +153,12 @@ function formatDateTime() { //時間格式化
     if (s.length < 2) s = '0' + s;
 
     return [h, m, s].join(':');
+}
+
+var Close = function(session){
+    var backendSessionService = pomelo.app.get('backendSessionService');
+    var connectors = pomelo.app.getServersByType('connector');
+    backendSessionService.kickByUid(connectors[0].id,session.uid,function(res){
+   		console.log(session.uid+'已從轉帳入口踢出!');
+    });
 }

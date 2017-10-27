@@ -75,7 +75,7 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback_Calcul
 		},
 		function(winResult,multiple,callback){
 			if(winResult.length!=0){
-				idWinMoneysResult(dbmaster,dbslave,winResult,multiple,function(data){
+				idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,function(data){
 					if(data.ErrorCode==0){
 						callback(null,data.result);
 					}else{
@@ -99,7 +99,7 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback_Calcul
 		});
 }
 
-function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,callback_Win)
+function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,callback_Win)
 {
 	if(winResult.length==0){
 		callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':null});
@@ -127,10 +127,11 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,callback_Win)
 			function(award, callback)
 			{
 				//dbslave.query('SELECT mem100 FROM member where mem001 = ?',[item.bet005],function(data){ //nsc
-				dbslave.query('SELECT mem006 FROM member2 where mem002 = ?',[item.bet005],function(data){ //egame
+				//dbslave.query('SELECT mem006 FROM member2 where mem002 = ?',[item.bet005],function(data){ //egame
+				dbslave.query('SELECT mem100 FROM users where mid = ?',[item.bet005],function(data){ //duegame
 					if(data.ErrorCode==0){//開始結算
 						//callback(null,data.rows[0].mem100,award); //nsc
-						callback(null,data.rows[0].mem006,award); //egame
+						callback(null,data.rows[0].mem100,award); //duegame
 					}else{
 						callback(501,'取得中獎注單帳號餘額錯誤');
 					}
@@ -139,21 +140,16 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,callback_Win)
 			//寫入amount_log
 			function(memmoney, award, callback){
 				var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
-				struct_amount.params.transfer_type = 22;
+				struct_amount.params.type = 4;
+				struct_amount.params.game_id = '51';
+				struct_amount.params.game_name = gamesID;
 				struct_amount.params.transfer_no = item.bet002;
-				struct_amount.params.from_mid = 0;
-				struct_amount.params.from_gkey = 'CTL';
-				struct_amount.params.from_balance = 0;
-				struct_amount.params.to_mid = item.bet005;
-				struct_amount.params.to_gkey = 'MAIN';
-				struct_amount.params.to_balance = memmoney;
-				struct_amount.params.amount = award;
-				struct_amount.params.operator = 0;
-				struct_amount.params.uip = serverIP;
-				struct_amount.params.otype = 'c';
-				struct_amount.params.gameid = '51';
-				struct_amount.params.bydate = formatDate();
-				var lib_amount = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("member_amount_log",struct_amount);
+				struct_amount.params.mid = item.bet005;
+				struct_amount.params.money = award;
+				struct_amount.params.balance = memmoney;
+				struct_amount.params.created_at = formatDate()+" "+formatDateTime();
+				struct_amount.params.updated_at = formatDate()+" "+formatDateTime();
+				var lib_amount = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("amount_log",struct_amount);
 				lib_amount.Insert(function(id){
 					if(!!id){
 						//amountlogid = id;
@@ -181,7 +177,8 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,callback_Win)
 			//最後再更新帳號餘額
 			function(award, callback){
 			 	//dbmaster.update('UPDATE member SET mem100 = mem100 + ? where mem001 = ?',[award,item.bet005],function(data){ //nsc
-			 	dbmaster.update('UPDATE member2 SET mem006 = mem006 + ? where mem002 = ?',[award,item.bet005],function(data){  //egame
+			 	//dbmaster.update('UPDATE member2 SET mem006 = mem006 + ? where mem002 = ?',[award,item.bet005],function(data){  //egame
+			 	dbmaster.update('UPDATE users SET mem100 = mem100 + ? where mid = ?',[award,item.bet005],function(data){  //egame
 	 		 		if(data.ErrorCode==0){
 	   		 			//console.log('UPDATE mem success');
 	   		 			callback(null,200);

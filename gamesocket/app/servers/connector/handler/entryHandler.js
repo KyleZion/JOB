@@ -186,8 +186,8 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 						}
 						else
 						{
-							GPB.ShowLog(0,"請勿頻繁切換遊戲");
-							MLcallback(1,"請勿頻繁切換遊戲");
+							GPB.ShowLog(0,"請勿頻繁切換");
+							MLcallback(1,"請勿頻繁切換");
 						}
 					});
 				}
@@ -214,17 +214,18 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 			{		
 				if(results.S!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.S});
+					Close(session);
 				}else if(results.A!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.A});
+					Close(session);
 				}else if(results.F!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.F});
+					Close(session);
 				}				
 			}else{
 				//channel.add(uid,session.frontendId);
 				/*var a=sessionService.getClientAddressBySessionId(session.id);
-				console.log('getClient!!!')
-				console.log(a);*/
-				console.log(session);
+				console.log('getClient!!!');*/
 				next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata});
 			}
 		});
@@ -236,6 +237,7 @@ function LoginSuccess(session,res,Token)
 		GPB.ShowLog(0,"LoginSuccess:"+res.id);
 			redis.hset(GPB.rKey_USER+res.id, "GAMETYPE", GameName, redis.print);
 			redis.hset(GPB.rKey_USER+res.id, "LOGIN_TIME", new Date(), redis.print);
+			//redis.hset(GPB.rKey_USER+session.uid, "TRANS_TIME", new Date());
 			//redis.hset(GPB.rKey_USER+res.id, "CASH",results.getMoney);
 			session.set("memberdata",res);
 			session.set("Mid" , res.id);
@@ -338,9 +340,6 @@ function Task2_Init_Session(callback,session)
 		GPB.ShowLog(0,'Game onDisconnect GameName ::::'+obj);
 			if(obj!=null && obj== GameName  ){
 				redis.hset(GPB.rKey_USER+session.uid, "GAMETYPE", "000", function(err,value){
-					console.log(111111111111111111111111111111111111111111111111);
-					console.log(err);
-					console.log(value);
 				});
 			}
 		});
@@ -359,10 +358,10 @@ function Task2_Init_Session(callback,session)
 
 	var Close = function(session){
         //redis.quit();
-            sessionService.kickBySessionId(session.id,function(res){
-            //sessionService.sendMessage(session.id,'onKick');
-            console.log('kick Success');
-            });
+        sessionService.kickBySessionId(session.id,function(res){
+        //sessionService.sendMessage(session.id,'onKick');
+        console.log('kick Success');
+        });
     }
 	
 	
