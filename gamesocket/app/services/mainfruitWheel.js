@@ -1,6 +1,6 @@
 var pomelo = require('pomelo');
 
-module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
+module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis,gameZone)
 {
 	var gameService = require('./gameService.js');
 	var messageService = require('./messageService.js');
@@ -9,43 +9,39 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 	var status='';
 		//進入流程控制 
 		var EndTime = Date.parse(endtime);//Date.parse(data.rows[0].endtime);
-		console.log("GameControl");
-		CheckTime = setInterval(function() 
+
+		function CheckTime() 
 		{
 			var NowTime  = Date.parse(new Date());
 			var Timeout = false;
 			status ='T';
+			check=setTimeout(CheckTime,2000);
 			if( NowTime>= EndTime)
 			{
 				Timeout = true;
 				status = 'F';
-				redis.hset('GS:GAMESERVER:fruitWheel', "Status", 'F');
+				redis.hset('GS:GAMESERVER:fruitWheel', "Status"+gameZone, 'F');
 				//關盤DB
 				var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 				var lib_gameClose = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_games);
 				struct_games.params.gas009 = 1;
-				struct_games.where.gas003 = Period;
+				struct_games.where.gas004 = gameZone;
+				struct_games.where.id = gameID;
 				lib_gameClose.Update(function(res){
 					if(!res){
-						console.log('關盤'+Period);
-						messageService.broadcast('connector','GetStatus',{'status':status});
+						console.log('關盤'+gameID);
+						messageService.broadcast('connector','GetStatus'+gameZone,{'status':status});
 					}
 				});
-				/*dbmaster.update('UPDATE games_51 SET gas009 = ? where gas003  = ?',[1,Period],function(data){
-					if(data.ErrorCode==0){
-						console.log('關盤'+Period);
-						messageService.broadcast('connector','GetStatus',{'status':status});
-					}
-				});*/
 			}
 			if(Timeout)
 			{
-				clearInterval(CheckTime);
+				clearTimeout(check);
 				var gameopx = setTimeout(function()
 				{
 					status='O';
-					redis.hset('GS:GAMESERVER:fruitWheel', "Status", 'O');
-					messageService.broadcast('connector','GetStatus',{'status':status});
+					redis.hset('GS:GAMESERVER:fruitWheel', "Status"+gameZone, 'O');
+					messageService.broadcast('connector','GetStatus'+gameZone,{'status':status});
 					console.log("Timeout");
 					//clearTimeout(gameopx);
 					async.waterfall([
@@ -68,30 +64,25 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 							var struct_gameop = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 							var lib_gameop = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_gameop);
 							struct_gameop.params.gas008 = gameNum;
-							struct_gameop.where.gas003 = Period;
+							struct_gameop.where.gas004 = gameZone;
+							struct_gameop.where.id = gameID;
 							lib_gameop.Update(function(res){
 								if(!res){
 									console.log('寫獎號完成:'+gameNum);
-									setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':gameNum});}, 20000);
+									//VIC: push message to frontend refactory
+									//修改messageService方法
+									setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum});}, 20000);
 									callback(null,gameNum);
 								}
 							});
-	    					/*dbmaster.update('UPDATE games_51 SET gas008 = ? where gas003  = ?',[gameNum,Period],function(data){
-								//寫獎號到games_51
-								if(data.ErrorCode==0){
-									console.log('寫獎號完成:'+gameNum);
-									setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':gameNum});}, 20000);
-									callback(null,gameNum);
-								}
-							});*/
 						},
 						function(gameNum,callback){
 							//select 本期下注成功的注單
-							dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g51 where bet009 = ? and bet003 = ? order by id',[gameID,0],function(data){
+							dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
 								if(data.ErrorCode==0){
 									//開始結算
 									//var opBet =data.rows;
-									gameService.CalculateBet(dbmaster,dbslave,gameID,gameNum,data.rows,function(data){
+									gameService.CalculateBet(dbmaster,dbslave,gameID,gameNum,data.rows,gameZone,function(data){
 										if(data.ErrorCode==0){
 											callback(null,gameNum);
 											console.log('結算完成');
@@ -108,9 +99,9 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 						},
 						function(gameNum,callback){
 							//更新games gas012 已結算
-							dbmaster.update('UPDATE games_51 SET gas012 = ? where gas003  = ?',[1,Period],function(data){	
+							dbmaster.update('UPDATE games_51 SET gas012 = ? where id = ? and gas004 = ?',[1,gameID,gameZone],function(data){	
 								if(data.ErrorCode==0){
-									console.log(Period+'期已結算結果');
+									console.log(gameID+'期已結算結果');
 									callback(null,gameNum);
 								}
 							});
@@ -123,9 +114,10 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 							//setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':results});}, 20000);
 						}
 					});
-					setTimeout(function(){ fruitWheelInit.init(); }, 30000);
+					setTimeout(function(){ fruitWheelInit.init(gameZone); }, 30000);
 				}, 5000);
 			}
-		},2000);
+		}
+		CheckTime();
 }
 

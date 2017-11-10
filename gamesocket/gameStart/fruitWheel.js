@@ -29,15 +29,24 @@ module.exports = function SetGame(pomelo,app)
 		      callback_A(null,0);
 		    },
 		    B:function(callback_B){
-
-		    console.log("初始化完成");
-		      fruitWheelInit.init();
+		      fruitWheelInit.init(101);
 		      callback_B(null,0);
+		    },
+		    C:function(callback_C){
+		      fruitWheelInit.init(102);
+		      callback_C(null,0);
+		    },
+		    D:function(callback_D){
+		      fruitWheelInit.init(105);
+		      callback_D(null,0);
+		    },
+		    E:function(callback_E){
+		      fruitWheelInit.init(110);
+		      callback_E(null,0);
 		    }
 		  },function(err, results) {
 		    console.log("初始化完成");
 		    });
 	});
-
 
 }

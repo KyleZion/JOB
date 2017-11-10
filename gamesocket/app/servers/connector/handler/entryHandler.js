@@ -1,6 +1,6 @@
 //'use strict';
 
-var GameName="";
+//var GameName="";
 var co = require('co');
 var thunkify = require('thunkify');
 var pomelo = require('pomelo');
@@ -66,7 +66,7 @@ Handler.prototype.MemberLogout = function(msg,session,next){
 }
 Handler.prototype.MemberLogin = function(msg,session,next){
 	var Token = msg.Token;
-	GameName= msg.GameType;
+	var GameName= msg.GameType;
 	var iasync = require('async');
 	var userdata;
 	var uid = null;
@@ -136,7 +136,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					if(p2==0){ //
 						GPB.ShowLog(0,"從來沒有登入過任何遊戲");
 						redis.sadd(GPB.rKey_USER_List, userdata.id,redis.print);
-						LoginSuccess(session,userdata,Token);
+						//LoginSuccess(session,userdata,Token,GameName);
 						MLcallback(null,0);
 					}
 					else{
@@ -175,7 +175,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 
 							    // session同步，在改变session之后需要同步，以后的请求处理中就可以获取最新session
 							    yield thunkify(session.pushAll).bind(session)();
-						        LoginSuccess(session,userdata,Token);
+						        LoginSuccess(session,userdata,Token,GameName);
 							    };
 						    var onError = function (err) {
 						        console.error(err);
@@ -232,7 +232,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 }
 
 
-function LoginSuccess(session,res,Token)
+function LoginSuccess(session,res,Token,GameName)
 	{
 		GPB.ShowLog(0,"LoginSuccess:"+res.id);
 			redis.hset(GPB.rKey_USER+res.id, "GAMETYPE", GameName, redis.print);
@@ -335,13 +335,15 @@ function Task2_Init_Session(callback,session)
 	var onUserLeave = function (app, session) {
 	    if (!session || !session.uid) {
 	        return;
-	    }
+	    }//登出方法修正
 	    redis.hget(GPB.rKey_USER+session.uid, "GAMETYPE", function (err, obj) {
-		GPB.ShowLog(0,'Game onDisconnect GameName ::::'+obj);
-			if(obj!=null && obj== GameName  ){
-				redis.hset(GPB.rKey_USER+session.uid, "GAMETYPE", "000", function(err,value){
-				});
-			}
+			//GPB.ShowLog(0,'Game onDisconnect GameName ::::'+obj);
+			redis.hget(GPB.rKey_GAMESERVER+obj,'GameName',function(err,gamename){
+				if(obj!=null && obj== gamename){
+					redis.hset(GPB.rKey_USER+session.uid, "GAMETYPE", "000", function(err,value){
+					});
+				}
+			});
 		});
 	    console.log(session.uid + '斷線');
 	};

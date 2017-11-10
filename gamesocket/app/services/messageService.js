@@ -13,6 +13,11 @@ exp.pushMessageToPlayer = function (uid, route, msg) {
   exp.pushMessageByUids([uid], route, msg);
 };
 
+exp.pushMessageToChannel = function (uid, route, msg) {
+
+  pomelo.app.get('channel').pushMessage(route, msg, opts, cb)
+};
+
 exp.broadcast = function (stype, route, msg) {
 
   pomelo.app.get('channelService').broadcast(stype, route,msg, {  

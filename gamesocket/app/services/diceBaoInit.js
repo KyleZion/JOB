@@ -60,12 +60,11 @@ var gameMade = function(dbmaster,dbslave,redis){
 			var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 			struct_games.params.gas002 = 52;
 			struct_games.params.gas003 = Period;
-			struct_games.params.gas004 = o_Day;
-			struct_games.params.gas005 = o_Time;
-			struct_games.params.gas006 = c_Day;
-			struct_games.params.gas007 = c_Time;
+			struct_games.params.start = o_Day+' '+o_Time;
+			struct_games.params.stop =c_Day+' '+c_Time ;
 			struct_games.params.gas009 = 0;
-			struct_games.params.gas013 = o_Day;
+			struct_games.params.created_at = o_Day+' '+o_Time;
+			struct_games.params.updated_at = o_Day+' '+o_Time;
 			callback_1(null,Period,struct_games);
 		},
 		function(Period,struct_games,callback_2){
@@ -80,7 +79,7 @@ var gameMade = function(dbmaster,dbslave,redis){
 			});
 		},
 		function(gameID,callback_4){
-			var sql='SELECT gas001,gas008 FROM games_52 where gas008 <> ? order by gas001 desc limit ?';
+			var sql='SELECT gas008 FROM games_52 where gas008 <> ? order by id desc limit ?';
 			var args=["",10];
 			dbslave.query(sql,args,function(data){
 				if(data.ErrorCode==0){
@@ -93,7 +92,7 @@ var gameMade = function(dbmaster,dbslave,redis){
 			});						
 		},
 		function(gameID,callback_5){
-			var sql='SELECT gas001,gas008 FROM games_52 where gas008 <> ? order by gas001 desc limit ?';
+			var sql='SELECT gas008 FROM games_52 where gas008 <> ? order by id desc limit ?';
 			var args=["",30];
 			dbslave.query(sql,args,function(data){
 				if(data.ErrorCode==0){
@@ -117,7 +116,7 @@ var gameMade = function(dbmaster,dbslave,redis){
 				redis.hset('GS:GAMESERVER:diceBao', "lobbyHistory", lobbyHistory);
 				redis.hset('GS:GAMESERVER:diceBao', "Status", 'T');
 				maindiceBao.mainGame(gameID,Period,endtime,dbmaster,dbslave,redis);
-				messageService.broadcast('connector','GetStatus',{'status':'T'});
+				messageService.broadcast('connector','GetStatus_diceBao',{'status':'T'});
 			}
 		});
 }

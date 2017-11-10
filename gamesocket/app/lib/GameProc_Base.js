@@ -216,7 +216,7 @@ module.exports = function GameProc_Base(weport,GameName,GameShowName)
 						function (wcallback) {
 							var key = keys[i];
 							GPB.GS_Redis.hget(key, "GAMETYPE", function (err, obj) {
-								GPB.ShowLog(0,"GameName:"+GameName+" "+key+":\tGAMETYPE:"+obj);
+								//GPB.ShowLog(0,"GameName:"+GameName+" "+key+":\tGAMETYPE:"+obj);
 								if(obj==GameName){
 									GPB.GS_Redis.hset(key, "GAMETYPE","000",function(err,res){wcallback();});
 								}

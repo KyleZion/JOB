@@ -15,9 +15,9 @@ var dbmaster=pomelo.app.get('dbmaster');
 var dbslave=pomelo.app.get('dbslave');
 var async=require('async');
 var md5 = require('md5');
+var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
 var sessionService = pomelo.app.get('sessionService');
 var gid='051';
-var channel = pomelo.app.get('channelService').getChannel('connect',false);
 var gameDao = require('../../../dao/gameDao');
 var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
 //===固定==============================================================
@@ -27,10 +27,10 @@ handler.bet = function(msg,session,next){
 	var betData = null; //下注內容
 	betData=tmp.data; //取JSON data
 	var gameID=betData.GamesID;
+	var channelID = betData.channelID;
+	var odds = 1;
 	var amount = 0;//下注總金額
-	var sessionMoney= 0 ;//原始帳戶餘額
 	var betValue =[0,0,0,0,0,0,0]; //各注數 
-	var betSqls=[];//寫入bet_g51的SQL Value
 	var betkey=''; 
 	var bet2='';
 	var trans_no='';
@@ -38,14 +38,36 @@ handler.bet = function(msg,session,next){
 	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	async.series({
-		Z: function(callback_Z){
+		Y: function(callback_Y){
 			for(var i=0;i<=6;i++){
 				if(betData[i]!=0){
 					amount= amount+betData[i]; //計算下注總金額
 					betValue[i]=betData[i];
 				}
 			}
-			callback_Z(null,0)
+			callback_Y(null,0)
+		},
+		Z: function(callback_Z){
+			switch(channelID){
+				case 101:
+					callback_Z(null,0);
+					break;
+				case 102:
+					amount = amount * 2 ; 
+					odds = 2;
+					callback_Z(null,0);
+					break;
+				case 105:
+					amount = amount * 5;
+					odds = 5;
+					callback_Z(null,0);
+					break;
+				case 110:
+					amount = amount * 10;
+					odds = 10;
+					callback_Z(null,0);
+					break;
+			}
 		},
 		//=============================================================
 		A:function(callback_A){
@@ -109,10 +131,10 @@ handler.bet = function(msg,session,next){
 								struct_bet.params.bet005 = session.uid;
 								struct_bet.params.bet009 = gameID;
 								struct_bet.params.bet011 = 1151;
-								struct_bet.params.bet012 = 0;
+								struct_bet.params.bet012 = channelID;
 								struct_bet.params.bet014 = betValue;
 								struct_bet.params.bet015 = 1;
-								struct_bet.params.bet016 = 1;
+								struct_bet.params.bet016 = odds;
 								struct_bet.params.bet017 = amount;
 								struct_bet.params.bet018 = 170000;
 								struct_bet.params.bet034 =md5(Date.now());
@@ -123,7 +145,7 @@ handler.bet = function(msg,session,next){
 							}else{
 								betkey=gid+getSn(13);
 							}					
-						}
+						} //VIC:else處理?
 					});
 				},
 				function (err, checkSn){
@@ -233,9 +255,8 @@ handler.bet = function(msg,session,next){
 	
 }
 
-
 handler.GetGameID =function(msg,session,next){
-	redis.hget('GS:GAMESERVER:fruitWheel', "GameID", function (err, res) {
+	redis.hget('GS:GAMESERVER:fruitWheel', "GameID"+msg.cid, function (err, res) {
 		if(err){
 			next(new Error('redis error'),500);
 		}else{
@@ -278,7 +299,7 @@ handler.GetMoney =function(msg,session,next){
 
 handler.GetTimeZone = function(msg,session,next){
 	var nowtime = formatDate()+" "+formatDateTime();
-	redis.hget('GS:GAMESERVER:fruitWheel', "endTime", function (err, res) {
+	redis.hget('GS:GAMESERVER:fruitWheel', "endTime"+msg.cid, function (err, res) {
 		if(err){
 			next(new Error('redis error'),500);
 		}else{
@@ -307,15 +328,15 @@ handler.GetTimeZone = function(msg,session,next){
 
 handler.GetHistory = function(msg,session,next){ //Redis
 	switch(msg.count){
-		case "10":
-			redis.hget('GS:GAMESERVER:fruitWheel', "gameHistory", function (err, res) {
+		case 10:
+			redis.hget('GS:GAMESERVER:fruitWheel', "gameHistory"+msg.cid, function (err, res) {
 				if(err){
 					next(new Error('redis error'),500);
 				}else{
 					if(res==null){
 						async.waterfall([
 							function(cb) {
-								gameDao.getHistory(msg,cb);
+								gameDao.getHistory(msg.count,cb);
 							}
 						], 
 							function(err,resDao) {
@@ -332,15 +353,15 @@ handler.GetHistory = function(msg,session,next){ //Redis
 				}
 			});
 			break;
-		case "30":
-			redis.hget('GS:GAMESERVER:fruitWheel', "lobbyHistory", function (err, res) {
+		case 30:
+			redis.hgetall('GS:GAMESERVER:fruitWheel', function (err, res) {
 				if(err){
 					next(new Error('redis error'),500);
 				}else{
 					if(res==null){
 						async.waterfall([
 							function(cb) {
-								gameDao.getHistory(msg,cb);
+								gameDao.getHistory(msg.count,cb);
 							}
 						], 
 							function(err,resDao) {
@@ -352,7 +373,13 @@ handler.GetHistory = function(msg,session,next){ //Redis
 							}
 						);
 					}else{ //success
-						next(null,{'ErrorCode':0,'ErrorMessage':'','History':res});
+						var record = new Array();
+						record[0] = res.lobbyHistory101;
+						record[1] = res.lobbyHistory102;
+						record[2] = res.lobbyHistory105;
+						record[3] = res.lobbyHistory110;
+						console.log(record);
+						next(null,{'ErrorCode':0,'ErrorMessage':'','History':record});
 					}
 				}
 			});
@@ -363,29 +390,62 @@ handler.GetHistory = function(msg,session,next){ //Redis
 }
 
 handler.GetStatus = function(msg,session,next){  //Redis
-	redis.hget('GS:GAMESERVER:fruitWheel', "Status", function (err, res) {
-		if(err){
-			next(new Error('redis error'),500);
-		}else{
-			if(res==null){
-				async.waterfall([
-					function(cb) {
-						gameDao.getStatus(cb);
+	if(msg.cid==0){
+		redis.hgetall('GS:GAMESERVER:fruitWheel', function (err, res) {
+				if(err){
+					next(new Error('redis error'),500);
+				}else{
+					if(res==null){
+						async.waterfall([
+							function(cb) {
+								gameDao.getStatus(cb);
+							}
+						], 
+							function(err,resDao) {
+								if(err) {
+									next(new Error('SQL error'),500);
+								}else{
+									next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':resDao});
+								}
+							}
+						);
+					}else{ //success
+						var record = new Array();
+						record[0] = res.Status101;
+						record[1] = res.Status102;
+						record[2] = res.Status105;
+						record[3] = res.Status110;
+						console.log(record);
+						next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':record});
 					}
-				], 
-					function(err,resDao) {
-						if(err) {
-							next(new Error('SQL error'),500);
-						}else{
-							next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':resDao});
+				}
+		});
+	}else{
+		redis.hget('GS:GAMESERVER:fruitWheel', "Status"+msg.cid, function (err, res) {
+			if(err){
+				next(new Error('redis error'),500);
+			}else{
+				if(res==null){
+					async.waterfall([
+						function(cb) {
+							gameDao.getStatus(cb);
 						}
-					}
-				);
-			}else{ //success
-				next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':res});
+					], 
+						function(err,resDao) {
+							if(err) {
+								next(new Error('SQL error'),500);
+							}else{
+								next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':resDao});
+							}
+						}
+					);
+				}else{ //success
+					next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':res});
+				}
 			}
-		}
-	});
+		});
+	}
+	
 }
 handler.GetBetTotal = function(msg,session,next){ //Redis
 	var NowBetTotal=[0,0,0,0,0,0,0];
@@ -407,7 +467,19 @@ handler.GetBetTotal = function(msg,session,next){ //Redis
 		}
 	);
 }
-
+handler.AddtoChannel = function(msg,session,next){
+	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);
+	channelService.add(session.uid,session.frontendId);//加入channel,房間
+	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':msg.ChannelID}); //觸發該玩家監聽訊息function
+	var odds = getChannel(msg.ChannelID);
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'odds':odds});//回傳區號,賠率
+}
+handler.LeaveChannel = function(msg,session,next){
+	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  false);
+	channelService.leave(session.uid,session.frontendId);
+	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':0});
+}
 function getSn(num){ //唯一單號亂數
 	sn = new Array();
 	for(var i=0;i<num;i++)
@@ -440,5 +512,25 @@ function formatDateTime() { //時間格式化
     if (s.length < 2) s = '0' + s;
 
     return [h, m, s].join(':');
+}
+
+function getChannel(channelID) { //時間格式化
+	var odds = 0;
+    switch(channelID){
+		case 101:
+			odds = 1;
+			break;
+		case 102:
+			odds = 2;
+			break;
+		case 105:
+			odds = 5;
+			break;
+		case 110:
+			odds = 10;
+			break;
+	}
+
+    return odds;
 }
 

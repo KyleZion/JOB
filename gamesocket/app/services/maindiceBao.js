@@ -9,7 +9,6 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 	var status='';
 		//進入流程控制 
 		var EndTime = Date.parse(endtime);//Date.parse(data.rows[0].endtime);
-		console.log("GameControl");
 		CheckTime = setInterval(function() 
 		{
 			var NowTime  = Date.parse(new Date());
@@ -28,7 +27,7 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 				lib_gameClose.Update(function(res){
 					if(!res){
 						console.log('關盤'+Period);
-						messageService.broadcast('connector','GetStatus',{'status':status});
+						messageService.broadcast('connector','GetStatus_diceBao',{'status':status});
 					}
 				});
 			}
@@ -39,7 +38,7 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 				{
 					status='O';
 					redis.hset('GS:GAMESERVER:diceBao', "Status", 'O');
-					messageService.broadcast('connector','GetStatus',{'status':status});
+					messageService.broadcast('connector','GetStatus_diceBao',{'status':status});
 					console.log("Timeout");
 					//clearTimeout(gameopx);
 					async.waterfall([
@@ -56,7 +55,6 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 									gameNum[i]=gameNum[j];
 									gameNum[j]=tmp;
 									}
-								
 								}
 							}
 							//console.log("52開獎號:"+gameNum);
@@ -70,14 +68,14 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 							lib_gameop.Update(function(res){
 								if(!res){
 									console.log('寫獎號完成:'+gameNum);
-									setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':gameNum});}, 20000);
+									setTimeout(function(){ messageService.broadcast('connector','gameop_diceBao',{'gameNum':gameNum});}, 20000);
 									callback(null,gameNum);
 								}
 							});
 						},
 						function(gameNum,callback){
 							//select 本期下注成功的注單
-							dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g52 where bet009 = ? and bet003 = ? order by bet008',[gameID,0],function(data){
+							dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g52 where bet009 = ? and bet003 = ? order by id',[gameID,0],function(data){
 								if(data.ErrorCode==0){
 									//開始結算
 									//var opBet =data.rows;
@@ -107,7 +105,7 @@ module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis)
 							console.log(err);
 						}else{
 							console.log('結算完20秒後送獎號到前台:'+results);
-							setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':results});}, 20000);
+							//setTimeout(function(){ messageService.broadcast('connector','gameop_diceBao',{'gameNum':results});}, 20000);
 						}
 					});
 					setTimeout(function(){ diceBaoInit.init(); }, 30000);

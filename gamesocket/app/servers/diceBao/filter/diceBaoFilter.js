@@ -108,7 +108,7 @@ Filter.prototype.before = function (msg, session, next) {
             else
             {
               //dbslave.query('SELECT mem100 from member where mem001 = ?',[session.uid],function(data){ //nsc
-              dbslave.query('SELECT mem006 from member2 where mem002 = ?',[session.uid],function(data)//egame
+              dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
               {
                 if(data.ErrorCode==0)
                 {

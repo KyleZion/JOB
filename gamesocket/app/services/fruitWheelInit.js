@@ -9,16 +9,16 @@ Date.prototype.addSeconds = function(s){
 	return this;
 }
 
-exp.init = function () {
+exp.init = function (gameZone) {
 	var dbslave =pomelo.app.get('dbslave');
 	var dbmaster =pomelo.app.get('dbmaster');
 	var redis =pomelo.app.get('redis');
 	//先開盤
-	gameMade(dbmaster,dbslave,redis);
+	gameMade(dbmaster,dbslave,redis,gameZone);
 	//觸發局數流程控制 Control
 }
 
-var gameMade = function(dbmaster,dbslave,redis){
+var gameMade = function(dbmaster,dbslave,redis,gameZone){
 	var gameID = 0;
 	var Period='';
 	var endtime='';
@@ -60,6 +60,7 @@ var gameMade = function(dbmaster,dbslave,redis){
 			var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 			struct_games.params.gas002 = 51;
 			struct_games.params.gas003 = Period;
+			struct_games.params.gas004 = gameZone;
 			struct_games.params.start = o_Day+' '+o_Time;
 			struct_games.params.stop =c_Day+' '+c_Time ;
 			struct_games.params.gas009 = 0;
@@ -79,8 +80,8 @@ var gameMade = function(dbmaster,dbslave,redis){
 			});
 		},
 		function(gameID,callback_4){
-			var sql='SELECT gas008 FROM games_51 where gas008 <> ? order by id desc limit ?';
-			var args=["",10];
+			var sql='SELECT gas008 FROM games_51 where gas008 <> ? and gas004 = ? order by id desc limit ?';
+			var args=["",gameZone,10];
 			dbslave.query(sql,args,function(data){
 				if(data.ErrorCode==0){
 					for (var key in data.rows){
@@ -92,8 +93,8 @@ var gameMade = function(dbmaster,dbslave,redis){
 			});
 		},
 		function(gameID,callback_5){
-			var sql='SELECT gas008 FROM games_51 where gas008 <> ? order by id desc limit ?';
-			var args=["",30];
+			var sql='SELECT gas008 FROM games_51 where gas008 <> ? and gas004 = ? order by id desc limit ?';
+			var args=["",gameZone,30];
 			dbslave.query(sql,args,function(data){
 				if(data.ErrorCode==0){
 					for (var key in data.rows){
@@ -110,13 +111,13 @@ var gameMade = function(dbmaster,dbslave,redis){
 				console.log('期數未開');
 			}else{
 				console.log('開盤:'+result);
-				redis.hset('GS:GAMESERVER:fruitWheel', "GameID", gameID);
-				redis.hset('GS:GAMESERVER:fruitWheel', "endTime", endtime);
-				redis.hset('GS:GAMESERVER:fruitWheel', "gameHistory", gameHistory);
-				redis.hset('GS:GAMESERVER:fruitWheel', "lobbyHistory", lobbyHistory);
-				redis.hset('GS:GAMESERVER:fruitWheel', "Status", 'T');
-				mainfruitWheel.mainGame(gameID,Period,endtime,dbmaster,dbslave,redis);
-				messageService.broadcast('connector','GetStatus',{'status':'T'});
+				redis.hset('GS:GAMESERVER:fruitWheel', "GameID"+gameZone, gameID);
+				redis.hset('GS:GAMESERVER:fruitWheel', "endTime"+gameZone, endtime);
+				redis.hset('GS:GAMESERVER:fruitWheel', "gameHistory"+gameZone, gameHistory);
+				redis.hset('GS:GAMESERVER:fruitWheel', "lobbyHistory"+gameZone, lobbyHistory);
+				redis.hset('GS:GAMESERVER:fruitWheel', "Status"+gameZone, 'T');
+				mainfruitWheel.mainGame(gameID,Period,endtime,dbmaster,dbslave,redis,gameZone);
+				messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
 			}
 		});
 }

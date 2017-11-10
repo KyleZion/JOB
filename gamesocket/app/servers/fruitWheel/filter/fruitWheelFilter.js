@@ -18,11 +18,14 @@ var bypass = {
     "T":"GetTimeZone",
     "H":"GetHistory",
     "S":"GetStatus",
-    "O":"GetBetTotal"
+    "O":"GetBetTotal",
+    "A":"AddtoChannel",
+    "L":"LeaveChannel"
 }
 
 Filter.prototype.before = function (msg, session, next) {
   var gameID = 0;
+  var channelID = 0;
   var checkStatus = false;
   var betData;
   var lockAccount = 0;
@@ -62,8 +65,19 @@ Filter.prototype.before = function (msg, session, next) {
         });
 
       },
+      checkChannel: function(callback){
+        betData = (JSON.parse(msg.bet)).data;
+        channelID = betData.channelID;
+        if(channelID==101 || channelID==102 || channelID==105 || channelID==110)
+        {
+          callback(null,200);
+        }
+        else{
+          callback(1,500);
+        }
+      },
       checkStatus: function(callback_0){
-        redis.hget('GS:GAMESERVER:fruitWheel', "Status", function (err, res) {
+        redis.hget('GS:GAMESERVER:fruitWheel', "Status"+channelID, function (err, res) {
           if(err){
             callback_0(1,500);
           }else{
@@ -82,8 +96,7 @@ Filter.prototype.before = function (msg, session, next) {
         });
       },
       checkGameID: function(callback_1){
-        betData = (JSON.parse(msg.bet)).data; //將C2傳來的下注內容string轉JSON
-        redis.hget('GS:GAMESERVER:fruitWheel', "GameID", function (err, res) {
+        redis.hget('GS:GAMESERVER:fruitWheel', "GameID"+channelID, function (err, res) {
           if(err){
             callback_1(1,500);
           }else{
@@ -97,7 +110,7 @@ Filter.prototype.before = function (msg, session, next) {
         });
       },
       checkBet: function(callback_2){
-        dbslave.query('SELECT count(*) as c FROM bet_g51 where bet005 = ? and bet009 = ? and betstate = ?',[session.uid,gameID,0],function(data)
+        dbslave.query('SELECT count(*) as c FROM bet_g51 where bet005 = ? and bet009 = ? and betstate = ? and bet012 = ?',[session.uid,gameID,0,channelID],function(data)
         {
           if(data.ErrorCode==0)
           {
@@ -107,7 +120,6 @@ Filter.prototype.before = function (msg, session, next) {
             }
             else
             {
-              //dbslave.query('SELECT mem100 from member where mem001 = ?',[session.uid],function(data){ //nsc
               //dbslave.query('SELECT mem006 from member2 where mem002 = ?',[session.uid],function(data)//egame
               dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
               {
@@ -139,6 +151,9 @@ Filter.prototype.before = function (msg, session, next) {
                       else if(betData.GamesID!=gameID){
                         //檢查期數
                         callback_A(1,'下注期數錯誤');
+                      }
+                      else if(!channelID){
+                        callback_A(1,'遊戲區號錯誤');
                       }
                       else if(!checkStatus){
                         callback_A(1,'已關盤');
@@ -175,7 +190,7 @@ Filter.prototype.before = function (msg, session, next) {
     {
       if(err)
       {
-        if(res.lockAccount==500 || res.checkStatus==500 || res.checkGameID == 500)
+        if(res.lockAccount==500 || res.checkStatus==500 || res.checkGameID == 500 || res.checkChannel ==500)
         {
           next(new Error('ServerQuestion'),'網路連線異常');
         }else{
