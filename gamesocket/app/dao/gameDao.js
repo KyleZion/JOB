@@ -152,7 +152,7 @@ gameDao.lowerMoney = function(betTotal,mid,cb){
 		}
 	});
 }
-gameDao.delBet = function(mid,gid,cb){
+gameDao.delBet = function(mid,gid,cid,cb){
 	dbmaster = pomelo.app.get('dbmaster');
 	var sql = 'DELETE FROM bet_g51 where bet005 = ? and bet009 = ?';
 	var args=[mid,gid];

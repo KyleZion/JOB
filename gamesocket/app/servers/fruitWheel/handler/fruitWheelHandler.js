@@ -31,6 +31,7 @@ handler.bet = function(msg,session,next){
 	var odds = 1;
 	var amount = 0;//下注總金額
 	var betValue =[0,0,0,0,0,0,0]; //各注數 
+	var periodBetTotal =[0,0,0,0,0,0,0];
 	var betkey=''; 
 	var bet2='';
 	var trans_no='';
@@ -43,6 +44,7 @@ handler.bet = function(msg,session,next){
 				if(betData[i]!=0){
 					amount= amount+betData[i]; //計算下注總金額
 					betValue[i]=betData[i];
+					periodBetTotal[i]=betData[i];
 				}
 			}
 			callback_Y(null,0)
@@ -204,7 +206,7 @@ handler.bet = function(msg,session,next){
 			    }else{
 					async.parallel([
 						function(cb){
-							gameDao.delBet(session.uid,gameID,cb);
+							gameDao.delBet(session.uid,gameID,channelID,cb);
 						},
 						function(cb){
 							gameDao.delAmountlogById(logId,cb);
@@ -234,8 +236,23 @@ handler.bet = function(msg,session,next){
 				next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 			}else{
 				console.log("下注完成");
-				//UnlockAmount
 				async.waterfall([
+					function(cb)
+					{
+						redis.hget('GS:GAMESERVER:fruitWheel', "NowbetTotal"+channelID,function(err,res){
+							if(err){
+
+							}else{
+								var tmp= res.split(",");
+								var redisTotal =periodBetTotal.map(function(element,index,periodBetTotal){
+									return Number(tmp[index])+Number(element);
+								});
+								redis.hset('GS:GAMESERVER:fruitWheel', "NowbetTotal"+channelID,redisTotal.join(","));
+								cb(null);
+
+							}
+						});
+					},
 					function(cb)
 					{
 						gameDao.getMoney(session.uid, cb);
@@ -326,7 +343,7 @@ handler.GetTimeZone = function(msg,session,next){
 	});
 }
 
-handler.GetHistory = function(msg,session,next){ //Redis
+handler.GetHistory = function(msg,session,next){ 
 	switch(msg.count){
 		case 10:
 			redis.hget('GS:GAMESERVER:fruitWheel', "gameHistory"+msg.cid, function (err, res) {
@@ -415,7 +432,6 @@ handler.GetStatus = function(msg,session,next){  //Redis
 						record[1] = res.Status102;
 						record[2] = res.Status105;
 						record[3] = res.Status110;
-						console.log(record);
 						next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':record});
 					}
 				}
@@ -448,9 +464,14 @@ handler.GetStatus = function(msg,session,next){  //Redis
 	
 }
 handler.GetBetTotal = function(msg,session,next){ //Redis
-	var NowBetTotal=[0,0,0,0,0,0,0];
-
-	async.waterfall([
+	redis.hget('GS:GAMESERVER:fruitWheel', "NowbetTotal"+msg.cid, function (err, res) {
+		if(err){
+			next(new Error('redis error'),500);
+		}else{//success
+			next(null,{'ErrorCode':0,'ErrorMessage':'','GetBetTotal':res});	
+		}
+	});
+	/*async.waterfall([
 		function(cb) {
 			for(var i in NowBetTotal){
 				NowBetTotal[i]=Math.floor(Math.random() *21+5)
@@ -465,7 +486,7 @@ handler.GetBetTotal = function(msg,session,next){ //Redis
 				next(null,{'ErrorCode':0,'ErrorMessage':'','GetBetTotal':res});
 			}
 		}
-	);
+	);*/
 }
 handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);
