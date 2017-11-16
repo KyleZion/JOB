@@ -26,7 +26,7 @@ Filter.prototype.before = function (msg, session, next) {
     if(timeDiff>60) //連續轉帳不能低於60秒
     {
       if(msg.amount<10){
-        next(new Error('amountError'),'轉帳額度需在10元以上');
+        next(new Error('amountError'),'转帐额度需在10元以上');
       }else{
         redis.hset(GPB.rKey_USER+session.uid, "TRANS_TIME", new Date());//若Redis掛了就Select users updated_at 欄位?
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"transferFilter"); //放在最後一行
@@ -34,7 +34,7 @@ Filter.prototype.before = function (msg, session, next) {
     }
     else
     {
-      next(new Error('TimeError'),'請勿頻繁轉帳！');
+      next(new Error('TimeError'),'请勿频繁转帐！');
     }
   });
   

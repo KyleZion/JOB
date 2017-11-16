@@ -4,10 +4,10 @@ var async = require('async');
 var utils = require('../util/utils');
 var gameDao = module.exports;
 
-gameDao.getGameId = function(CasinoId,cb){
+gameDao.getGameId = function(CasinoId,cid,cb){
 	dbslave = pomelo.app.get('dbslave');
-	var sql = 'SELECT id from games_'+CasinoId+' where gas009 = ? order by id desc limit 1 ';
-	var args = [0];
+	var sql = 'SELECT id from games_'+CasinoId+' where gas004 = ? and gas009 = ? order by id desc limit 1 ';
+	var args = [cid,0];
 	dbslave.query(sql,args,function(res) {
 		if(res.ErrorCode !=  0) {
 			utils.invokeCallback(cb, res.ErrorMessage, null);
@@ -17,6 +17,25 @@ gameDao.getGameId = function(CasinoId,cb){
 				var rs = res.rows[0];
 				//console.log(rs);
 				utils.invokeCallback(cb, null, rs.id);
+			} else {
+				utils.invokeCallback(cb, null,res);
+			}
+		}
+	});
+}
+
+gameDao.getGameSet = function(CasinoId,cid,cb){
+	dbslave = pomelo.app.get('dbslave');
+	var sql = 'SELECT gas003 from games_'+CasinoId+' where gas004 = ? and gas009 = ? order by id desc limit 1 ';
+	var args = [cid,0];
+	dbslave.query(sql,args,function(res) {
+		if(res.ErrorCode !=  0) {
+			utils.invokeCallback(cb, res.ErrorMessage, null);
+		} else {
+			//if (!!res && res.length === 1) {
+			if (!!res) {
+				var rs = res.rows[0];
+				utils.invokeCallback(cb, null, rs.gas003);
 			} else {
 				utils.invokeCallback(cb, null,res);
 			}
@@ -48,10 +67,10 @@ gameDao.getMoney = function(mid,cb){
 	});
 }
 
-gameDao.getTimezone = function(nowTime,cb){
+gameDao.getTimezone = function(nowTime,cid,cb){
 	dbslave = pomelo.app.get('dbslave');
-	var sql='SELECT id,(NOW()) as nowtime ,stop as endtime FROM games_51 ORDER BY id DESC LIMIT 1'
-	var args = [""];
+	var sql='SELECT id,(NOW()) as nowtime ,stop as endtime FROM games_51 where gas004 = ? ORDER BY id DESC LIMIT 1'
+	var args = [cid];
 	dbslave.query(sql,args,function(res) {
 		//console.log(res);
 		if(res.ErrorCode !=  0) {
@@ -93,10 +112,10 @@ gameDao.getHistory = function(count,cb){
 	});
 }
 
-gameDao.getStatus = function(cb){
+gameDao.getStatus = function(cid,cb){
 	dbslave = pomelo.app.get('dbslave');
-	var sql='SELECT stop as endtime FROM games_51 WHERE gas002  = ? ORDER BY id DESC LIMIT 1'
-	var args=[51];
+	var sql='SELECT stop as endtime FROM games_51 WHERE gas004 = ? ORDER BY id DESC LIMIT 1'
+	var args=[cid];
 	var status='F';
 	dbslave.query(sql,args,function(res) {
 		//console.log(res);

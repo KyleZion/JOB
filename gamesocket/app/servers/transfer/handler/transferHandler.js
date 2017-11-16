@@ -119,10 +119,10 @@ Handler.prototype.Transfer = function(msg,session,next){
 	{
 		if(err)
 		{
-			next(null,{'ErrorCode':1,'ErrorMessage':'發生錯誤:000'});
+			next(null,{'ErrorCode':1,'ErrorMessage':'发生错误:000'});
 			Close(session);
 		}else{
-			next(null,{'ErrorCode':0,'ErrorMessage':'轉出成功已扣除電子遊戲帳戶！','Newbalance':results.C});
+			next(null,{'ErrorCode':0,'ErrorMessage':'转出成功已扣除电子游戏帐户！','Newbalance':results.C});
 			Close(session);
 		}
 		

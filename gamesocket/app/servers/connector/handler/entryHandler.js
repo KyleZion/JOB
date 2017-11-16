@@ -81,7 +81,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 						if(res==null){ 
 							logger.error('GameType ERROR'+GameName);
 							console.log('no data in redis2:');
-							MLcallback(1,'網路連線異常');
+							MLcallback(1,'网路连线异常');
 						}
 						else{
 							if(res.indexOf(GameName) > -1){
@@ -107,7 +107,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 							logger.error('Token not Exits'+ Token);
 							GPB.ShowLog(2,'no data in redis:'+Token);
 							StopClient(session);
-							MLcallback(1,'網路連線異常');
+							MLcallback(1,'网路连线异常');
 						}
 						else{
 							userdata = res;
@@ -186,8 +186,8 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 						}
 						else
 						{
-							GPB.ShowLog(0,"請勿頻繁切換");
-							MLcallback(1,"請勿頻繁切換");
+							GPB.ShowLog(0,"请勿频繁切换 ");
+							MLcallback(1,"请勿频繁切换 ");
 						}
 					});
 				}

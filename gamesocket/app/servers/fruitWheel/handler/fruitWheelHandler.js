@@ -31,7 +31,7 @@ handler.bet = function(msg,session,next){
 	var odds = 1;
 	var amount = 0;//下注總金額
 	var betValue =[0,0,0,0,0,0,0]; //各注數 
-	var periodBetTotal =[0,0,0,0,0,0,0];
+	var periodBetTotal =[0,0,0,0,0,0,0]; //寫入本局總下注額
 	var betkey=''; 
 	var bet2='';
 	var trans_no='';
@@ -147,7 +147,7 @@ handler.bet = function(msg,session,next){
 							}else{
 								betkey=gid+getSn(13);
 							}					
-						} //VIC:else處理?
+						} 
 					});
 				},
 				function (err, checkSn){
@@ -249,7 +249,6 @@ handler.bet = function(msg,session,next){
 								});
 								redis.hset('GS:GAMESERVER:fruitWheel', "NowbetTotal"+channelID,redisTotal.join(","));
 								cb(null);
-
 							}
 						});
 					},
@@ -280,7 +279,7 @@ handler.GetGameID =function(msg,session,next){
 			if(res==null){
 				async.waterfall([
 					function(cb) {
-						gameDao.getGameId(51, cb);
+						gameDao.getGameId(51,msg.cid,cb);
 					}
 				], 
 					function(err,resDao) {
@@ -293,6 +292,32 @@ handler.GetGameID =function(msg,session,next){
 				);
 			}else{ //success
 				next(null,{'ErrorCode':0,'ErrorMessage':'','ID':res});
+			}
+		}
+	});
+}
+handler.GetGameSet =function(msg,session,next){
+	redis.hget('GS:GAMESERVER:fruitWheel', "GameSet"+msg.cid, function (err, res) {
+		if(err){
+			next(new Error('redis error'),500);
+		}else{
+			if(res==null){
+				async.waterfall([
+					function(cb) {
+						gameDao.getGameSet(51,msg.cid,cb);
+					}
+				], 
+					function(err,resDao) {
+						if(err) {
+							next(new Error('SQL error'),500);
+						}else{
+							var GameSet = resDao.substring(8)
+							next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':GameSet});
+						}
+					}
+				);
+			}else{ //success
+				next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':res});
 			}
 		}
 	});
@@ -323,7 +348,7 @@ handler.GetTimeZone = function(msg,session,next){
 			if(res==null){
 				async.waterfall([
 					function(cb) {
-						gameDao.getTimezone(nowtime,cb);
+						gameDao.getTimezone(nowtime,msg.cid,cb);
 					}
 				], 
 					function(err,resDao) {
@@ -407,7 +432,7 @@ handler.GetHistory = function(msg,session,next){
 }
 
 handler.GetStatus = function(msg,session,next){  //Redis
-	if(msg.cid==0){
+	if(msg.cid==0){ //VIC:尚須修正lobby取狀態
 		redis.hgetall('GS:GAMESERVER:fruitWheel', function (err, res) {
 				if(err){
 					next(new Error('redis error'),500);
@@ -415,7 +440,7 @@ handler.GetStatus = function(msg,session,next){  //Redis
 					if(res==null){
 						async.waterfall([
 							function(cb) {
-								gameDao.getStatus(cb);
+								gameDao.getStatus(0,cb);
 							}
 						], 
 							function(err,resDao) {
@@ -444,7 +469,7 @@ handler.GetStatus = function(msg,session,next){  //Redis
 				if(res==null){
 					async.waterfall([
 						function(cb) {
-							gameDao.getStatus(cb);
+							gameDao.getStatus(msg.cid,cb);
 						}
 					], 
 						function(err,resDao) {
@@ -496,6 +521,10 @@ handler.AddtoChannel = function(msg,session,next){
 	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'odds':odds});//回傳區號,賠率
 }
 handler.LeaveChannel = function(msg,session,next){
+	if(msg.ChannelID==0)
+	{
+		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':0});
+	}
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  false);
 	channelService.leave(session.uid,session.frontendId);
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
@@ -535,7 +564,7 @@ function formatDateTime() { //時間格式化
     return [h, m, s].join(':');
 }
 
-function getChannel(channelID) { //時間格式化
+function getChannel(channelID) { 
 	var odds = 0;
     switch(channelID){
 		case 101:

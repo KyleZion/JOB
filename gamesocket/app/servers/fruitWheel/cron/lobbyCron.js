@@ -33,3 +33,11 @@ Cron.prototype.lobbyMessage = function () {
         }      
     });
 };
+
+Cron.prototype.resetGameSet = function () {
+    var redis=pomelo.app.get('redis');
+    redis.hset('GS:GAMESERVER:fruitWheel', "GameSet101",'0001');
+    redis.hset('GS:GAMESERVER:fruitWheel', "GameSet102",'0001');
+    redis.hset('GS:GAMESERVER:fruitWheel', "GameSet105",'0001');
+    redis.hset('GS:GAMESERVER:fruitWheel', "GameSet110",'0001');
+};

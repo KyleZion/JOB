@@ -25,7 +25,20 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 	var gameHistory='';
 	var lobbyHistory='';
 	async.waterfall([
-		function(callback_1){
+		function(callback_0){
+			redis.hget('GS:GAMESERVER:fruitWheel',"GameSet"+gameZone,function(err,res){
+				if(res == null){
+					redis.hset('GS:GAMESERVER:fruitWheel', "GameSet"+gameZone,'0001');
+					callback_0(null,'0001');
+				}else{
+					var GameSet = (Number(res)+1).toString();
+					GameSet=GameSet.length >= 4 ? GameSet : new Array(4-GameSet.length+1).join("0") + GameSet;
+					redis.hset('GS:GAMESERVER:fruitWheel', "GameSet"+gameZone,GameSet);
+					callback_0(null,GameSet);
+				}
+			});
+		},
+		function(GameSet,callback_1){
 			//建立新期數 games_xx 成功
 			//開盤 寫入期數進GAMES_51---------------------------
 			var TimeNow= new Date();
@@ -55,7 +68,7 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 			//c_Day關盤日期
 			//c_Time關盤時間
 			//o_Day歸屬日期
-			Period=yyyy+MM+dd+h+m+s;
+			Period=yyyy+MM+dd+GameSet;
 
 			var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 			struct_games.params.gas002 = 51;

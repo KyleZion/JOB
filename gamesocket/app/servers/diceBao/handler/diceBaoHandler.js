@@ -323,14 +323,14 @@ handler.bet = function(msg,session,next){
 }*/
 
 handler.GetGameID =function(msg,session,next){
-	redis.hget('GS:GAMESERVER:diceBao', "GameID", function (err, res) {
+	redis.hget('GS:GAMESERVER:diceBao', "GameID"+msg.cid, function (err, res) {
 		if(err){
 			next(new Error('redis error'),500);
 		}else{
 			if(res==null){
 				async.waterfall([
 					function(cb) {
-						gameDao.getGameId(52, cb);
+						gameDao.getGameId(52,msg.cid,cb);
 					}
 				], 
 					function(err,resDao) {
@@ -343,6 +343,33 @@ handler.GetGameID =function(msg,session,next){
 				);
 			}else{ //success
 				next(null,{'ErrorCode':0,'ErrorMessage':'','ID':res});
+			}
+		}
+	});
+}
+
+handler.GetGameSet =function(msg,session,next){
+	redis.hget('GS:GAMESERVER:diceBao', "GameSet"+msg.cid, function (err, res) {
+		if(err){
+			next(new Error('redis error'),500);
+		}else{
+			if(res==null){
+				async.waterfall([
+					function(cb) {
+						gameDao.getGameSet(52,msg.cid,cb);
+					}
+				], 
+					function(err,resDao) {
+						if(err) {
+							next(new Error('SQL error'),500);
+						}else{
+							var GameSet = resDao.substring(8)
+							next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':GameSet});
+						}
+					}
+				);
+			}else{ //success
+				next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':res});
 			}
 		}
 	});
