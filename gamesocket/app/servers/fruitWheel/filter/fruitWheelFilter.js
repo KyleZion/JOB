@@ -198,27 +198,37 @@ Filter.prototype.before = function (msg, session, next) {
         }else{
           next(new Error('BetQuestion'),res.checkBet);
         }
-        
       }else
       {
         //console.log(res); //OK
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
       }
     })//async.series END
-  }else
+  }
+  else if(msg.route == "fruitWheel.fruitWheelHandler.A")
+  {
+    //dbslave.query('SELECT count(*) as c FROM bet_g51 where bet005 = ? and bet009 = ? and betstate = ? and bet012 = ?',[session.uid,gameID,0,channelID],function(data)
+    dbslave.query('SELECT count(*) as c FROM bet_g51 where bet005 = ? and betstate = ?',[session.uid,0],function(data)
+    {
+      if(data.ErrorCode==0)
+        {
+          if(data.rows[0].c!=0)
+          {
+            next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
+          }else
+          {
+            var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
+          }
+        }
+    });
+  }
+  else
   { //非下注route
     var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
   }
 };
 
 Filter.prototype.after = function (err, msg, session, resp, next) {
-  /*redis.srem('lockAccount:',session.uid,function(err,res){
-    if(res==1){
-      next(err, resp);
-    }else{
-      next(err, resp);
-    }
-  });*/
   next(err, resp);
 };
 

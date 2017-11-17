@@ -517,7 +517,7 @@ handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);
 	channelService.add(session.uid,session.frontendId);//加入channel,房間
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':msg.ChannelID}); //觸發該玩家監聽訊息function
-	var odds = getChannel(msg.ChannelID);
+	var odds = getOddsbyChannel(msg.ChannelID);
 	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'odds':odds});//回傳區號,賠率
 }
 handler.LeaveChannel = function(msg,session,next){
@@ -564,7 +564,7 @@ function formatDateTime() { //時間格式化
     return [h, m, s].join(':');
 }
 
-function getChannel(channelID) { 
+function getOddsbyChannel(channelID) { 
 	var odds = 0;
     switch(channelID){
 		case 101:
