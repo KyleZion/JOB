@@ -9,23 +9,36 @@ Date.prototype.addSeconds = function(s){
 	return this;
 }
 
-exp.init = function () {
+exp.init = function (gameZone) {
 	var dbslave =pomelo.app.get('dbslave');
 	var dbmaster =pomelo.app.get('dbmaster');
 	var redis =pomelo.app.get('redis');
 	//先開盤
-	gameMade(dbmaster,dbslave,redis);
+	gameMade(dbmaster,dbslave,redis,gameZone);
 	//觸發局數流程控制 Control
 }
 
-var gameMade = function(dbmaster,dbslave,redis){
+var gameMade = function(dbmaster,dbslave,redis,gameZone){
 	var gameID = 0;
 	var Period='';
 	var endtime='';
 	var gameHistory='';
 	var lobbyHistory='';
 	async.waterfall([
-		function(callback_1){
+		function(callback_0){ //局數顯示
+			redis.hget('GS:GAMESERVER:diceBao',"GameSet"+gameZone,function(err,res){
+				if(res == null){
+					redis.hset('GS:GAMESERVER:diceBao', "GameSet"+gameZone,'0001');
+					callback_0(null,'0001');
+				}else{
+					var GameSet = (Number(res)+1).toString();
+					GameSet=GameSet.length >= 4 ? GameSet : new Array(4-GameSet.length+1).join("0") + GameSet;
+					redis.hset('GS:GAMESERVER:diceBao', "GameSet"+gameZone,GameSet);
+					callback_0(null,GameSet);
+				}
+			});
+		},
+		function(GameSet,callback_1){
 			//建立新期數 games_xx 成功
 			//開盤 寫入期數進GAMES_52---------------------------
 			var TimeNow= new Date();
@@ -55,11 +68,12 @@ var gameMade = function(dbmaster,dbslave,redis){
 			//c_Day關盤日期
 			//c_Time關盤時間
 			//o_Day歸屬日期
-			Period=yyyy+MM+dd+h+m+s;
+			Period=yyyy+MM+dd+GameSet;
 
 			var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 			struct_games.params.gas002 = 52;
 			struct_games.params.gas003 = Period;
+			struct_games.params.gas004 = gameZone;
 			struct_games.params.start = o_Day+' '+o_Time;
 			struct_games.params.stop =c_Day+' '+c_Time ;
 			struct_games.params.gas009 = 0;
@@ -79,8 +93,8 @@ var gameMade = function(dbmaster,dbslave,redis){
 			});
 		},
 		function(gameID,callback_4){
-			var sql='SELECT gas008 FROM games_52 where gas008 <> ? order by id desc limit ?';
-			var args=["",10];
+			var sql='SELECT gas008 FROM games_52 where gas008 <> ? and gas004 = ? order by id desc limit ?';
+			var args=["",gameZone,10];
 			dbslave.query(sql,args,function(data){
 				if(data.ErrorCode==0){
 					for (var key in data.rows){
@@ -92,8 +106,8 @@ var gameMade = function(dbmaster,dbslave,redis){
 			});						
 		},
 		function(gameID,callback_5){
-			var sql='SELECT gas008 FROM games_52 where gas008 <> ? order by id desc limit ?';
-			var args=["",30];
+			var sql='SELECT gas008 FROM games_52 where gas008 <> ? and gas004 = ? order by id desc limit ?';
+			var args=["",gameZone,30];
 			dbslave.query(sql,args,function(data){
 				if(data.ErrorCode==0){
 					for (var key in data.rows){
@@ -110,12 +124,12 @@ var gameMade = function(dbmaster,dbslave,redis){
 				console.log('期數未開');
 			}else{
 				console.log('開盤:'+result);
-				redis.hset('GS:GAMESERVER:diceBao', "GameID", gameID);
-				redis.hset('GS:GAMESERVER:diceBao', "endTime", endtime);
-				redis.hset('GS:GAMESERVER:diceBao', "gameHistory", gameHistory);
-				redis.hset('GS:GAMESERVER:diceBao', "lobbyHistory", lobbyHistory);
-				redis.hset('GS:GAMESERVER:diceBao', "Status", 'T');
-				maindiceBao.mainGame(gameID,Period,endtime,dbmaster,dbslave,redis);
+				redis.hset('GS:GAMESERVER:diceBao', "GameID"+gameZone, gameID);
+				redis.hset('GS:GAMESERVER:diceBao', "endTime"+gameZone, endtime);
+				redis.hset('GS:GAMESERVER:diceBao', "gameHistory"+gameZone, gameHistory);
+				redis.hset('GS:GAMESERVER:diceBao', "lobbyHistory"+gameZone, lobbyHistory);
+				redis.hset('GS:GAMESERVER:diceBao', "Status"+gameZone, 'T');
+				maindiceBao.mainGame(gameID,endtime,dbmaster,dbslave,redis,gameZone);
 				messageService.broadcast('connector','GetStatus_diceBao',{'status':'T'});
 			}
 		});

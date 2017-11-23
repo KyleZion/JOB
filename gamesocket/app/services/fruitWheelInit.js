@@ -130,7 +130,8 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 				redis.hset('GS:GAMESERVER:fruitWheel', "lobbyHistory"+gameZone, lobbyHistory);
 				redis.hset('GS:GAMESERVER:fruitWheel', "Status"+gameZone, 'T');
 				redis.hset('GS:GAMESERVER:fruitWheel', "NowbetTotal"+gameZone,'0,0,0,0,0,0,0');
-				mainfruitWheel.mainGame(gameID,Period,endtime,dbmaster,dbslave,redis,gameZone);
+				redis.hset('GS:lockAccount');//清空下注key值 解開退出再進入遊戲限制
+				mainfruitWheel.mainGame(gameID,endtime,dbmaster,dbslave,redis,gameZone);
 				messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
 			}
 		});

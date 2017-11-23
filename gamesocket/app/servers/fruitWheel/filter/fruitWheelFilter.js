@@ -34,11 +34,11 @@ Filter.prototype.before = function (msg, session, next) {
   {
     async.series({
       lockAccount: function(callback){ //redis修正
-        redis.hexists("lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
+        redis.hexists("GS:lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
         {
           if(p2==0)
           { //未進入程序過
-            redis.hset("lockAccount:"+session.uid,"BET_TIME",new Date(),function(err,res)
+            redis.hset("GS:lockAccount:"+session.uid,"BET_TIME",new Date(),function(err,res)
             {
               if(res==1)
               {
@@ -52,12 +52,12 @@ Filter.prototype.before = function (msg, session, next) {
           }
           else
           { //
-            redis.hget("lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
+            redis.hget("GS:lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
               var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
               if(timeDiff>10)
               {
                 lockAccount=1;
-                redis.hset("lockAccount:"+session.uid, "BET_TIME", new Date());
+                redis.hset("GS:lockAccount:"+session.uid, "BET_TIME", new Date());
                 callback(null,200);
               }else{
                 callback(null,500);
@@ -207,19 +207,14 @@ Filter.prototype.before = function (msg, session, next) {
   }
   else if(msg.route == "fruitWheel.fruitWheelHandler.A")
   {
-    //dbslave.query('SELECT count(*) as c FROM bet_g51 where bet005 = ? and bet009 = ? and betstate = ? and bet012 = ?',[session.uid,gameID,0,channelID],function(data)
-    dbslave.query('SELECT count(*) as c FROM bet_g51 where bet005 = ? and betstate = ?',[session.uid,0],function(data)
-    {
-      if(data.ErrorCode==0)
-        {
-          if(data.rows[0].c!=0)
-          {
-            next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
-          }else
-          {
-            var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
-          }
-        }
+    redis.hget("GS:lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
+      var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
+      if(timeDiff<60)
+      {
+        next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
+      }else{
+        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
+      }
     });
   }
   else

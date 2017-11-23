@@ -1,6 +1,6 @@
 var pomelo = require('pomelo');
 
-module.exports.mainGame = function(gameID,Period,endtime,dbmaster,dbslave,redis,gameZone)
+module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZone)
 {
 	var gameService = require('./gameService.js');
 	var messageService = require('./messageService.js');

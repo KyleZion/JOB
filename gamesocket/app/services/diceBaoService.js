@@ -1,10 +1,11 @@
-var async = require('async');
 var exp = module.exports;
+var async = require('async');
+var pomelo = require('pomelo');
 var asyncLoop = require('node-async-loop');
-var co =require('co');
+var logger = require('pomelo-logger').getLogger('Service-log',__filename);
 var serverIP='127.0.0.1';
 var numSum=0;
-exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback_Calculate)
+exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callback_Calculate)
 {
 	async.waterfall([
 		function(callback)
@@ -179,12 +180,11 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback_Calcul
 					callback(null,winResult);
 				}
 			});
-			
 		},
 		function(winResult,callback){
 			if(winResult.length!=0){
 				idWinMoneysResult(dbmaster,dbslave,winResult,function(data){
-					if(data.ErrorCode==0)
+					if(data.ErrorCode==0);
 					callback(null,data.result);
 				});	
 			}else{
@@ -193,9 +193,9 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,callback_Calcul
 		}
 	],
 		function(err,value){
-			console.log("52idWinMoneysResultCallBack:")
+			console.log("52idWinMoneysResultCallBack:");
 			console.log(value);
-			callback_Calculate( {'ErrorCode': 0,'ErrorMessage': ''});
+			callback_Calculate({'ErrorCode': 0,'ErrorMessage': ''});
 		});
 }
 

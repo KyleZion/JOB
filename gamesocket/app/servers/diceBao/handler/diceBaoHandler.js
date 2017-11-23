@@ -22,7 +22,7 @@ var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); /
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
-	console.log(msg);
+	//console.log(msg);
 	var betData = ((JSON.stringify(JSON.parse(msg.bet).data)).slice(1,-1)).split(','); //將C2傳來的下注內容string轉JSON
 	console.log(betData);
 	//betData=tmp.split(','); //取JSON data
@@ -31,7 +31,7 @@ handler.bet = function(msg,session,next){
 	//var betPlay = betData.split(',');
 	var betPlay = new Array();
 	var betValue =null;
-		//betValue =getbetValue(betPlay[0]);
+	//betValue =getbetValue(betPlay[0]);
 	//var amount = betPlay[1];//下注總金額
 	var betkey=''; 
 	var bet2='';
@@ -206,10 +206,10 @@ handler.bet = function(msg,session,next){
 							function(err,results){
 								if(err){
 									logger.error('gameDao Error');
-									callback_D(1,'網路連線異常');
+									callback_D(1,'网路连线异常');
 									//next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 								}else{
-									callback_D(1,'網路連線異常');
+									callback_D(1,'网路连线异常');
 									//next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
 								}
 							});
@@ -221,7 +221,7 @@ handler.bet = function(msg,session,next){
 				function(err, results) { //series執行結果
 					if(err)//錯誤則刪單並退錢
 					{
-						next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
+						next(null,{'ErrorCode':1,'ErrorMessage':'网路连线异常'});
 					}else{
 						console.log("下注完成");
 						//UnlockAmount
@@ -523,25 +523,49 @@ handler.GetBetTotal = function(msg,session,next){ //Redis
 	);
 }
 
-handler.GetNowBetTotal = function(msg,session,next){
-	var NowBetTotal=[0,0,0,0,0,0,0];
+handler.GetGameSet =function(msg,session,next){
+	redis.hget('GS:GAMESERVER:fruitWheel', "GameSet"+msg.cid, function (err, res) {
+		if(err){
+			next(new Error('redis error'),500);
+		}else{
+			if(res==null){
+				async.waterfall([
+					function(cb) {
+						gameDao.getGameSet(51,msg.cid,cb);
+					}
+				], 
+					function(err,resDao) {
+						if(err) {
+							next(new Error('SQL error'),500);
+						}else{
+							var GameSet = resDao.substring(8)
+							next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':GameSet});
+						}
+					}
+				);
+			}else{ //success
+				next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':res});
+			}
+		}
+	});
+}
 
-	async.waterfall([
-		function(cb) {
-			for(var i in NowBetTotal){
-				NowBetTotal[i]=Math.floor(Math.random() *21+5)
-			}
-			cb(null,NowBetTotal.join())
-		}
-	], 
-		function(err,res) {
-			if(err) {
-				next(new Error('random error'),500);
-			}else{
-				next(null,{'ErrorCode':0,'ErrorMessage':'','GetBetTotal':res});
-			}
-		}
-	);
+handler.AddtoChannel = function(msg,session,next){
+	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);
+	channelService.add(session.uid,session.frontendId);//加入channel,房間
+	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':msg.ChannelID}); //觸發該玩家監聽訊息function
+	var odds = getOddsbyChannel(msg.ChannelID);
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'odds':odds});//回傳區號,賠率
+}
+handler.LeaveChannel = function(msg,session,next){
+	if(msg.ChannelID==0)
+	{
+		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':0});
+	}
+	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  false);
+	channelService.leave(session.uid,session.frontendId);
+	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':0});
 }
 
 function formatDate() { //日期格式化

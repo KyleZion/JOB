@@ -145,8 +145,6 @@ gameDao.getStatus = function(cid,cb){
 }
 gameDao.addMoney = function(betTotal,mid,cb){
 	dbmaster = pomelo.app.get('dbmaster');
-	//var sql = 'UPDATE member SET mem100 = mem100 + ? where mem001 = ?'; //nsc
-	//var sql = 'UPDATE member2 SET mem006 = mem006 + ? where mem002 = ?';
 	var sql = 'UPDATE users SET mem100 = mem100 + ? where mid = ?';
 	var args=[betTotal,mid];
 	dbmaster.update(sql,args,function(res){
@@ -159,8 +157,6 @@ gameDao.addMoney = function(betTotal,mid,cb){
 }
 gameDao.lowerMoney = function(betTotal,mid,cb){
 	dbmaster = pomelo.app.get('dbmaster');
-	//var sql = 'UPDATE member SET mem100 = mem100 - ? where mem001 = ?';//nsc
-	//var sql = 'UPDATE member2 SET mem006 = mem006 - ? where mem002 = ?';//egame
 	var sql = 'UPDATE users SET mem100 = mem100 - ? where mid = ?';
 	var args=[betTotal,mid];
 	dbmaster.update(sql,args,function(res){
@@ -173,8 +169,8 @@ gameDao.lowerMoney = function(betTotal,mid,cb){
 }
 gameDao.delBet = function(mid,gid,cid,cb){
 	dbmaster = pomelo.app.get('dbmaster');
-	var sql = 'DELETE FROM bet_g51 where bet005 = ? and bet009 = ?';
-	var args=[mid,gid];
+	var sql = 'DELETE FROM bet_g51 where bet005 = ? and bet009 = ? and bet012 = ?';
+	var args=[mid,gid,cid];
 	dbmaster.delete(sql,args,function(res){
 		if(res.ErrorCode==0){
 			utils.invokeCallback(cb, 0, 200);

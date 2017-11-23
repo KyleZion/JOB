@@ -1,6 +1,5 @@
 module.exports = function Filter_Base(bypass,msg,next,name)
 {
-
 	var async = require('async');
 	var ts=(msg.route).split('.');
   	var method = bypass[ts[2]];

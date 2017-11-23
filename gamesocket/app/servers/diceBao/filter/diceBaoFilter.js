@@ -13,27 +13,32 @@ var Filter = function() {
 
 var bypass = {
     "B":"bet",
-    "G":"GetGameID", 
+    "I":"GetGameID", 
     "M":"GetMoney",
     "T":"GetTimeZone",
     "H":"GetHistory",
     "S":"GetStatus",
-    "O":"GetBetTotal"
+    "O":"GetBetTotal",
+    "G":"GetGameSet",
+    "A":"AddToChannel",
+    "L":"LeaveChannel"
 }
 
 Filter.prototype.before = function (msg, session, next) {
   var gameID = 0;
+  var channelID = 0;
   var checkStatus = false;
   var betData;
   var lockAccount = 0;
-  if(msg.route=="diceBao.diceBaoHandler.B"){
+  if(msg.route=="diceBao.diceBaoHandler.B")
+  {
     async.series({
       lockAccount: function(callback){ //redis修正
-        redis.hexists("lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
+        redis.hexists("GS:lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
         {
           if(p2==0)
           { //未進入程序過
-            redis.hset("lockAccount:"+session.uid,"BET_TIME",new Date(),function(err,res)
+            redis.hset("GS:lockAccount:"+session.uid,"BET_TIME",new Date(),function(err,res)
             {
               if(res==1)
               {
@@ -47,12 +52,12 @@ Filter.prototype.before = function (msg, session, next) {
           }
           else
           { //
-            redis.hget("lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
+            redis.hget("GS:lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
               var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
               if(timeDiff>10)
               {
                 lockAccount=1;
-                redis.hset("lockAccount:"+session.uid, "BET_TIME", new Date());
+                redis.hset("GS:lockAccount:"+session.uid, "BET_TIME", new Date());
                 callback(null,200);
               }else{
                 callback(null,500);
@@ -61,6 +66,17 @@ Filter.prototype.before = function (msg, session, next) {
           }
         });
 
+      },
+      checkChannel: function(callback){
+        betData = (JSON.parse(msg.bet)).data;
+        channelID = betData.channelID;
+        if(channelID==101 || channelID==102 || channelID==105 || channelID==110)
+        {
+          callback(null,200);
+        }
+        else{
+          callback(1,500);
+        }
       },
       checkStatus: function(callback_0){
         redis.hget('GS:GAMESERVER:diceBao', "Status", function (err, res) {
@@ -82,7 +98,7 @@ Filter.prototype.before = function (msg, session, next) {
         });
       },
       checkGameID: function(callback_1){
-        betData = (JSON.parse(msg.bet)).data; //將C2傳來的下注內容string轉JSON
+        //betData = (JSON.parse(msg.bet)).data; //將C2傳來的下注內容string轉JSON
         redis.hget('GS:GAMESERVER:diceBao', "GameID", function (err, res) {
           if(err){
             callback_1(1,500);
@@ -97,7 +113,7 @@ Filter.prototype.before = function (msg, session, next) {
         });
       },
       checkBet: function(callback_2){
-        dbslave.query('SELECT count(*) as c FROM bet_g52 where bet005 = ? and bet009 = ? and betstate = ?',[session.uid,gameID,0],function(data)
+        dbslave.query('SELECT count(*) as c FROM bet_g52 where bet005 = ? and bet009 = ? and betstate = ?  and bet012 = ?',[session.uid,gameID,0,channelID],function(data)
         {
           if(data.ErrorCode==0)
           {
@@ -127,29 +143,32 @@ Filter.prototype.before = function (msg, session, next) {
                       }
                       callback_Z(null,0);
                     },
-                    A: function(callback_A){
+                    A:function(callback_A){
                       if(!betDataCheck){
                         //檢查沒有押注就送出
                         callback_A(1,'未下注');
                       } 
                       else if(betData.total===0 || sessionMoney<betData.total){ //檢查Client下注總金額和下注內容金額有無相同
-                        callback_A(1,'餘額不足或下注錯誤');
+                        callback_A(1,'馀额不足或下注错误');
                       }
                       else if(betData.GamesID!=gameID){
                         //檢查期數
-                        callback_A(1,'下注期數錯誤');
+                        callback_A(1,'下注期数错误');
+                      }
+                      else if(!channelID){
+                        callback_A(1,'游戏区号错误');
                       }
                       else if(!checkStatus){
-                        callback_A(1,'已關盤');
+                        callback_A(1,'已关盘');
                       }
                       else if(!lockAccount){
-                        callback_A(1,'請勿連續下注');
+                        callback_A(1,'请勿连续下注');
                       }
                       else{
                         callback_A(null,200);
                       }
                       //=============================================================
-                    } 
+                    }
                   },
                   function(err, results) {
                     if(err){
@@ -162,7 +181,7 @@ Filter.prototype.before = function (msg, session, next) {
                     }
                   });
                 }else{ //取餘額錯誤 
-                  callback_2(1,'網路連線異常');
+                  callback_2(1,'网路连线异常');
                 }
               });
             }
@@ -176,7 +195,7 @@ Filter.prototype.before = function (msg, session, next) {
       {
         if(res.lockAccount==500 || res.checkStatus==500 || res.checkGameID == 500)
         {
-          next(new Error('ServerQuestion'),'網路連線異常');
+          next(new Error('ServerQuestion'),'网路连线异常');
         }else{
           next(new Error('BetQuestion'),res.checkBet);
         }
@@ -186,9 +205,21 @@ Filter.prototype.before = function (msg, session, next) {
         console.log(res); //OK
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); //放在最後一行
       }
-    }
-    )
-  }else{ //非下注route
+    })//async.series END
+  }
+  else if(msg.route == "diceBao.diceBaoHandler.A")
+  {
+    redis.hget("GS:lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
+      var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
+      if(timeDiff<60)
+      {
+        next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
+      }else{
+        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
+      }
+    });
+  }
+  else{ //非下注route
    var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); //放在最後一行
   }
 };

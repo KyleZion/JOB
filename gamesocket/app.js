@@ -57,7 +57,7 @@ app.configure('production|development', function(){
   app.set("globalErrorHandler",globalErrorHandler); //globalErrorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
 });
 //=====================================connector configure=====================================
-var games = ['connector','fruitWheel','transfer'];
+var games = ['connector','diceBao','transfer'];
 for (var i = 0; i < games.length ; i++) {
 
   var path = app.getBase() + "/gameStart/"+ games[i]+".js";
