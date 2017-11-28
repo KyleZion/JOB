@@ -38,7 +38,7 @@ app.configure('production|development', function(){
   app.set("dbmaster", dbmaster);
   
 
-  app.filter(pomelo.filters.serial());
+  //app.filter(pomelo.filters.serial());
   var globalFilter = require('./app/servers/global/filter/globalFilter');
   app.globalFilter(globalFilter());
   //GlobalFilter錯誤皆會送來此

@@ -130,7 +130,7 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 				redis.hset('GS:GAMESERVER:diceBao', "lobbyHistory"+gameZone, lobbyHistory);
 				redis.hset('GS:GAMESERVER:diceBao', "Status"+gameZone, 'T');
 				maindiceBao.mainGame(gameID,endtime,dbmaster,dbslave,redis,gameZone);
-				messageService.broadcast('connector','GetStatus_diceBao',{'status':'T'});
+				messageService.broadcast('connector','diceBaoStatus',{'status':'T'});
 			}
 		});
 }

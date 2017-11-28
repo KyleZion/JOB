@@ -14,6 +14,7 @@ var dbmaster=pomelo.app.get('dbmaster');
 var dbslave=pomelo.app.get('dbslave');
 var async=require('async');
 var md5 = require('md5');
+var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
 var sessionService = pomelo.app.get('sessionService');
 var gid='052';
 var channel = pomelo.app.get('channelService').getChannel('connect',false);
@@ -393,14 +394,14 @@ handler.GetMoney =function(msg,session,next){
 
 handler.GetTimeZone = function(msg,session,next){
 	var nowtime = formatDate()+" "+formatDateTime();
-	redis.hget('GS:GAMESERVER:diceBao', "endTime", function (err, res) {
+	redis.hget('GS:GAMESERVER:diceBao', "endTime"+msg.cid, function (err, res) {
 		if(err){
 			next(new Error('redis error'),500);
 		}else{
 			if(res==null){
 				async.waterfall([
 					function(cb) {
-						gameDao.getTimezone(nowtime,cb);
+						gameDao.getTimezone(nowtime,msg.cid,cb);
 					}
 				], 
 					function(err,resDao) {
@@ -420,17 +421,17 @@ handler.GetTimeZone = function(msg,session,next){
 	});
 }
 
-handler.GetHistory = function(msg,session,next){ //Redis
+handler.GetHistory = function(msg,session,next){ 
 	switch(msg.count){
-		case "10":
-			redis.hget('GS:GAMESERVER:diceBao', "gameHistory", function (err, res) {
+		case 10:
+			redis.hget('GS:GAMESERVER:diceBao', "gameHistory"+msg.cid, function (err, res) {
 				if(err){
 					next(new Error('redis error'),500);
 				}else{
 					if(res==null){
 						async.waterfall([
 							function(cb) {
-								gameDao.getHistory(msg,cb);
+								gameDao.getHistory(msg.count,cb);
 							}
 						], 
 							function(err,resDao) {
@@ -447,15 +448,15 @@ handler.GetHistory = function(msg,session,next){ //Redis
 				}
 			});
 			break;
-		case "30":
-			redis.hget('GS:GAMESERVER:diceBao', "lobbyHistory", function (err, res) {
+		case 30:
+			redis.hgetall('GS:GAMESERVER:diceBao', function (err, res) {
 				if(err){
 					next(new Error('redis error'),500);
 				}else{
 					if(res==null){
 						async.waterfall([
 							function(cb) {
-								gameDao.getHistory(msg,cb);
+								gameDao.getHistory(msg.count,cb);
 							}
 						], 
 							function(err,resDao) {
@@ -467,7 +468,13 @@ handler.GetHistory = function(msg,session,next){ //Redis
 							}
 						);
 					}else{ //success
-						next(null,{'ErrorCode':0,'ErrorMessage':'','History':res});
+						var record = new Array();
+						record[0] = res.lobbyHistory101;
+						record[1] = res.lobbyHistory102;
+						record[2] = res.lobbyHistory105;
+						record[3] = res.lobbyHistory110;
+						console.log(record);
+						next(null,{'ErrorCode':0,'ErrorMessage':'','History':record});
 					}
 				}
 			});
@@ -478,29 +485,60 @@ handler.GetHistory = function(msg,session,next){ //Redis
 }
 
 handler.GetStatus = function(msg,session,next){  //Redis
-	redis.hget('GS:GAMESERVER:diceBao', "Status", function (err, res) {
-		if(err){
-			next(new Error('redis error'),500);
-		}else{
-			if(res==null){
-				async.waterfall([
-					function(cb) {
-						gameDao.getStatus(cb);
+	if(msg.cid==0){ 
+		redis.hgetall('GS:GAMESERVER:diceBao', function (err, res) {
+				if(err){
+					next(new Error('redis error'),500);
+				}else{
+					if(res==null){
+						async.waterfall([
+							function(cb) {
+								gameDao.getStatus(0,cb);
+							}
+						], 
+							function(err,resDao) {
+								if(err) {
+									next(new Error('SQL error'),500);
+								}else{
+									next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':resDao});
+								}
+							}
+						);
+					}else{ //success
+						var record = new Array();
+						record[0] = res.Status101;
+						record[1] = res.Status102;
+						record[2] = res.Status105;
+						record[3] = res.Status110;
+						next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':record});
 					}
-				], 
-					function(err,resDao) {
-						if(err) {
-							next(new Error('SQL error'),500);
-						}else{
-							next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':resDao});
+				}
+		});
+	}else{
+		redis.hget('GS:GAMESERVER:diceBao', "Status"+msg.cid, function (err, res) {
+			if(err){
+				next(new Error('redis error'),500);
+			}else{
+				if(res==null){
+					async.waterfall([
+						function(cb) {
+							gameDao.getStatus(msg.cid,cb);
 						}
-					}
-				);
-			}else{ //success
-				next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':res});
+					], 
+						function(err,resDao) {
+							if(err) {
+								next(new Error('SQL error'),500);
+							}else{
+								next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':resDao});
+							}
+						}
+					);
+				}else{ //success
+					next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':res});
+				}
 			}
-		}
-	});
+		});
+	}
 }
 handler.GetBetTotal = function(msg,session,next){ //Redis
 	var NowBetTotal=[0,0,0,0,0,0,0];
@@ -524,7 +562,7 @@ handler.GetBetTotal = function(msg,session,next){ //Redis
 }
 
 handler.GetGameSet =function(msg,session,next){
-	redis.hget('GS:GAMESERVER:fruitWheel', "GameSet"+msg.cid, function (err, res) {
+	redis.hget('GS:GAMESERVER:diceBao', "GameSet"+msg.cid, function (err, res) {
 		if(err){
 			next(new Error('redis error'),500);
 		}else{
@@ -600,6 +638,26 @@ function getSn(num){
 		sn[i]=Math.floor(Math.random() *10)
 		}
 	return sn.join("");
+}
+
+function getOddsbyChannel(channelID) { 
+	var odds = 0;
+    switch(channelID){
+		case 101:
+			odds = 1;
+			break;
+		case 102:
+			odds = 2;
+			break;
+		case 105:
+			odds = 5;
+			break;
+		case 110:
+			odds = 10;
+			break;
+	}
+
+    return odds;
 }
 
 function getbetValue(code)

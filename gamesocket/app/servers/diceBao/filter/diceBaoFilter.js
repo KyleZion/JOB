@@ -20,7 +20,7 @@ var bypass = {
     "S":"GetStatus",
     "O":"GetBetTotal",
     "G":"GetGameSet",
-    "A":"AddToChannel",
+    "A":"AddtoChannel",
     "L":"LeaveChannel"
 }
 
