@@ -34,38 +34,16 @@ Filter.prototype.before = function (msg, session, next) {
   {
     async.series({
       lockAccount: function(callback){ //redis修正
-        redis.hexists("GS:lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
-        {
-          if(p2==0)
-          { //未進入程序過
-            redis.hset("GS:lockAccount:"+session.uid,"BET_TIME",new Date(),function(err,res)
-            {
-              if(res==1)
-              {
-                lockAccount=res;
-                callback(null,200);
-              }else
-              {
-                callback(null,500);
-              }
-            });
+        redis.sismember("GS:lockAccount:diceBao",session.uid,function(err,res){
+          if(res==0){
+            redis.sadd("GS:lockAccount:diceBao",session.uid);
+            lockAccount = 1;
+            callback(null,200);
           }
-          else
-          { //
-            redis.hget("GS:lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
-              var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
-              if(timeDiff>10)
-              {
-                lockAccount=1;
-                redis.hset("GS:lockAccount:"+session.uid, "BET_TIME", new Date());
-                callback(null,200);
-              }else{
-                callback(null,500);
-              }
-            });
+          else{
+            callback(1,500);
           }
         });
-
       },
       checkChannel: function(callback){
         betData = (JSON.parse(msg.bet)).data;
@@ -209,13 +187,12 @@ Filter.prototype.before = function (msg, session, next) {
   }
   else if(msg.route == "diceBao.diceBaoHandler.A")
   {
-    redis.hget("GS:lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
-      var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
-      if(timeDiff<60)
-      {
+    redis.sismember("GS:lockAccount:diceBao",session.uid,function(err,res){
+      if(res==0){ 
+        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); 
+      }
+      else{
         next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
-      }else{
-        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
       }
     });
   }

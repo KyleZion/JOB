@@ -36,6 +36,7 @@ handler.bet = function(msg,session,next){
 	var bet2='';
 	var trans_no='';
 	var logId = 0;
+	var b015 = 0;
 	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	async.series({
@@ -50,6 +51,7 @@ handler.bet = function(msg,session,next){
 			callback_Y(null,0)
 		},
 		Z: function(callback_Z){
+			b015 = amount;
 			switch(channelID){
 				case 101:
 					callback_Z(null,0);
@@ -125,6 +127,7 @@ handler.bet = function(msg,session,next){
 								checkSn=false;
 								bet2=betkey+'0001';
 								trans_no=bet2;
+								var md5str = session.uid+gameID;
 								struct_bet.params.betkey = betkey;
 								struct_bet.params.betstate = 0;
 								struct_bet.params.betwin = 0;
@@ -135,11 +138,11 @@ handler.bet = function(msg,session,next){
 								struct_bet.params.bet011 = 1151;
 								struct_bet.params.bet012 = channelID;
 								struct_bet.params.bet014 = betValue;
-								struct_bet.params.bet015 = 1;
+								struct_bet.params.bet015 = b015;
 								struct_bet.params.bet016 = odds;
 								struct_bet.params.bet017 = amount;
 								struct_bet.params.bet018 = 170000;
-								struct_bet.params.bet034 =md5(Date.now());
+								struct_bet.params.bet034 =md5(md5str);
 								struct_bet.params.bydate =formatDate();
 								struct_bet.params.created_at = formatDate()+" "+formatDateTime();
 								struct_bet.params.updated_at = formatDate()+" "+formatDateTime();
@@ -486,7 +489,6 @@ handler.GetStatus = function(msg,session,next){  //Redis
 			}
 		});
 	}
-	
 }
 handler.GetBetTotal = function(msg,session,next){ //Redis
 	redis.hget('GS:GAMESERVER:fruitWheel', "NowbetTotal"+msg.cid, function (err, res) {

@@ -11,6 +11,7 @@ app.set('name', 'pomelo_test');
 
 // app configuration
 app.configure('production|development', function(){
+  app.enable("systemMonitor");
   //redis config
   var redis_config = configUtil.load('redis');
   var client = redis.createClient(redis_config.development.port,redis_config.development.IP,{});
@@ -57,11 +58,11 @@ app.configure('production|development', function(){
   app.set("globalErrorHandler",globalErrorHandler); //globalErrorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
 });
 //=====================================connector configure=====================================
-var games = ['connector','diceBao','transfer'];
+var games = ['connector','fruitWheel','transfer'];
+//var games = ['connector','transfer'];
 for (var i = 0; i < games.length ; i++) {
 
   var path = app.getBase() + "/gameStart/"+ games[i]+".js";
-
 
   var game = require(path);
   var iSetGame = new game(pomelo,app);
@@ -115,7 +116,6 @@ app.configure('production|development', 'fruitWheel', function() {
     console.log("初始化完成");
     });
 });*/
-
 
 
 // start app

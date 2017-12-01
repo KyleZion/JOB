@@ -36,7 +36,7 @@ var redis=pomelo.app.get('redis');
 
 Handler.prototype.Connect = function (msg, session, next) {
 	Async_Connection(session);
-	next(null,{'ErrorCode':0,'ErrorMessage':''});
+	next(null,{'ErrorCode':0,'ErrorMessage':'Connnect!'});
 };
 
 function Async_Connection(session){
@@ -71,7 +71,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 	var userdata;
 	var uid = null;
 		iasync.series({
-			S: function(MLcallback){
+			S:function(MLcallback){
 				redis.SMEMBERS(GPB.rKey_GAMESERVER_LIST, function(err,res){
 					if(err){
 						GPB.ShowLog(2,'Error:'+ err);
@@ -79,8 +79,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					} 
 					else{
 						if(res==null){ 
-							logger.error('GameType ERROR'+GameName);
-							console.log('no data in redis2:');
+							logger.error('GameType ERROR'+GameName+'no data in redis:');
 							MLcallback(1,'网路连线异常');
 						}
 						else{
@@ -94,6 +93,13 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 						}
 					}
 				});
+			},
+			T: function(MLcallback){
+				if(pomelo.app.getServersByType(GameName).length==0){
+					MLcallback(1,'伺服器维护中，请稍后再试')
+				}else{
+					MLcallback(null,0);
+				}
 			},
 			A: function(MLcallback){
 				redis.hgetall(GPB.rKey_Web_user+Token, function(err,res){
@@ -215,6 +221,9 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 				if(results.S!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.S});
 					Close(session);
+				}else if(results.T!=0){
+					next(null,{'ErrorCode':1,'ErrorMessage':results.T});
+					Close(session);
 				}else if(results.A!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.A});
 					Close(session);
@@ -232,6 +241,182 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 		});
 }
 
+Handler.prototype.CSLogin = function(msg,session,next){
+	var Token = msg.Token;
+	var GameName= msg.GameType;
+	var iasync = require('async');
+	var userdata;
+	var uid = null;
+		iasync.series({
+			S:function(MLcallback){
+				redis.SMEMBERS(GPB.rKey_GAMESERVER_LIST, function(err,res){
+					if(err){
+						GPB.ShowLog(2,'Error:'+ err);
+						MLcallback(1,0);
+					}
+					else{
+						if(res==null){ 
+							logger.error('GameType ERROR'+GameName+'no data in redis:');
+							MLcallback(1,'网路连线异常');
+						}
+						else{
+							if(res.indexOf(GameName) > -1){
+								MLcallback(null,0);
+							}
+							else{
+								logger.error('GameType ERROR'+GameName);
+								MLcallback(1,'type error');
+							}
+						}
+					}
+				});
+			},
+			T: function(MLcallback){
+				if(pomelo.app.getServersByType(GameName).length==0){
+					MLcallback(1,'伺服器维护中，请稍后再试')
+				}else{
+					MLcallback(null,0);
+				}
+			},
+			A: function(MLcallback){
+				redis.hgetall(GPB.rKey_Web_user+Token, function(err,res){
+					if(err){
+						GPB.ShowLog(2,'Error:'+ err);
+						StopClient(session);
+						MLcallback(1,0);
+					} 
+					else{
+						if(res==null){ //是否判斷res.id ?
+							logger.error('Token not Exits'+ Token);
+							GPB.ShowLog(2,'no data in redis:'+Token);
+							StopClient(session);
+							MLcallback(1,'网路连线异常');
+						}
+						else{
+							userdata = res;
+							uid=res.id;
+							MLcallback(null,0);
+						}
+					}
+				});
+			},
+			/*
+			B: function(MLcallback){
+				session.redis.hgetall(GPB.rKey_USER+userdata.id, function(err,res){   
+					ShowLog(0,"所有玩家參數:");	
+					ShowLog(0,res);
+					MLcallback(null,0);
+				});
+			},
+			C: function(MLcallback){
+				session.redis.smembers(GPB.rKey_USER_List, function(err,res){  
+					ShowLog(0,"所有玩家:"+res);	
+					MLcallback(null,0);
+				});
+			},*/
+			D: function(MLcallback){
+				redis.sismember(GPB.rKey_USER_List,userdata.id,function(p1,p2){
+					if(p2==0){ //
+						GPB.ShowLog(0,"從來沒有登入過任何遊戲");
+						redis.sadd(GPB.rKey_USER_List, userdata.id,redis.print);
+						//LoginSuccess(session,userdata,Token,GameName);
+						MLcallback(null,0);
+					}
+					else{
+						MLcallback(null,userdata.id);
+					}
+				});
+			},
+			E: function(MLcallback){
+				redis.hget(GPB.rKey_USER+userdata.id, "GAMETYPE", function (err, obj) {
+					userdata.gamename = obj;
+					MLcallback(null,0);
+				})
+			},
+			F: function(MLcallback){
+				if(userdata.gamename=="000" ||userdata.gamename=="0" || userdata.gamename==null){
+					redis.hget(GPB.rKey_USER+userdata.id, "LOGIN_TIME", function (err, obj) {
+						var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
+						if(timeDiff>10) //連續登入不能低於10秒
+						{
+							//bind uid
+							var self = this;
+							if (!uid) {
+							    return next(null, {
+							    ErrorCode: 1 
+							    });
+							}
+							var onDo = function* () {
+							    // 踢掉用户
+							    yield thunkify(sessionService.kick)(uid);
+
+							    // session绑定uid
+							    yield thunkify(session.bind).bind(session)(uid);
+
+							    // 连接断开时的处理
+							    session.on('closed', onUserLeave.bind(self, self.app));
+
+							    // session同步，在改变session之后需要同步，以后的请求处理中就可以获取最新session
+							    yield thunkify(session.pushAll).bind(session)();
+						        LoginSuccess(session,userdata,Token,GameName);
+							    };
+						    var onError = function (err) {
+						        console.error(err);
+								MLcallback(1,err);
+							};
+							co(onDo).catch(onError);    
+							MLcallback(null,0);
+						}
+						else
+						{
+							GPB.ShowLog(0,"请勿频繁切换 ");
+							MLcallback(1,"请勿频繁切换 ");
+						}
+					});
+				}
+				else{
+					GPB.ShowLog(0,"已經在遊戲裡面 原本遊戲需要先斷線> : "+ userdata.gamename);
+					redis.hgetall(GPB.rKey_GAMESERVER+ userdata.gamename, function(err,res){  
+						if(err==null)
+						{
+							//session.Alert("已經在遊戲裡面 原本遊戲需要先斷線 : "+ res.GameShowName);
+							GPB.ShowLog(0,"已經在遊戲裡面 原本遊戲需要先斷線>> : "+ res.GameShowName);
+							MLcallback(1,"已在遊戲中！請先關閉原本遊戲 :"+res.GameShowName);
+						}
+						else
+						{
+							GPB.ShowLog(0,"已經在遊戲裡面 原本遊戲需要先斷線>>> : "+ res.GameShowName);
+							MLcallback(1,"已在遊戲中！請先關閉原本遊戲 :"+res.GameShowName);
+						}
+					});
+					
+				}
+			}
+		},function(err, results) {
+			if(!!err)
+			{		
+				if(results.S!=0){
+					next(null,{'ErrorCode':1,'ErrorMessage':results.S});
+					Close(session);
+				}else if(results.T!=0){
+					next(null,{'ErrorCode':1,'ErrorMessage':results.T});
+					Close(session);
+				}else if(results.A!=0){
+					next(null,{'ErrorCode':1,'ErrorMessage':results.A});
+					Close(session);
+				}else if(results.F!=0){
+					next(null,{'ErrorCode':1,'ErrorMessage':results.F});
+					Close(session);
+				}				
+			}else{
+				//channel.add(uid,session.frontendId);
+				/*var a=sessionService.getClientAddressBySessionId(session.id);
+				console.log('getClient!!!');*/
+				messageService.pushMessageToPlayer({'uid':uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
+				next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata});
+			}
+		});
+}
 
 function LoginSuccess(session,res,Token,GameName)
 	{

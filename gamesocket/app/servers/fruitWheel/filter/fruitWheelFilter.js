@@ -34,7 +34,7 @@ Filter.prototype.before = function (msg, session, next) {
   {
     async.series({
       lockAccount: function(callback){ //redis修正
-        redis.hexists("GS:lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
+        /*redis.hexists("GS:lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
         {
           if(p2==0)
           { //未進入程序過
@@ -64,8 +64,17 @@ Filter.prototype.before = function (msg, session, next) {
               }
             });
           }
+        });*/
+        redis.sismember("GS:lockAccount:fruitWheel",session.uid,function(err,res){
+          if(res==0){
+            redis.sadd("GS:lockAccount:fruitWheel",session.uid);
+            lockAccount = 1;
+            callback(null,200);
+          }
+          else{
+            callback(1,500);
+          }
         });
-
       },
       checkChannel: function(callback){
         betData = (JSON.parse(msg.bet)).data;
@@ -207,13 +216,21 @@ Filter.prototype.before = function (msg, session, next) {
   }
   else if(msg.route == "fruitWheel.fruitWheelHandler.A")
   {
-    redis.hget("GS:lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
+    /*redis.hget("GS:lockAccount:"+session.uid,"BET_TIME", function (err, obj) {
       var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
       if(timeDiff<60)
       {
         next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
       }else{
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
+      }
+    });*/
+    redis.sismember("GS:lockAccount:fruitWheel",session.uid,function(err,res){
+      if(res==0){ 
+        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); 
+      }
+      else{
+        next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
       }
     });
   }

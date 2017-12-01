@@ -44,7 +44,7 @@ Filter.prototype.before = function (msg, session, next) {
       {
         if(session.uid == null)
         {
-          if(routeFilter=='ceC' || routeFilter=='ceM')
+          if(routeFilter=='ceC' || routeFilter=='ceM' || routeFilter=='ceS')
             callback_2(null,'OK');
           else
             callback_2(1,'請登入遊戲！!!!!!!!!!!!!!!!!!!!!!!!!!!!');

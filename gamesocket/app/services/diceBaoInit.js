@@ -129,8 +129,9 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 				redis.hset('GS:GAMESERVER:diceBao', "gameHistory"+gameZone, gameHistory);
 				redis.hset('GS:GAMESERVER:diceBao', "lobbyHistory"+gameZone, lobbyHistory);
 				redis.hset('GS:GAMESERVER:diceBao', "Status"+gameZone, 'T');
+				redis.del('GS:lockAccount:diceBao');//清空下注key值 解開退出再進入遊戲限制
 				maindiceBao.mainGame(gameID,endtime,dbmaster,dbslave,redis,gameZone);
-				messageService.broadcast('connector','diceBaoStatus',{'status':'T'});
+				messageService.broadcast('connector','GetStatus_diceBao',{'status':'T'});
 			}
 		});
 }

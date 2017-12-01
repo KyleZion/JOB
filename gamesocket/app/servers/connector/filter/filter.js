@@ -16,7 +16,8 @@ var Filter = function() {
 var bypass = {
   "C":'Connect',
   "M":"MemberLogin",
-  "o":"MemberLogout"
+  "o":"MemberLogout",
+  "S":"CSLogin"
 }
 
 Filter.prototype.before = function (msg, session, next) {

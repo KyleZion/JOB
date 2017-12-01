@@ -23,7 +23,7 @@ module.exports = function SetGame(pomelo,app)
 
 	  	var errorHandler = function(err, msg, resp , session, next){
 	      	console.log('>>>>>>>>>>>>>connector errorHandler : ' + err );
-	      	console.log( msg );
+	      	console.log(msg);
 	 	}
 	  	app.set("errorHandler",errorHandler);//errorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
 	});
