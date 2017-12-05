@@ -248,38 +248,8 @@ Handler.prototype.CSLogin = function(msg,session,next){
 	var userdata;
 	var uid = null;
 		iasync.series({
-			S:function(MLcallback){
-				redis.SMEMBERS(GPB.rKey_GAMESERVER_LIST, function(err,res){
-					if(err){
-						GPB.ShowLog(2,'Error:'+ err);
-						MLcallback(1,0);
-					}
-					else{
-						if(res==null){ 
-							logger.error('GameType ERROR'+GameName+'no data in redis:');
-							MLcallback(1,'网路连线异常');
-						}
-						else{
-							if(res.indexOf(GameName) > -1){
-								MLcallback(null,0);
-							}
-							else{
-								logger.error('GameType ERROR'+GameName);
-								MLcallback(1,'type error');
-							}
-						}
-					}
-				});
-			},
-			T: function(MLcallback){
-				if(pomelo.app.getServersByType(GameName).length==0){
-					MLcallback(1,'伺服器维护中，请稍后再试')
-				}else{
-					MLcallback(null,0);
-				}
-			},
 			A: function(MLcallback){
-				redis.hgetall(GPB.rKey_Web_user+Token, function(err,res){
+				redis.hgetall("CS:"+Token, function(err,res){
 					if(err){
 						GPB.ShowLog(2,'Error:'+ err);
 						StopClient(session);
@@ -300,25 +270,11 @@ Handler.prototype.CSLogin = function(msg,session,next){
 					}
 				});
 			},
-			/*
-			B: function(MLcallback){
-				session.redis.hgetall(GPB.rKey_USER+userdata.id, function(err,res){   
-					ShowLog(0,"所有玩家參數:");	
-					ShowLog(0,res);
-					MLcallback(null,0);
-				});
-			},
-			C: function(MLcallback){
-				session.redis.smembers(GPB.rKey_USER_List, function(err,res){  
-					ShowLog(0,"所有玩家:"+res);	
-					MLcallback(null,0);
-				});
-			},*/
 			D: function(MLcallback){
-				redis.sismember(GPB.rKey_USER_List,userdata.id,function(p1,p2){
+				redis.sismember("GS:ADMINLIST",userdata.id,function(p1,p2){
 					if(p2==0){ //
-						GPB.ShowLog(0,"從來沒有登入過任何遊戲");
-						redis.sadd(GPB.rKey_USER_List, userdata.id,redis.print);
+						GPB.ShowLog(0,"未登入過後台ADMIN");
+						redis.sadd("GS:ADMINLIST", userdata.id);
 						//LoginSuccess(session,userdata,Token,GameName);
 						MLcallback(null,0);
 					}

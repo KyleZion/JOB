@@ -12,31 +12,21 @@ var Filter = function() {
 };
 
 var bypass = {
-    "B":"bet",
-    "I":"GetGameID", 
-    "M":"GetMoney",
-    "T":"GetTimeZone",
-    "H":"GetHistory",
-    "S":"GetStatus",
-    "O":"GetBetTotal",
-    "A":"AddtoChannel",
-    "L":"LeaveChannel",
+    "K":"KickMemeber",
     "G":"GetGameSet"
 }
 
 Filter.prototype.before = function (msg, session, next) {
   var gameID = 0;
-  //var channelID = 0;
+  var channelID = 0;
   var checkStatus = false;
-  //var betData;
+  var betData;
   var lockAccount = 0;
   if(msg.route == "fruitWheel.fruitWheelHandler.B")
   {
-    var betData = (JSON.parse(msg.bet)).data;
-    var channelID = betData.channelID;
     async.series({
       lockAccount: function(callback){ //redis修正
-        /*redis.hexists("GS:lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
+        redis.hexists("GS:lockAccount:"+session.uid,"BET_TIME",function(p1,p2)
         {
           if(p2==0)
           { //未進入程序過
@@ -66,7 +56,7 @@ Filter.prototype.before = function (msg, session, next) {
               }
             });
           }
-        });*/
+        });
         redis.sismember("GS:lockAccount:fruitWheel",session.uid,function(err,res){
           if(res==0){
             redis.sadd("GS:lockAccount:fruitWheel",session.uid);
@@ -79,6 +69,8 @@ Filter.prototype.before = function (msg, session, next) {
         });
       },
       checkChannel: function(callback){
+        betData = (JSON.parse(msg.bet)).data;
+        channelID = betData.channelID;
         if(channelID==101 || channelID==102 || channelID==105 || channelID==110)
         {
           callback(null,200);

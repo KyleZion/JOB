@@ -68,7 +68,7 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 			//c_Day關盤日期
 			//c_Time關盤時間
 			//o_Day歸屬日期
-			Period=yyyy+MM+dd+GameSet;
+			Period=yyyy+MM+dd+gameZone+GameSet;
 
 			var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 			struct_games.params.gas002 = 51;
@@ -131,7 +131,6 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 				redis.hset('GS:GAMESERVER:fruitWheel', "Status"+gameZone, 'T');
 				redis.hset('GS:GAMESERVER:fruitWheel', "NowbetTotal"+gameZone,'0,0,0,0,0,0,0');
 				redis.del('GS:lockAccount:fruitWheel');//清空下注key值 解開退出再進入遊戲限制
-				//redis.del('GS:lockAccount:fruitWheel');//清空後再創建?
 				mainfruitWheel.mainGame(gameID,endtime,dbmaster,dbslave,redis,gameZone);
 				messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
 			}

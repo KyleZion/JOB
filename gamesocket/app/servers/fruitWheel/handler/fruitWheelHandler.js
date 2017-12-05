@@ -320,7 +320,7 @@ handler.GetGameSet =function(msg,session,next){
 					}
 				);
 			}else{ //success
-				next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':res});
+				next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':msg.cid+res});
 			}
 		}
 	});
