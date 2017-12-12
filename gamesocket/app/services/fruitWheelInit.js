@@ -51,7 +51,7 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 			var o_Day = yyyy+'-'+MM+'-'+dd;
 			var o_Time = h+':'+m+':'+s;
 
-			var end = TimeNow.addSeconds(20); //關盤時間向後加秒數
+			var end = TimeNow.addSeconds(25); //關盤時間向後加秒數
 			var end_yyyy = end.getFullYear();
 			var end_MM = (end.getMonth()+1<10 ? '0' : '')+(end.getMonth()+1);
 			var end_dd = (end.getDate()<10 ? '0' : '')+end.getDate();

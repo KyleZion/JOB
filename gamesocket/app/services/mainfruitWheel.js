@@ -14,7 +14,31 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 		{
 			var NowTime  = Date.parse(new Date());
 			var Timeout = false;
+			var NowBetTotal = [0,0,0,0,0,0,0];
 			status ='T';
+			async.waterfall([ //此為寫入該期數下注額用於前端顯示遊戲中有其他人下注之實際情況，目前是在此做假資料代替
+					function(cb) {
+						for(var i in NowBetTotal){
+							NowBetTotal[i]=Math.floor(Math.random() *12+5);
+						}
+						cb(null,NowBetTotal)
+					}
+				], 
+					function(err,periodBetTotal) {
+						redis.hget('GS:GAMESERVER:fruitWheel', "NowbetTotal"+gameZone,function(err,res){
+							if(err){
+
+							}else{
+								var tmp= res.split(",");
+								var redisTotal =periodBetTotal.map(function(element,index,periodBetTotal){
+									return Number(tmp[index])+Number(element);
+								});
+								redis.hset('GS:GAMESERVER:fruitWheel', "NowbetTotal"+gameZone,redisTotal.join(","));
+								//cb(null);
+							}
+						});
+					}
+			);
 			check=setTimeout(CheckTime,2000);
 			if( NowTime>= EndTime)
 			{
@@ -71,7 +95,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 									console.log('寫獎號完成:'+gameNum);
 									//VIC: push message to frontend refactory
 									//修改messageService方法
-									setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum});}, 20000);
+									setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum});}, 5000);
 									callback(null,gameNum);
 								}
 							});
@@ -114,7 +138,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 							//setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':results});}, 20000);
 						}
 					});
-					setTimeout(function(){ fruitWheelInit.init(gameZone); }, 30000);
+					setTimeout(function(){ fruitWheelInit.init(gameZone); }, 20000);
 				}, 5000);
 			}
 		}

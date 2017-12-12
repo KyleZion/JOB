@@ -15,7 +15,7 @@ module.exports = function SetGame(pomelo,app)
 	var diceBaoFilter = require(filterPath);
 	app.configure('production|development', 'diceBao', function() {
 	    	
-	console.error(' diceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBao: ');
+	console.warn(' diceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBaodiceBao: ');
 
 	    app.set("errorHandler",EHB.errorHandler);//errorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
 	  

@@ -5,9 +5,9 @@ var pomelo = require('pomelo');
 var logger = require('pomelo-logger').getLogger(__filename);
 var Base_Param = require('../../../consts/Base_Param.js');
 var GPB = new Base_Param();
-var sessions=[];
 var messageService = require('../../../services/messageService.js');
 var gameDao = require('../../../dao/gameDao');
+var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 /////////////////////////////////////////////////////////////////////
 
 module.exports = function (app) {
@@ -122,6 +122,7 @@ Handler.prototype.Transfer = function(msg,session,next){
 			next(null,{'ErrorCode':1,'ErrorMessage':'发生错误:000'});
 			Close(session);
 		}else{
+			redis.hset(GPB.rKey_USER+session.uid, "TRANS_TIME", PUB.formatDate()+" "+PUB.formatDateTime());//若Redis掛了就Select users updated_at 欄位?
 			next(null,{'ErrorCode':0,'ErrorMessage':'转出成功已扣除电子游戏帐户！','Newbalance':results.C});
 			Close(session);
 		}

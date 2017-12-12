@@ -17,10 +17,73 @@ var async=require('async');
 var md5 = require('md5');
 var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
 var sessionService = pomelo.app.get('sessionService');
+var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 //===固定==============================================================
 
-handler.KickMember =function(msg,session,next){
+handler.GetMembers =function(msg,session,next){
+		var keys ;
+		var members={};
+		async.series({
+			A: function(callback){
+				redis.keys("GS:USER:*",function(err,res){ 
+					if(err==null){
+						keys = res;
+						callback(null,res);
+					}
+					else
+						callback(1,err);
+				});
+			},
+			B: function(callback){
+				var i = 0;
+				
+				async.whilst(
+					function () { 
+						return i < keys.length; 
+					},
+					function (wcallback) {
+						var key = keys[i];
+						redis.hget(key, "GAMETYPE", function (err, obj) {
+							redis.hget(key, "ACCOUNT", function (p1, Acc) {
+								members[Acc]=obj
+								wcallback();
+							});
+						});
+						i++;
+					},
+					function (err) {
+						callback(null,0);
+					}
+				);
+			}
+		},
+		function(err, results) {
+			console.log(PUB.formatDate());
+			console.log(PUB.formatDateTime());
+			next(err,members);
+		});
+}
 
+handler.KickMember =function(msg,session,next){
+	redis.hget("GS:USER:"+msg.uid,"GAMETYPE",function(err,obj){
+		if(err){
+			next(new Error('Redis Error'),500);
+		}else{
+			if(obj=='000' || obj == '0'){
+				next(null,{'ErrorCode':601,'ErrorMessage':'該會員不在遊戲中！'});
+			}else if(obj==null){
+				next(null,{'ErrorCode':602,'ErrorMessage':'該會員不存在！'});
+			}else{
+				var sessionService = pomelo.app.get('backendSessionService');
+				messageService.pushMessageToPlayer({'uid':msg.uid, sid:'connector-server-1'},'onKick',{'message':1});
+				sessionService.kickByUid('connector-server-1',msg.uid,function(res){
+					console.log(res);
+					next(null,{'ErrorCode':600,'ErrorMessage':'已踢出玩家'});
+				});
+			}
+		}
+	});
+	
 }
 
 function getSn(num){ //唯一單號亂數
@@ -57,23 +120,4 @@ function formatDateTime() { //時間格式化
     return [h, m, s].join(':');
 }
 
-function getOddsbyChannel(channelID) { 
-	var odds = 0;
-    switch(channelID){
-		case 101:
-			odds = 1;
-			break;
-		case 102:
-			odds = 2;
-			break;
-		case 105:
-			odds = 5;
-			break;
-		case 110:
-			odds = 10;
-			break;
-	}
-
-    return odds;
-}
 

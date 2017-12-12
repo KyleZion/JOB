@@ -12,7 +12,8 @@ var bypass = {
   "ce":'connector.entryHandler.',
   "fw":"fruitWheel.fruitWheelHandler.",
   "tt":"transfer.transferHandler.",
-  "dd":"diceBao.diceBaoHandler."
+  "dd":"diceBao.diceBaoHandler.",
+  "mm":"manager.managerHandler."
 }
 
 
@@ -49,8 +50,11 @@ Filter.prototype.before = function (msg, session, next) {
           else
             callback_2(1,'請登入遊戲！!!!!!!!!!!!!!!!!!!!!!!!!!!!');
         }
-        else if(routeFilter=='ceC' || routeFilter=='ceM'){
+        else if(routeFilter=='ceC' || routeFilter=='ceM' || routeFilter=='ceS'){
             callback_2(2,'請勿重新登入');
+        }
+        else if(routeFilter=='ceo'){ //登出
+          callback_2(null,'OK');
         }
         else
         {
@@ -59,24 +63,28 @@ Filter.prototype.before = function (msg, session, next) {
           var Base_Param = require('../../../consts/Base_Param.js');
           var GPB = new Base_Param();
           var gamename = "000";
-          async.series({
-            E: function(MLcallback){
-              redis.hget(GPB.rKey_USER+session.uid, "GAMETYPE", function (err, obj) {
-                gamename = obj;
-                MLcallback(null,0);
-              })
-            },
-            F: function(MLcallback){
-              if(gamename=="000" ||gamename=="0" || gamename==null)
-                MLcallback(1,'請登入遊戲！');
-              else{
-                if(gamename==serverType)
-                  MLcallback(null,'OK');
-                else
-                  MLcallback(2,'指令不相符');
+          if(serverType!="manager"){
+            async.series({
+              E: function(MLcallback){
+                redis.hget(GPB.rKey_USER+session.uid, "GAMETYPE", function (err, obj) {
+                  gamename = obj;
+                  MLcallback(null,0);
+                })
+              },
+              F: function(MLcallback){
+                if(gamename=="000" ||gamename=="0" || gamename==null)
+                  MLcallback(1,'請登入遊戲！');
+                else{
+                  if(gamename==serverType)
+                    MLcallback(null,'OK');
+                  else
+                    MLcallback(2,'指令不相符');
+                }
               }
-            }
-          },function(err, results) { callback_2(err,results);  });
+            },function(err, results) { callback_2(err,results);});
+          }else{ //manager
+            callback_2(null,'OK');
+          }
         }
       }
       

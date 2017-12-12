@@ -20,6 +20,7 @@ var sessionService = pomelo.app.get('sessionService');
 var gid='051';
 var gameDao = require('../../../dao/gameDao');
 var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
+var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
@@ -111,7 +112,7 @@ handler.bet = function(msg,session,next){
 		},
 		B: function(callback_B){
 			betValue=betValue.join(',');
-			betkey=gid+getSn(13);
+			betkey=gid+PUB.getSn(13);
 			var checkSn=true; 
 			//檢查唯一單號
 			async.whilst(
@@ -143,12 +144,12 @@ handler.bet = function(msg,session,next){
 								struct_bet.params.bet017 = amount;
 								struct_bet.params.bet018 = 170000;
 								struct_bet.params.bet034 =md5(md5str);
-								struct_bet.params.bydate =formatDate();
-								struct_bet.params.created_at = formatDate()+" "+formatDateTime();
-								struct_bet.params.updated_at = formatDate()+" "+formatDateTime();
+								struct_bet.params.bydate =PUB.formatDate()
+								struct_bet.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
+								struct_bet.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
 								callback(null,checkSn);
 							}else{
-								betkey=gid+getSn(13);
+								betkey=gid+PUB.getSn(13);
 							}					
 						} 
 					});
@@ -240,7 +241,7 @@ handler.bet = function(msg,session,next){
 			}else{
 				console.log("下注完成");
 				async.waterfall([
-					function(cb)
+					/*function(cb) //此為寫入該期數下注額用於前端顯示遊戲中有其他人下注之實際情況，目前以假資料代替
 					{
 						redis.hget('GS:GAMESERVER:fruitWheel', "NowbetTotal"+channelID,function(err,res){
 							if(err){
@@ -254,7 +255,7 @@ handler.bet = function(msg,session,next){
 								cb(null);
 							}
 						});
-					},
+					},*/
 					function(cb)
 					{
 						gameDao.getMoney(session.uid, cb);
@@ -265,6 +266,7 @@ handler.bet = function(msg,session,next){
 						if(err) {
 							next(new Error('SQL error'),500);
 						}else{
+							redis.hset('GS:USER:'+session.uid, "ALIVE_TIME",PUB.formatDate()+" "+PUB.formatDateTime());
 							next(null,{'ErrorCode':0,'ErrorMessage':'','bet': resDao});
 						}
 					}
@@ -343,7 +345,7 @@ handler.GetMoney =function(msg,session,next){
 }
 
 handler.GetTimeZone = function(msg,session,next){
-	var nowtime = formatDate()+" "+formatDateTime();
+	var nowtime = PUB.formatDate()+" "+PUB.formatDateTime();
 	redis.hget('GS:GAMESERVER:fruitWheel', "endTime"+msg.cid, function (err, res) {
 		if(err){
 			next(new Error('redis error'),500);
@@ -498,28 +500,12 @@ handler.GetBetTotal = function(msg,session,next){ //Redis
 			next(null,{'ErrorCode':0,'ErrorMessage':'','GetBetTotal':res});	
 		}
 	});
-	/*async.waterfall([
-		function(cb) {
-			for(var i in NowBetTotal){
-				NowBetTotal[i]=Math.floor(Math.random() *21+5)
-			}
-			cb(null,NowBetTotal.join())
-		}
-	], 
-		function(err,res) {
-			if(err) {
-				next(new Error('random error'),500);
-			}else{
-				next(null,{'ErrorCode':0,'ErrorMessage':'','GetBetTotal':res});
-			}
-		}
-	);*/
 }
 handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);
 	channelService.add(session.uid,session.frontendId);//加入channel,房間
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':msg.ChannelID}); //觸發該玩家監聽訊息function
-	var odds = getOddsbyChannel(msg.ChannelID);
+	var odds = PUB.getOddsbyChannel(msg.ChannelID);
 	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'odds':odds});//回傳區號,賠率
 }
 handler.LeaveChannel = function(msg,session,next){
@@ -532,57 +518,3 @@ handler.LeaveChannel = function(msg,session,next){
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
 	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':0});
 }
-function getSn(num){ //唯一單號亂數
-	sn = new Array();
-	for(var i=0;i<num;i++)
-		{
-		sn[i]=Math.floor(Math.random() *10)
-		}
-	return sn.join("");
-}
-
-function formatDate() { //日期格式化
-    var d = new Date(),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
-
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-
-    return [year, month, day].join('-');
-}
-
-function formatDateTime() { //時間格式化
-    var d = new Date(),
-        h = d.getHours(),
-        m = d.getMinutes(),
-        s = d.getSeconds();
-
-    if (h.length < 2) h = '0' + h;
-    if (m.length < 2) m = '0' + m;
-    if (s.length < 2) s = '0' + s;
-
-    return [h, m, s].join(':');
-}
-
-function getOddsbyChannel(channelID) { 
-	var odds = 0;
-    switch(channelID){
-		case 101:
-			odds = 1;
-			break;
-		case 102:
-			odds = 2;
-			break;
-		case 105:
-			odds = 5;
-			break;
-		case 110:
-			odds = 10;
-			break;
-	}
-
-    return odds;
-}
-

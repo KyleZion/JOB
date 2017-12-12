@@ -28,7 +28,6 @@ Filter.prototype.before = function (msg, session, next) {
       if(msg.amount<10){
         next(new Error('amountError'),'转帐额度需在10元以上');
       }else{
-        redis.hset(GPB.rKey_USER+session.uid, "TRANS_TIME", new Date());//若Redis掛了就Select users updated_at 欄位?
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"transferFilter"); //放在最後一行
       }
     }

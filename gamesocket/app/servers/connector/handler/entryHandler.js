@@ -13,6 +13,7 @@ var sessionService = pomelo.app.get('sessionService');
 var channel = pomelo.app.get('channelService').getChannel('connect',true);
 var messageService = require('../../../services/messageService.js');
 var gameDao = require('../../../dao/gameDao');
+var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 /////////////////////////////////////////////////////////////////////
 
 module.exports = function (app) {
@@ -62,7 +63,7 @@ function Async_Connection(session){
 
 Handler.prototype.MemberLogout = function(msg,session,next){
 	Close(session);
-	next(null,'KICK');
+	next(null,{'ErrorCode':0,'ErrorMessage':'已踢出'});
 }
 Handler.prototype.MemberLogin = function(msg,session,next){
 	var Token = msg.Token;
@@ -150,6 +151,19 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					}
 				});
 			},
+			/*D: function(MLcallback){
+				redis.HEXISTS(GPB.rKey_USER_List,userdata.id,function(p1,p2){
+					if(p2==0){ //
+						GPB.ShowLog(0,"從來沒有登入過任何遊戲");
+						redis.hset(GPB.rKey_USER_List, userdata.id,'000');
+						//LoginSuccess(session,userdata,Token,GameName);
+						MLcallback(null,0);
+					}
+					else{
+						MLcallback(null,userdata.id);
+					}
+				});
+			},*/
 			E: function(MLcallback){
 				redis.hget(GPB.rKey_USER+userdata.id, "GAMETYPE", function (err, obj) {
 					userdata.gamename = obj;
@@ -243,7 +257,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 
 Handler.prototype.CSLogin = function(msg,session,next){
 	var Token = msg.Token;
-	var GameName= msg.GameType;
+	//var GameName= msg.GameType;
 	var iasync = require('async');
 	var userdata;
 	var uid = null;
@@ -271,93 +285,71 @@ Handler.prototype.CSLogin = function(msg,session,next){
 				});
 			},
 			D: function(MLcallback){
-				redis.sismember("GS:ADMINLIST",userdata.id,function(p1,p2){
+				redis.sismember("GS:ADMINLIST:",uid,function(p1,p2){
 					if(p2==0){ //
 						GPB.ShowLog(0,"未登入過後台ADMIN");
-						redis.sadd("GS:ADMINLIST", userdata.id);
-						//LoginSuccess(session,userdata,Token,GameName);
+						redis.sadd("GS:ADMINLIST:", uid);
 						MLcallback(null,0);
 					}
 					else{
-						MLcallback(null,userdata.id);
+						MLcallback(null,uid);
 					}
 				});
 			},
 			E: function(MLcallback){
-				redis.hget(GPB.rKey_USER+userdata.id, "GAMETYPE", function (err, obj) {
-					userdata.gamename = obj;
-					MLcallback(null,0);
-				})
+				redis.hget("GS:GAMESERVER:manager", "USERID", function (err, obj) {
+					redis.hget("GS:GAMESERVER:manager", "USER_NAME", function (err, uname) {
+						userdata.userID = obj;
+						userdata.userName = uname;
+						MLcallback(null,0);
+					});
+				});
 			},
 			F: function(MLcallback){
-				if(userdata.gamename=="000" ||userdata.gamename=="0" || userdata.gamename==null){
-					redis.hget(GPB.rKey_USER+userdata.id, "LOGIN_TIME", function (err, obj) {
-						var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
-						if(timeDiff>10) //連續登入不能低於10秒
-						{
-							//bind uid
-							var self = this;
-							if (!uid) {
-							    return next(null, {
-							    ErrorCode: 1 
-							    });
-							}
-							var onDo = function* () {
-							    // 踢掉用户
-							    yield thunkify(sessionService.kick)(uid);
-
-							    // session绑定uid
-							    yield thunkify(session.bind).bind(session)(uid);
-
-							    // 连接断开时的处理
-							    session.on('closed', onUserLeave.bind(self, self.app));
-
-							    // session同步，在改变session之后需要同步，以后的请求处理中就可以获取最新session
-							    yield thunkify(session.pushAll).bind(session)();
-						        LoginSuccess(session,userdata,Token,GameName);
-							    };
-						    var onError = function (err) {
-						        console.error(err);
-								MLcallback(1,err);
-							};
-							co(onDo).catch(onError);    
-							MLcallback(null,0);
+				if(userdata.userID=="000" ||userdata.userID=="0" || userdata.userID==null){
+					redis.hset("GS:GAMESERVER:manager","USERID",uid);
+					//bind uid
+					var self = this;
+						if (!uid) {
+						    return next(null, {
+						    ErrorCode: 1 
+						    });
 						}
-						else
-						{
-							GPB.ShowLog(0,"请勿频繁切换 ");
-							MLcallback(1,"请勿频繁切换 ");
-						}
-					});
+						var onDo = function* () {
+						    // 踢掉用户
+						    yield thunkify(sessionService.kick)(uid);
+
+						    // session绑定uid
+						    yield thunkify(session.bind).bind(session)(uid);
+
+						    // 连接断开时的处理
+						    session.on('closed', onAdminLeave.bind(self, self.app));
+
+						    // session同步，在改变session之后需要同步，以后的请求处理中就可以获取最新session
+						    yield thunkify(session.pushAll).bind(session)();
+					        CSLoginSuccess(session,userdata,Token);
+						    };
+					    var onError = function (err) {
+					        console.error(err);
+							MLcallback(1,err);
+						};
+						co(onDo).catch(onError);
+						MLcallback(null,0);
 				}
 				else{
-					GPB.ShowLog(0,"已經在遊戲裡面 原本遊戲需要先斷線> : "+ userdata.gamename);
-					redis.hgetall(GPB.rKey_GAMESERVER+ userdata.gamename, function(err,res){  
-						if(err==null)
-						{
-							//session.Alert("已經在遊戲裡面 原本遊戲需要先斷線 : "+ res.GameShowName);
-							GPB.ShowLog(0,"已經在遊戲裡面 原本遊戲需要先斷線>> : "+ res.GameShowName);
-							MLcallback(1,"已在遊戲中！請先關閉原本遊戲 :"+res.GameShowName);
-						}
-						else
-						{
-							GPB.ShowLog(0,"已經在遊戲裡面 原本遊戲需要先斷線>>> : "+ res.GameShowName);
-							MLcallback(1,"已在遊戲中！請先關閉原本遊戲 :"+res.GameShowName);
-						}
-					});
-					
+					if(uid==userdata.userID){
+						GPB.ShowLog(0,"重複登入功能:"+ userdata.userName);
+						MLcallback(1,"請勿重複登入");
+					}else{
+						GPB.ShowLog(0,"已有相關人員正在使用>>>:"+ userdata.userName);
+						MLcallback(1,userdata.userName+"正在使用此功能！");
+					}
 				}
 			}
 		},function(err, results) {
 			if(!!err)
 			{		
-				if(results.S!=0){
-					next(null,{'ErrorCode':1,'ErrorMessage':results.S});
-					Close(session);
-				}else if(results.T!=0){
-					next(null,{'ErrorCode':1,'ErrorMessage':results.T});
-					Close(session);
-				}else if(results.A!=0){
+				if(results.A!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.A});
 					Close(session);
 				}else if(results.F!=0){
@@ -365,10 +357,6 @@ Handler.prototype.CSLogin = function(msg,session,next){
 					Close(session);
 				}				
 			}else{
-				//channel.add(uid,session.frontendId);
-				/*var a=sessionService.getClientAddressBySessionId(session.id);
-				console.log('getClient!!!');*/
-				messageService.pushMessageToPlayer({'uid':uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
 				next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata});
 			}
 		});
@@ -377,8 +365,9 @@ Handler.prototype.CSLogin = function(msg,session,next){
 function LoginSuccess(session,res,Token,GameName)
 	{
 		GPB.ShowLog(0,"LoginSuccess:"+res.id);
+			redis.hset(GPB.rKey_USER+res.id, "ACCOUNT",  res.account);
 			redis.hset(GPB.rKey_USER+res.id, "GAMETYPE", GameName, redis.print);
-			redis.hset(GPB.rKey_USER+res.id, "LOGIN_TIME", new Date(), redis.print);
+			redis.hset(GPB.rKey_USER+res.id, "LOGIN_TIME", PUB.formatDate()+" "+PUB.formatDateTime());
 			//redis.hset(GPB.rKey_USER+session.uid, "TRANS_TIME", new Date());
 			//redis.hset(GPB.rKey_USER+res.id, "CASH",results.getMoney);
 			session.set("memberdata",res);
@@ -421,57 +410,69 @@ function LoginSuccess(session,res,Token,GameName)
 		session.SendMessage('0','','MemberLogin',{'account': session.memberdata.account});*/
 }
 
+function CSLoginSuccess(session,res,Token)
+{
+	GPB.ShowLog(0,res.name+"登入管理功能");
+	redis.hset("GS:GAMESERVER:manager", "USER_NAME", res.name);
+	redis.hset("GS:GAMESERVER:manager", "LOGIN_TIME", PUB.formatDate()+" "+PUB.formatDateTime());
+	session.set("memberdata",res);
+	session.set("Mid" , res.id);
+	session.set("Token",Token);
+	session.set("Logintime", new Date());
+	session.pushAll();
+}
+
 function Task2_Init_Session(callback,session)
-	{
-		GPB.ShowLog(2,'Task2_Init_Session');
-		session.set("Connectime",new Date());
-		session.set("Stop",0);
-		session.set("memberdata",null);
+{
+	GPB.ShowLog(2,'Task2_Init_Session');
+	session.set("Connectime",new Date());
+	session.set("Stop",0);
+	session.set("memberdata",null);
 /*		session.on('disconnect', function () {
-			ShowLog(2,'disconnected');
-			if(socket.redis!=null)
-				socket.redis.quit();
-			GPB.EventEmitter.emit('onDisconnect',socket,socket.Mid);
-			
-		});*/
-		/*session.SendMessage = function (ErrorCode,ErrorMessage,CMD,DATA)
-		{
-			socket.emit(CMD, {'ErrorCode': ErrorCode,'ErrorMessage': ErrorMessage,'DATA': DATA});
-		}*/
-		/*socket.Alert = function (DATA)
-		{
-			ShowLog(2,'socket.Alert');
-			socket.emit("ALERT", {'ErrorCode': 0,'ErrorMessage': '','DATA': {'message':DATA,'date':(new Date()).getTime()}});
-		}*/
-/*		session.StopClient = function ()
-		{
-			console.log(session);
-			if(session.Stop!=1){
-				//GPB.EventEmitter.emit('onStop',socket,'');
-				session.Stop = 1;
-				session.Stoptime = new Date();
-				//session.SendMessage('0','','KICK',{'date': new Date()});
-			}
-		}
-		session.Close = function ()
-		{
-			//redis.quit();
-			sessionService.kickBySessionId(session.id,function(res){
-			console.log(session.id);
-			console.log('kick Success');
-			});
-		}
+		ShowLog(2,'disconnected');
+		if(socket.redis!=null)
+			socket.redis.quit();
+		GPB.EventEmitter.emit('onDisconnect',socket,socket.Mid);
 		
-		session.GetRedis =function GetRedis(){
-			return session.get('redis');
-		}*/
-		/*session.set('GetMemberData') =function GetMemberData()
-		{
-			return session.get('memberdata');
-		}*/
-		session.pushAll();
-		callback(null,'Task2_success');
+	});*/
+	/*session.SendMessage = function (ErrorCode,ErrorMessage,CMD,DATA)
+	{
+		socket.emit(CMD, {'ErrorCode': ErrorCode,'ErrorMessage': ErrorMessage,'DATA': DATA});
+	}*/
+	/*socket.Alert = function (DATA)
+	{
+		ShowLog(2,'socket.Alert');
+		socket.emit("ALERT", {'ErrorCode': 0,'ErrorMessage': '','DATA': {'message':DATA,'date':(new Date()).getTime()}});
+	}*/
+/*		session.StopClient = function ()
+	{
+		console.log(session);
+		if(session.Stop!=1){
+			//GPB.EventEmitter.emit('onStop',socket,'');
+			session.Stop = 1;
+			session.Stoptime = new Date();
+			//session.SendMessage('0','','KICK',{'date': new Date()});
+		}
 	}
+	session.Close = function ()
+	{
+		//redis.quit();
+		sessionService.kickBySessionId(session.id,function(res){
+		console.log(session.id);
+		console.log('kick Success');
+		});
+	}
+	
+	session.GetRedis =function GetRedis(){
+		return session.get('redis');
+	}*/
+	/*session.set('GetMemberData') =function GetMemberData()
+	{
+		return session.get('memberdata');
+	}*/
+	session.pushAll();
+	callback(null,'Task2_success');
+}
 
 	// 登入斷線後處理
 	var onUserLeave = function (app, session) {
@@ -483,8 +484,23 @@ function Task2_Init_Session(callback,session)
 			redis.hget(GPB.rKey_GAMESERVER+obj,'GameName',function(err,gamename){
 				if(obj!=null && obj== gamename){
 					redis.hset(GPB.rKey_USER+session.uid, "GAMETYPE", "000", function(err,value){
+						redis.hset(GPB.rKey_USER_List, session.uid,"000");
 					});
 				}
+			});
+		});
+	    console.log(session.uid + '斷線');
+	};
+	var onAdminLeave = function (app, session) {
+	    if (!session || !session.uid) {
+	        return;
+	    }
+	    redis.hget("GS:GAMESERVER:manager", "USERID", function (err, obj) {
+			redis.hget("GS:GAMESERVER:manager", "USER_NAME",function(err,username){
+				redis.hset("GS:GAMESERVER:manager", "USERID", "000");
+				redis.hset("GS:GAMESERVER:manager", "USER_NAME","000" );
+				redis.hset("GS:GAMESERVER:manager", "LAST_USERID", obj);
+				redis.hset("GS:GAMESERVER:manager", "LAST_USER_NAME", username);
 			});
 		});
 	    console.log(session.uid + '斷線');

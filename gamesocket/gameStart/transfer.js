@@ -7,9 +7,9 @@ module.exports = function SetGame(pomelo,app)
 
 	var ErrorHandler_Base = require(app.getBase()+'/app/lib/ErrorHandler_Base.js');
 	var EHB = new ErrorHandler_Base();
-
+	var transferFilter = require(filterPath);
 	app.configure('production|development', 'transfer', function(){
-		var transferFilter = require(filterPath);
+		
 		app.filter(transferFilter());
 
 	  	var errorHandler = function(err, msg, resp , session, next){
