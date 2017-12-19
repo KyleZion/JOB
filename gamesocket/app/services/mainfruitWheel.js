@@ -5,6 +5,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 	var gameService = require('./gameService.js');
 	var messageService = require('./messageService.js');
 	var fruitWheelInit = require('./fruitWheelInit.js');
+	var fruitWheelgameop = require('./fruitWheelopvn1.js.js')
 	var async =require('async');
 	var status='';
 		//進入流程控制 
@@ -66,17 +67,18 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 					status='O';
 					redis.hset('GS:GAMESERVER:fruitWheel', "Status"+gameZone, 'O');
 					messageService.broadcast('connector','GetStatus'+gameZone,{'status':status});
-					console.log("Timeout");
+					//console.log("Timeout");
 					//clearTimeout(gameopx);
 					async.waterfall([
 						function(callback) {
+
 							var gameNum=-1; //開獎號碼初始化
 		    	 			//	先開獎
 		    	 			gameNum=Math.floor(Math.random() * 7);
 							console.log("開獎號:"+gameNum);
 							/*開獎號碼
-							6 - 橘子
-							5 - 櫻桃
+							6 - 櫻桃
+							5 - 橘子
 							4 - 葡萄
 							3 - 鈴鐺
 							2 - 西瓜

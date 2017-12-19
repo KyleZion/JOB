@@ -1,4 +1,4 @@
-var PriorityQueue = require('pomelo-collection').priorityQueue;
+//var PriorityQueue = require('pomelo-collection').priorityQueue;
 var id = 0;
 
 /**

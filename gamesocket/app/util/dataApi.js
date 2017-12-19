@@ -1,5 +1,5 @@
 // require json files
-var area = require('../../config/data/area');
+//var area = require('../../config/data/area');
 var character = require('../../config/data/character');
 var equipment = require('../../config/data/equipment');
 var experience = require('../../config/data/experience');

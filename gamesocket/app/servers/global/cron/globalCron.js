@@ -5,17 +5,13 @@ var Cron = function(app) {
   this.app = app;
 };
 var cron = Cron.prototype;
-
-cron.sendMoney = function() {
-  console.log('-------------********************-------------------!');
-};
-
-
+var pomelo=require('pomelo');
 var iasync = require('async');
 var sessionService = pomelo.app.get('sessionService');
-var GameProc_Base = require('../../../consts/GameProc_Base.js');
+var GameProc_Base = require('../../../consts/Base_Param.js');
 var GPB = new GameProc_Base();
-cron.CheckLogin = function{
+
+cron.CheckLogin = function(){
 	//GPB.ShowLog(1,"CheckLogin : ");
 	var nowDT = new Date();
 	iasync.series({

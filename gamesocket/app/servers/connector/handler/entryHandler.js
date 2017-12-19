@@ -10,7 +10,7 @@ var GPB = new Base_Param();
 var sessions=[];
 var iasync = require('async');
 var sessionService = pomelo.app.get('sessionService');
-var channel = pomelo.app.get('channelService').getChannel('connect',true);
+//var channel = pomelo.app.get('channelService').getChannel('connect',true);
 var messageService = require('../../../services/messageService.js');
 var gameDao = require('../../../dao/gameDao');
 var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
@@ -179,9 +179,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 							//bind uid
 							var self = this;
 							if (!uid) {
-							    return next(null, {
-							    ErrorCode: 1 
-							    });
+							    return next(null, {ErrorCode: 1 });
 							}
 							var onDo = function* () {
 							    // 踢掉用户
@@ -198,7 +196,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 						        LoginSuccess(session,userdata,Token,GameName);
 							    };
 						    var onError = function (err) {
-						        console.error(err);
+						        //console.error(err);
 								MLcallback(1,err);
 							};
 							co(onDo).catch(onError);    
@@ -206,24 +204,24 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 						}
 						else
 						{
-							GPB.ShowLog(0,"请勿频繁切换 ");
-							MLcallback(1,"请勿频繁切换 ");
+							GPB.ShowLog(0,"转帐后或退出游戏后请稍后10秒再进行动作！");
+							MLcallback(1,"转帐后或退出游戏后请稍后10秒再进行动作！ ");
 						}
 					});
 				}
 				else{
-					GPB.ShowLog(0,"已經在遊戲裡面 原本遊戲需要先斷線> : "+ userdata.gamename);
+					GPB.ShowLog(0,"已经在游戏里面 原本游戏需要先断线> : "+ userdata.gamename);
 					redis.hgetall(GPB.rKey_GAMESERVER+ userdata.gamename, function(err,res){  
 						if(err==null)
 						{
 							//session.Alert("已經在遊戲裡面 原本遊戲需要先斷線 : "+ res.GameShowName);
-							GPB.ShowLog(0,"已經在遊戲裡面 原本遊戲需要先斷線>> : "+ res.GameShowName);
-							MLcallback(1,"已在遊戲中！請先關閉原本遊戲 :"+res.GameShowName);
+							GPB.ShowLog(0,"已经在游戏里面 原本游戏需要先断线>> : "+ res.GameShowName);
+							MLcallback(1,"已经在游戏里面 原本游戏需要先断线 :"+res.GameShowName);
 						}
 						else
 						{
-							GPB.ShowLog(0,"已經在遊戲裡面 原本遊戲需要先斷線>>> : "+ res.GameShowName);
-							MLcallback(1,"已在遊戲中！請先關閉原本遊戲 :"+res.GameShowName);
+							GPB.ShowLog(0,"已经在游戏里面 原本游戏需要先断线>>> : "+ res.GameShowName);
+							MLcallback(1,"已经在游戏里面 原本游戏需要先断线 :"+res.GameShowName);
 						}
 					});
 					

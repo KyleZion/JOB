@@ -16,7 +16,7 @@ var dbclient=pomelo.app.get('dbclient');
 var backendSessionService = pomelo.app.get('backendSessionService');
 var sessionService = pomelo.app.get('sessionService');
 var connectors = pomelo.app.getServersByType('connector');
-var channel = pomelo.app.get('channelService').getChannel('connect',true);
+//var channel = pomelo.app.get('channelService').getChannel('connect',true);
 
 handler.test = function(msg, session, next) {
 	//console.log(session.uid);
