@@ -88,7 +88,7 @@ sqlclient.init = function(app) {
 		sqlclient.insert = NND.SQLEX; //前端調用client.insert即可
 		sqlclient.update = NND.SQLEX;
 		sqlclient.delete = NND.SQLEX;
-		//sqlclient.query = NND.SQLQuery;
+		sqlclient.query = NND.SQLQuery;
 		return sqlclient;
 	}
 };

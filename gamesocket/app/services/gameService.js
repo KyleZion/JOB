@@ -69,7 +69,6 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 						{
 							if(key==gameNum)
 							{
-								//console.log("中:"+opBet[i].bet005);
 								winResult[item]=opBet[i];//此處不可用winResult[i]
 								winResult[item].Val=betValue[key];
 								item++;
@@ -162,7 +161,7 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,
 			//取得中獎注單帳號餘額
 			function(award, callback)
 			{
-				dbslave.query('SELECT mem100 FROM users where mid = ?',[item.bet005],function(data){ //duegame
+				dbmaster.query('SELECT mem100 FROM users where mid = ?',[item.bet005],function(data){ //duegame
 					if(data.ErrorCode==0){//開始結算
 						//callback(null,data.rows[0].mem100,award); //nsc
 						callback(null,data.rows[0].mem100,award); //duegame
@@ -212,7 +211,6 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,
 			function(award, callback){
 			 	dbmaster.update('UPDATE users SET mem100 = mem100 + ? where mid = ?',[award,item.bet005],function(data){  //egame
 	 		 		if(data.ErrorCode==0){
-	   		 			//console.log('UPDATE mem success');
 	   		 			callback(null,200);
 	   		 		}else{
 	   		 			callback(503,'更新member餘額發生DB錯誤');

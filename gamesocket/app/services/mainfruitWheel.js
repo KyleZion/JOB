@@ -5,7 +5,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 	var gameService = require('./gameService.js');
 	var messageService = require('./messageService.js');
 	var fruitWheelInit = require('./fruitWheelInit.js');
-	var fruitWheelgameop = require('./fruitWheelopvn1.js.js')
+	var gameNumop = new(require('./fruitWheelopvn1.js'))();
 	var async =require('async');
 	var status='';
 		//進入流程控制 
@@ -71,20 +71,23 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 					//clearTimeout(gameopx);
 					async.waterfall([
 						function(callback) {
-
-							var gameNum=-1; //開獎號碼初始化
-		    	 			//	先開獎
-		    	 			gameNum=Math.floor(Math.random() * 7);
-							console.log("開獎號:"+gameNum);
-							/*開獎號碼
-							6 - 櫻桃
-							5 - 橘子
-							4 - 葡萄
-							3 - 鈴鐺
-							2 - 西瓜
-							1 - 7
-							0 - BAR*/
-							callback(null,gameNum);//將gameNum傳到第二層
+							dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
+								if(data.ErrorCode==0){
+									/*console.log(data.rows);
+									var gameNum = gameNumop.gameopvn1(data.rows);
+									callback(null,gameNum);*/
+									gameNumop.gameopvn1(dbmaster,dbslave,gameID,data.rows,gameZone,function(data){
+										if(data.ErrorCode==0){
+											callback(null,data.gameNum);
+											console.log('結算完成');
+										}else{
+											console.log('結算錯誤');
+											callback(data.ErrorCode,data.ErrorMessage);
+										}
+									});
+								}
+							});
+							//callback(null,gameNum);//將gameNum傳到第二層
 						},
 						function(gameNum,callback){
 							var struct_gameop = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
@@ -134,9 +137,9 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 						}
 					],function(err, results) {
 						if(err){
-							console.log('結算失敗20秒後送獎號到前台:'+results);
+							//console.log('結算失敗20秒後送獎號到前台:'+results);
 						}else{
-							console.log('結算完20秒後送獎號到前台:'+results);
+							//console.log('結算完20秒後送獎號到前台:'+results);
 							//setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':results});}, 20000);
 						}
 					});

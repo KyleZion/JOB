@@ -1,14 +1,6 @@
 //'use strict';
 
-var GameName="transfer";
-var pomelo = require('pomelo');
-var logger = require('pomelo-logger').getLogger(__filename);
-var Base_Param = require('../../../consts/Base_Param.js');
-var GPB = new Base_Param();
-var messageService = require('../../../services/messageService.js');
-var gameDao = require('../../../dao/gameDao');
-var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
-/////////////////////////////////////////////////////////////////////
+
 
 module.exports = function (app) {
     return new Handler(app);
@@ -17,8 +9,17 @@ module.exports = function (app) {
 var Handler = function (app) {
     this.app = app;
 };
- 
+
+var pomelo = require('pomelo');
+var logger = require('pomelo-logger').getLogger(__filename);
+var Base_Param = require('../../../consts/Base_Param.js');
+var GPB = new Base_Param();
 var redis=pomelo.app.get('redis');
+var messageService = require('../../../services/messageService.js');
+var gameDao = require('../../../dao/gameDao');
+var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+/////////////////////////////////////////////////////////////////////
+
 
 Handler.prototype.Transfer = function(msg,session,next){
 	var async = require('async');
@@ -129,31 +130,6 @@ Handler.prototype.Transfer = function(msg,session,next){
 		
 	});
 		
-}
-
-function formatDate() { //日期格式化
-    var d = new Date(),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
-
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-
-    return [year, month, day].join('-');
-}
-
-function formatDateTime() { //時間格式化
-    var d = new Date(),
-        h = d.getHours(),
-        m = d.getMinutes(),
-        s = d.getSeconds();
-
-    if (h.length < 2) h = '0' + h;
-    if (m.length < 2) m = '0' + m;
-    if (s.length < 2) s = '0' + s;
-
-    return [h, m, s].join(':');
 }
 
 var Close = function(session){

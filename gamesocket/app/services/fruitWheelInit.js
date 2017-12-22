@@ -13,9 +13,16 @@ exp.init = function (gameZone) {
 	var dbslave =pomelo.app.get('dbslave');
 	var dbmaster =pomelo.app.get('dbmaster');
 	var redis =pomelo.app.get('redis');
-	//先開盤
-	gameMade(dbmaster,dbslave,redis,gameZone);
-	//觸發局數流程控制 Control
+	dbslave.query('SELECT id from games_51 where gas004 = ? and (gas009 = ? or gas012 = ?)',[gameZone,0,0],function(data){
+		if(data.ErrorCode==0){
+			if(data.rows.length==0){
+				gameMade(dbmaster,dbslave,redis,gameZone);
+			}else
+			{
+				//補開獎
+			}
+		}
+	});
 }
 
 var gameMade = function(dbmaster,dbslave,redis,gameZone){

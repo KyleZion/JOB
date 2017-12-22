@@ -20,7 +20,7 @@ var bypass = {
 }
 
 Filter.prototype.before = function (msg, session, next) {
-  //doshomething
+  //dosomething
   redis.hget(GPB.rKey_USER+session.uid, "TRANS_TIME", function (err, obj) {
     var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
     if(timeDiff>60) //連續轉帳不能低於60秒

@@ -32,7 +32,7 @@ module.exports = function GameProc_Base(weport,GameName,GameShowName)
 			
 		}
 	}
-	this.ShowLog(-1,'GameProc_Base');
+	this.ShowLog(-1,'GameProc_Base'+GameName);
 	var redis = require('redis');
 		
 	this.ievents = require('events');
@@ -125,7 +125,7 @@ module.exports = function GameProc_Base(weport,GameName,GameShowName)
 			this.sadd(GPB.rKey_GAMESERVER_LIST, GameName);
 			
 			
-			this.del(GPB.rKey_GAMESERVER+GameName);
+			//this.del(GPB.rKey_GAMESERVER+GameName);
 			this.hset(GPB.rKey_GAMESERVER+GameName, "port", weport);
 			this.hset(GPB.rKey_GAMESERVER+GameName, "GameName", GameName);
 			this.hset(GPB.rKey_GAMESERVER+GameName, "GameShowName", GameShowName);

@@ -14,7 +14,6 @@ var redis=pomelo.app.get('redis');
 var dbmaster=pomelo.app.get('dbmaster');
 var dbslave=pomelo.app.get('dbslave');
 var async=require('async');
-var md5 = require('md5');
 var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
 var sessionService = pomelo.app.get('sessionService');
 //var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();

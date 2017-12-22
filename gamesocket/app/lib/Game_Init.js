@@ -12,9 +12,9 @@ module.exports = function Game_Init(app,GS_Redis,GameName,GameShowName)
 			B: function(callback){
 				GS_Redis.sadd(GPB.rKey_GAMESERVER_LIST, GameName,function(err,res){callback(err,res);});
 			},
-			C: function(callback){
+			/*C: function(callback){ 不del整個值，重啟僅複寫
 				GS_Redis.del(GPB.rKey_GAMESERVER+GameName,function(err,res){callback(err,res);});
-			},
+			},*/
 			E: function(callback){
 				GS_Redis.hset(GPB.rKey_GAMESERVER+GameName, "GameName", GameName,function(err,res){callback(err,res);});
 			},
