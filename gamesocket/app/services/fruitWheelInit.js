@@ -20,6 +20,7 @@ exp.init = function (gameZone) {
 			}else
 			{
 				//補開獎
+				gameMade(dbmaster,dbslave,redis,gameZone);
 			}
 		}
 	});

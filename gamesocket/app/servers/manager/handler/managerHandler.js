@@ -27,7 +27,7 @@ handler.GetMembers =function(msg,session,next){
 				redis.keys("GS:USER:*",function(err,res){ 
 					if(err==null){
 						keys = res;
-						callback(null,res);
+						callback(null,1);
 					}
 					else
 						callback(1,err);

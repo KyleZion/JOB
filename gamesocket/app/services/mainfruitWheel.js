@@ -76,7 +76,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 									/*console.log(data.rows);
 									var gameNum = gameNumop.gameopvn1(data.rows);
 									callback(null,gameNum);*/
-									gameNumop.gameopvn1(dbmaster,dbslave,gameID,data.rows,gameZone,function(data){
+									gameNumop.gameopvn1(dbmaster,dbslave,redis,gameID,data.rows,gameZone,function(data){
 										if(data.ErrorCode==0){
 											callback(null,data.gameNum);
 											console.log('結算完成');
