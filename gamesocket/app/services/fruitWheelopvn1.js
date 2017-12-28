@@ -277,11 +277,25 @@ module.exports = function gameop()
                     console.log('aaaaaaaaaaaa'+num);
                     var struct_log = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
                     var lib_gameoplog = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("bet_g51",struct_log);
-                    lib_gameoplog.params.DT = 1;
-                    lib_gameoplog.params.WT = 1;
-                    lib_gameoplog.params.LT = award;
-                    lib_gameoplog.params.BC = item.Val;
-                    lib_gameop.Update(function(res){
+                    struct_log.params.DT = DB_DT;
+                    struct_log.params.WT = DB_WT;
+                    struct_log.params.LT = DB_LT;
+                    struct_log.params.BC = DB_BC;
+                    struct_log.params.SC = DB_SC;
+                    struct_log.params.TB = DB_TB;
+                    struct_log.params.TC = DB_TC;
+                    struct_log.params.B110 = DB_B110;
+                    struct_log.params.B105 = DB_B105;
+                    struct_log.params.B102 = DB_B102;
+                    struct_log.params.B101 = DB_B101;
+                    struct_log.params.C110 = DB_C110;
+                    struct_log.params.C105 = DB_C105;
+                    struct_log.params.C102 = DB_C102;
+                    struct_log.params.C101 = DB_C101;
+                    struct_log.params.num = DB_num;
+                    struct_log.params.Period = gameID;
+                    struct_log.params.PT = DB_PT;
+                    lib_gameoplog.Update(function(res){
                         if(!res){
                             callback(null,award);
                         }else{
