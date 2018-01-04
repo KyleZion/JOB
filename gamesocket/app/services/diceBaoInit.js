@@ -47,7 +47,7 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 			var dd = (TimeNow.getDate()<10 ? '0' : '')+TimeNow.getDate();
 			var h = (TimeNow.getHours()<10 ? '0' : '')+TimeNow.getHours();
 			var m = (TimeNow.getMinutes()<10 ? '0' : '')+TimeNow.getMinutes();
-			var s = (TimeNow.getSeconds()<10 ? '0' : '')+TimeNow.getSeconds(); 
+			var s = (TimeNow.getSeconds()<10 ? '0' : '')+TimeNow.getSeconds();
 			var o_Day = yyyy+'-'+MM+'-'+dd;
 			var o_Time = h+':'+m+':'+s;
 
@@ -94,24 +94,26 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 		},
 		function(gameID,callback_4){
 			var sql='SELECT gas008 FROM games_52 where gas008 <> ? and gas004 = ? order by id desc limit ?';
-			var args=["",gameZone,10];
+			var args=["",gameZone,20];
 			dbslave.query(sql,args,function(data){
 				if(data.ErrorCode==0){
 					for (var key in data.rows){
-						gameHistory=gameHistory+data.rows[key].gas008+',';
+						gameHistory=gameHistory+data.rows[key].gas008+'|';
 					}
 					gameHistory=gameHistory.substring(0,gameHistory.length-1);
 					callback_4(null,gameID);
 				}
-			});						
+			});
 		},
 		function(gameID,callback_5){
 			var sql='SELECT gas008 FROM games_52 where gas008 <> ? and gas004 = ? order by id desc limit ?';
-			var args=["",gameZone,30];
+			var args=["",gameZone,10];
 			dbslave.query(sql,args,function(data){
 				if(data.ErrorCode==0){
 					for (var key in data.rows){
-						lobbyHistory=lobbyHistory+data.rows[key].gas008+',';
+						lobbyHistory=lobbyHistory+data.rows[key].gas008;
+						lobbyHistory=lobbyHistory.substring(0,lobbyHistory.length-2);
+						lobbyHistory = lobbyHistory+'|'
 					}
 					lobbyHistory=lobbyHistory.substring(0,lobbyHistory.length-1);
 					callback_5(null,gameID);

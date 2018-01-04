@@ -1,4 +1,4 @@
-var logger = require('pomelo-logger').getLogger(__filename);
+//var logger = require('pomelo-logger').getLogger(__filename);
 var pomelo = require('pomelo');
 var dbslave = pomelo.app.get('dbslave');
 var dbmaster = pomelo.app.get('dbmaster');
@@ -21,6 +21,7 @@ var bypass = {
 
 Filter.prototype.before = function (msg, session, next) {
   //dosomething
+  console.log('轉帳filter');
   redis.hget(GPB.rKey_USER+session.uid, "TRANS_TIME", function (err, obj) {
     var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
     if(timeDiff>60) //連續轉帳不能低於60秒

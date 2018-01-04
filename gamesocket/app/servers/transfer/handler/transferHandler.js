@@ -1,6 +1,5 @@
-//'use strict';
-
-
+var pomelo=require('pomelo');
+var logger = require('pomelo-logger').getLogger(__filename);
 
 module.exports = function (app) {
     return new Handler(app);
@@ -10,18 +9,21 @@ var Handler = function (app) {
     this.app = app;
 };
 
-var pomelo = require('pomelo');
-var logger = require('pomelo-logger').getLogger(__filename);
-var Base_Param = require('../../../consts/Base_Param.js');
-var GPB = new Base_Param();
-var redis=pomelo.app.get('redis');
-var messageService = require('../../../services/messageService.js');
-var gameDao = require('../../../dao/gameDao');
-var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+
+
 /////////////////////////////////////////////////////////////////////
 
+//===固定==============================================================
+var handler = Handler.prototype;
+var GPB = new(require(pomelo.app.getBase()+'/app/consts/Base_Param.js'))();
+var redis=pomelo.app.get('redis');
+var async=require('async');
+var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+//===固定==============================================================
 
-Handler.prototype.Transfer = function(msg,session,next){
+
+handler.Transfer = function(msg,session,next){
+	console.log('轉帳handle');
 	var async = require('async');
 	var logId=0;
 	var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID

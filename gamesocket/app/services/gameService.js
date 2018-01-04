@@ -82,7 +82,7 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 			console.log("開獎完畢:"+gamesID);
 			dbmaster.update('UPDATE bet_g51 SET betstate=1 where bet009 = ? and bet003 = ? and bet012= ? ',[gamesID,0,gameZone],function(data){
 				if(data.ErrorCode==0){
-					console.log("開獎完畢進入派獎");
+					//console.log("開獎完畢進入派獎");
 					//console.log(winResult);
 					callback(null,winResult,multiple,Odds);
 				}else{
@@ -111,7 +111,7 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 				callback_Calculate({'ErrorCode':err,'ErrorMessage':value});
 			}else{
 				//console.log("idWinMoneysResultCallBack:")
-				console.log(value);
+				//console.log(value);
 				callback_Calculate({'ErrorCode': 0,'ErrorMessage': '','result':value});
 			}
 

@@ -34,11 +34,11 @@ module.exports = function SetGame(pomelo,app)
 		      callback_C(null,0);
 		    },
 		    D:function(callback_D){
-		      diceBaoInit.init(103);
+		      diceBaoInit.init(105);
 		      callback_D(null,0);
 		    },
 		    E:function(callback_E){
-		      diceBaoInit.init(104);
+		      diceBaoInit.init(110);
 		      callback_E(null,0);
 		    }
 		  },function(err, results) {

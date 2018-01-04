@@ -26,14 +26,15 @@ var bypass = {
 
 Filter.prototype.before = function (msg, session, next) {
   var gameID = 0;
-  var channelID = 0;
   var checkStatus = false;
-  var betData;
   var lockAccount = 0;
   if(msg.route=="diceBao.diceBaoHandler.B")
   {
+    var betData = (JSON.parse(msg.bet)).data;;
+    var channelID = betData.channelID;
     async.series({
       lockAccount: function(callback){ //redis修正
+        
         redis.sismember("GS:lockAccount:diceBao",session.uid,function(err,res){
           if(res==0){
             redis.sadd("GS:lockAccount:diceBao",session.uid);
@@ -46,8 +47,7 @@ Filter.prototype.before = function (msg, session, next) {
         });
       },
       checkChannel: function(callback){
-        betData = (JSON.parse(msg.bet)).data;
-        channelID = betData.channelID;
+        console.log(betData);
         if(channelID==101 || channelID==102 || channelID==105 || channelID==110)
         {
           callback(null,200);
@@ -57,7 +57,7 @@ Filter.prototype.before = function (msg, session, next) {
         }
       },
       checkStatus: function(callback_0){
-        redis.hget('GS:GAMESERVER:diceBao', "Status", function (err, res) {
+        redis.hget('GS:GAMESERVER:diceBao', "Status"+channelID, function (err, res) {
           if(err){
             callback_0(1,500);
           }else{
@@ -77,7 +77,7 @@ Filter.prototype.before = function (msg, session, next) {
       },
       checkGameID: function(callback_1){
         //betData = (JSON.parse(msg.bet)).data; //將C2傳來的下注內容string轉JSON
-        redis.hget('GS:GAMESERVER:diceBao', "GameID", function (err, res) {
+        redis.hget('GS:GAMESERVER:diceBao', "GameID"+channelID, function (err, res) {
           if(err){
             callback_1(1,500);
           }else{
@@ -107,13 +107,13 @@ Filter.prototype.before = function (msg, session, next) {
                 if(data.ErrorCode==0)
                 {
                   //var sessionMoney=data.rows[0].mem100;
-                  var sessionMoney=data.rows[0].mem006;
+                  var sessionMoney=data.rows[0].mem100;
                   //var amount=0;//下注總金額
                   var betDataCheck=false;
                   //計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
                   async.series({
                     Z: function(callback_Z){
-                      for(var i=0;i<=6;i++){
+                      for(var i in betData){
                         if(betData[i]!=0){
                           //amount= amount+betData[i]; //計算下注總金額
                           betDataCheck=true;
@@ -180,7 +180,7 @@ Filter.prototype.before = function (msg, session, next) {
         
       }else
       {
-        console.log(res); //OK
+        //console.log(res); //OK
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); //放在最後一行
       }
     })//async.series END

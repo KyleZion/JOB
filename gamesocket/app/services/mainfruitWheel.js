@@ -54,7 +54,10 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 				struct_games.where.id = gameID;
 				lib_gameClose.Update(function(res){
 					if(!res){
-						console.log('關盤'+gameID);
+						//console.log('關盤'+gameID);
+						messageService.broadcast('connector','GetStatus'+gameZone,{'status':status});
+					}else{
+						console.log('DB關盤失敗'+gameID);
 						messageService.broadcast('connector','GetStatus'+gameZone,{'status':status});
 					}
 				});
@@ -79,7 +82,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 									gameNumop.gameopvn1(dbmaster,dbslave,redis,gameID,data.rows,gameZone,function(data){
 										if(data.ErrorCode==0){
 											callback(null,data.gameNum);
-											console.log('結算完成');
+											//console.log('結算完成');
 										}else{
 											console.log('結算錯誤');
 											callback(data.ErrorCode,data.ErrorMessage);
@@ -97,7 +100,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 							struct_gameop.where.id = gameID;
 							lib_gameop.Update(function(res){
 								if(!res){
-									console.log('寫獎號完成:'+gameNum);
+									//console.log('寫獎號完成:'+gameNum);
 									//VIC: push message to frontend refactory
 									//修改messageService方法
 									setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum});}, 5000);
@@ -114,7 +117,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 									gameService.CalculateBet(dbmaster,dbslave,gameID,gameNum,data.rows,gameZone,function(data){
 										if(data.ErrorCode==0){
 											callback(null,gameNum);
-											console.log('結算完成');
+											//console.log('結算完成');
 										}else{
 											console.log('結算錯誤');
 											callback(data.ErrorCode,data.ErrorMessage);
@@ -130,8 +133,11 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 							//更新games gas012 已結算
 							dbmaster.update('UPDATE games_51 SET gas012 = ? where id = ? and gas004 = ?',[1,gameID,gameZone],function(data){	
 								if(data.ErrorCode==0){
-									console.log(gameID+'期已結算結果');
+									//console.log(gameID+'期已結算結果');
 									callback(null,gameNum);
+								}else{
+									console.log(gameID+'期結算失敗');
+									callback(data.ErrorCode,data.ErrorMessage);
 								}
 							});
 						}

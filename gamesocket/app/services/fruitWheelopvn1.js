@@ -6,25 +6,25 @@ module.exports = function gameop()
 {
     this.gameopvn1 =function (dbmaster,dbslave,redis,gameID,data,gameZone,callback) {
 
-/*        var bonus101 = redis->get('GS:Bonus:051:101'); 
-        var bonus102 = redis->get('GS:Bonus:051:102');
-        var bonus105 = redis->get('GS:Bonus:051:105');
-        var bonus110 = redis->get('GS:Bonus:051:110');
-        var RedisCommission101 = redis->get('GS:Commission:051:101');
-        var RedisCommission102 = redis->get('GS:Commission:051:102');
-        var RedisCommission105 = redis->get('GS:Commission:051:105');
-        var RedisCommission110 = redis->get('GS:Commission:051:110');*/
+        var bonus101 = 0;
+        var bonus102 = 0;
+        var bonus105 = 0;
+        var bonus110 = 0;
+        var RedisCommission101 = 0;
+        var RedisCommission102 = 0;
+        var RedisCommission105 = 0;
+        var RedisCommission110 = 0;
         var bonus = null;
         var RedisCommission = null;
 
-        var DB_B101 = 0;
-        var DB_C101 = 0;
-        var DB_B102 = 0;
-        var DB_C102 = 0;
-        var DB_B105 = 0;
-        var DB_C105 = 0;
-        var DB_B110 = 0;
-        var DB_C110 = 0;
+        var DB_B101 = 0; //1:1區bonus
+        var DB_C101 = 0; //1:1區佣金
+        var DB_B102 = 0; //1:2區bonus
+        var DB_C102 = 0; //1:2區佣金
+        var DB_B105 = 0; //1:5區bonus
+        var DB_C105 = 0; //1:5區佣金
+        var DB_B110 = 0; //1:10區bonus
+        var DB_C110 = 0; //1:10區佣金
 
         var CommissionPercentage = 0.15; //佣金百分比 [0.1 ~ 1]
         var takePercentage = 0.01; //獎池抽成百分比 (強制收入) [0 ~ 0.2]
@@ -41,7 +41,7 @@ module.exports = function gameop()
         var winbet = new Array(); 
         var flag = 0;
 
-        var OpenPoolNumber = 0;
+        var OpenPoolNumber = 0; //開獎池號碼
         var OpenPool_np = 99999999;
         var OpenPool_tmpwin = 0;
         var OpenPool_ordercoins = 0;
@@ -64,19 +64,198 @@ module.exports = function gameop()
             var gameNum = getOpenNum();
             callback({'ErrorCode':0,'ErrorMessage':'','gameNum': gameNum}) ;
         }else{
+            console.log('真算');
             async.series({
                 Z: function(callback_Z){ //初始化
-                    callback_Z(null,0)
+                    async.series({
+                        AA: function(callback_AA){
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:51', "CommissionPercentage", function (err, res) {
+                                if(err){
+                                    //DU_VIC:錯誤處理
+                                }else{
+                                    if(res==null){ //redis 無資料
+                                        var sql = "SELECT value FROM game_controls where name = ?";
+                                        var args = ['FW:CommissionPercentage'];
+                                        dbslave.query(sql,args,function(data){
+                                            if(data.ErrorCode==0){
+                                                CommissionPercentage = data.rows[0].value;
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:51', "CommissionPercentage",data.rows[0].value);
+                                            }/*else{
+                                                CommissionPercentage = 0.15;
+                                            }*/
+                                        });
+                                    }else{
+                                        CommissionPercentage = res ; 
+                                    }
+                                }
+                            });
+                            callback_AA(null,0);
+                        },
+                        BB: function(callback_BB){
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:51', "takePercentage", function (err, res) {
+                                if(err){
+                                    //DU_VIC:錯誤處理
+                                }else{
+                                    if(res==null){ //redis 無資料
+                                        var sql = "SELECT value FROM game_controls where name = ?";
+                                        var args = ['FW:takePercentage'];
+                                        dbslave.query(sql,args,function(data){
+                                            if(data.ErrorCode==0){
+                                                takePercentage = data.rows[0].value;
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:51', "takePercentage",data.rows[0].value);
+                                            }/*else{
+                                                takePercentage = 0.15;
+                                            }*/
+                                        });
+                                    }else{
+                                        takePercentage = res ; 
+                                    }
+                                }
+                            });
+                            callback_BB(null,0);
+                        },
+                        CC: function(callback_CC){
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:51', "OpenPoolPercentage", function (err, res) {
+                                if(err){
+                                    //DU_VIC:錯誤處理
+                                }else{
+                                    if(res==null){ //redis 無資料
+                                        var sql = "SELECT value FROM game_controls where name = ?";
+                                        var args = ['FW:OpenPoolPercentage'];
+                                        dbslave.query(sql,args,function(data){
+                                            if(data.ErrorCode==0){
+                                                OpenPoolPercentage = data.rows[0].value;
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:51', "OpenPoolPercentage", data.rows[0].value);
+                                            }/*else{
+                                                OpenPoolPercentage = 0.15;
+                                            }*/
+                                        });
+                                    }else{
+                                        OpenPoolPercentage = res ; 
+                                    }
+                                }
+                            });
+                            callback_CC(null,0);
+                        },
+                        DD: function(callback_DD){
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:51', "OpenPoolBase", function (err, res) {
+                                if(err){
+                                    //DU_VIC:錯誤處理
+                                }else{
+                                    if(res==null){ //redis 無資料
+                                        var sql = "SELECT value FROM game_controls where name = ?";
+                                        var args = ['FW:OpenPoolBase'];
+                                        dbslave.query(sql,args,function(data){
+                                            if(data.ErrorCode==0){
+                                                OpenPoolBase = data.rows[0].value;
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:51', "OpenPoolBase", data.rows[0].value);
+                                            }/*else{
+                                                OpenPoolBase = 0.15;
+                                            }*/
+                                        });
+                                    }else{
+                                        OpenPoolBase = res ; 
+                                    }
+                                }
+                            });
+                            callback_DD(null,0);
+                        },
+                        EE: function(callback_EE){
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:51', "PoolThresholdMaxPercentage", function (err, res) {
+                                if(err){
+                                    //DU_VIC:錯誤處理
+                                }else{
+                                    if(res==null){ //redis 無資料
+                                        var sql = "SELECT value FROM game_controls where name = ?";
+                                        var args = ['FW:PoolThresholdMaxPercentage'];
+                                        dbslave.query(sql,args,function(data){
+                                            if(data.ErrorCode==0){
+                                                PoolThresholdMaxPercentage = data.rows[0].value;
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:51', "PoolThresholdMaxPercentage", data.rows[0].value);
+                                            }/*else{
+                                                PoolThresholdMaxPercentage = 0.15;
+                                            }*/
+                                        });
+                                    }else{
+                                        PoolThresholdMaxPercentage = res ; 
+                                    }
+                                }
+                            });
+                            callback_EE(null,0);
+                        },
+                        FF: function(callback_FF){
+                            redis.hgetall('GS:Bonus:51', function (err, res) {
+                                if(err){
+
+                                }else{
+                                    if(res!=null){
+                                        bonus101 = res.bonus101;
+                                        bonus102 = res.bonus102;
+                                        bonus105 = res.bonus105;
+                                        bonus110 = res.bonus110;
+                                    }
+                                }
+                                });
+                            callback_FF(null,0);
+                        },
+                        GG: function(callback_GG){
+                            redis.hgetall('GS:Commission:51', function (err, res) {
+                                if(err){
+                                    
+                                }else{
+                                    if(res!=null){
+                                        RedisCommission101 = res.RedisCommission101;
+                                        RedisCommission102 = res.RedisCommission102;
+                                        RedisCommission105 = res.RedisCommission105;
+                                        RedisCommission110 = res.RedisCommission110;
+                                    }
+                                }
+                            });
+                            callback_GG(null,0);
+                        }
+                    },
+
+                    function(err, results) {
+                        callback_Z(null,0)
+                    });
+                    
                 },
                 A: function(callback_A){ //將該期該區注單撈出加總押分及計算彩池累積
                     for(var i = 0;i<data.length;i++){
-                        ordercoins += data[i]['bet017'];
+                        ordercoins += data[i]['bet017'];//總押分
                     }
                     callback_A(null,0)
                 },
                 B: function(callback_B){ //檢查是否開彩池
                     ThisTimeBonus = (ordercoins*takePercentage);
                     Commission = ordercoins * CommissionPercentage;
+
+                    if(gameZone == 101){
+                        RedisCommission101 += Commission;
+                        redis.hset('GS:Commission:51', "RedisCommission101", RedisCommission101);
+                    }
+                    else if(gameZone==102){
+                        RedisCommission102 += Commission;
+                        redis.hset('GS:Commission:51', "RedisCommission102", RedisCommission102);
+                    }
+                    else if(gameZone==105){
+                        RedisCommission105 += Commission;
+                        redis.hset('GS:Commission:51', "RedisCommission105", RedisCommission105);
+                    }
+                    else if(gameZone==110){
+                        RedisCommission110 += Commission;
+                        redis.hset('GS:Commission:51', "RedisCommission110", RedisCommission110);
+                    }
+
+                    if(gameZone == 101)
+                        RedisBonus = bonus101;
+                    else if(gameZone==102)
+                        RedisBonus = bonus102;
+                    else if(gameZone==105)
+                        RedisBonus = bonus105;
+                    else if(gameZone==110)
+                        RedisBonus = bonus110;
+
                     if(RedisBonus > 0)
                     {
                       var OpenPoolR_L = (RedisBonus / OpenPoolBase)*100;
@@ -157,7 +336,7 @@ module.exports = function gameop()
                         bonus += ThisTimeBonus;
                     var DB_ordercoins = 0;
                     var DB_DT = PUB.formatDate()+"/"+PUB.formatDateTime;
-                    var DB_LT = '051'
+                    var DB_LT = '51'
                     var DB_BC = Last_ordercoins;
                     var DB_SC = Last_tmpwin;
                     var DB_TB = ThisTimeBonus;
@@ -211,8 +390,8 @@ module.exports = function gameop()
                                 bonus += Minimum_np;
                             else if(gameZone==110)
                                 bonus += Minimum_np;
-                            $DB_WT = 2;
-                            $DB_SC = Minimum_np_tmpwin;
+                            DB_WT = 2;
+                            DB_SC = Minimum_np_tmpwin;
                         }
                         else{
                             //echo "<br>有人中獎 (彩池送出) 挑選公司賺最少的號碼    扣除被玩家贏走的餘額_累積到彩池 :".$OpenPool_n2;
@@ -274,7 +453,6 @@ module.exports = function gameop()
                     //echo "<br>累積後彩池bonus15:".$bonus15;
                     //======================================================================================
                     //echo "<br>中獎號碼:".$num;
-                    console.log('aaaaaaaaaaaa'+num);
                     var struct_log = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
                     var lib_gameoplog = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("bet_g51",struct_log);
                     struct_log.params.DT = DB_DT;
@@ -295,7 +473,7 @@ module.exports = function gameop()
                     struct_log.params.num = DB_num;
                     struct_log.params.Period = gameID;
                     struct_log.params.PT = DB_PT;
-                    lib_gameoplog.Update(function(res){
+                    lib_gameoplog.Insert(function(res){
                         if(!res){
                             callback(null,award);
                         }else{
