@@ -126,7 +126,8 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,
 	var award =0;
 	asyncLoop(winResult, function (item, next)
 	{
-		award=(Number(item.Val) * Odds * multiple) + (Number(item.Val)* Odds);
+		// award=(Number(item.Val) * Odds * multiple) + (Number(item.Val)* Odds);
+		award=(Number(item.Val) * Odds * multiple)
 		//var tmp=[item.bet002,item.bet005];
 		async.waterfall([
 			//先更新注單並寫入中獎金額

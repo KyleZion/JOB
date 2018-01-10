@@ -29,6 +29,7 @@ Cron.prototype.lobbyDiceBao = function () {
             History[1] = (res.lobbyHistory102).split("|");
             History[2] = (res.lobbyHistory105).split("|");
             History[3] = (res.lobbyHistory110).split("|");
+            console.log(Status[0]);
             messageService.broadcast('connector','lobbyDiceBao',{'History':History,'Status':Status});
         }      
     });

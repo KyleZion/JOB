@@ -431,7 +431,6 @@ handler.GetHistory = function(msg,session,next){
 						record[0] = res.lobbyHistory101;
 						record[1] = res.lobbyHistory102;
 						record[2] = res.lobbyHistory105;
-						record[3] = res.lobbyHistory110;
 						console.log(record);
 						next(null,{'ErrorCode':0,'ErrorMessage':'','History':record});
 					}
@@ -468,7 +467,6 @@ handler.GetStatus = function(msg,session,next){  //Redis
 						record[0] = res.Status101;
 						record[1] = res.Status102;
 						record[2] = res.Status105;
-						record[3] = res.Status110;
 						next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':record});
 					}
 				}

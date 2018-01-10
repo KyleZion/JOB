@@ -74,7 +74,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 					//clearTimeout(gameopx);
 					async.waterfall([
 						function(callback) {
-							dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
+							dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
 								if(data.ErrorCode==0){
 									/*console.log(data.rows);
 									var gameNum = gameNumop.gameopvn1(data.rows);
