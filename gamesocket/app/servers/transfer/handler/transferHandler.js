@@ -8,11 +8,6 @@ module.exports = function (app) {
 var Handler = function (app) {
     this.app = app;
 };
-
-
-
-/////////////////////////////////////////////////////////////////////
-
 //===固定==============================================================
 var handler = Handler.prototype;
 var GPB = new(require(pomelo.app.getBase()+'/app/consts/Base_Param.js'))();

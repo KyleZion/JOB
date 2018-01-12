@@ -13,25 +13,25 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 			switch(gameNum)
 			{
 				case 0:
-					multiple=57
+					multiple=58;
 					break;
 				case 1:
-					multiple=27
+					multiple=28;
 					break;
 				case 2:
-					multiple=13
+					multiple=14;
 					break;
 				case 3:
-					multiple=10
+					multiple=11;
 					break;
 				case 4:
-					multiple=6
+					multiple=7;
 					break;
 				case 5:
-					multiple=2
+					multiple=3;
 					break;
 				case 6:
-					multiple=1
+					multiple=2;
 					break;
 			}
 			callback(null,multiple);

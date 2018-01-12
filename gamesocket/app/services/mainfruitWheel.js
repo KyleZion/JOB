@@ -84,7 +84,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 											callback(null,data.gameNum);
 											//console.log('結算完成');
 										}else{
-											console.log('結算錯誤');
+											console.log('結算錯誤1');
 											callback(data.ErrorCode,data.ErrorMessage);
 										}
 									});
