@@ -28,10 +28,13 @@ Filter.prototype.before = function (msg, session, next) {
   var gameID = 0;
   var checkStatus = false;
   var lockAccount = 0;
+  console.log(msg);
   if(msg.route=="diceBao.diceBaoHandler.B")
   {
-    var betData = (JSON.parse(msg.bet)).data;;
-    var channelID = betData.channelID;
+    var betData = JSON.parse(msg.bet).bets;
+    var channelID = JSON.parse(msg.bet).channelID;
+    var total = JSON.parse(msg.bet).total
+    gameID = JSON.parse(msg.bet).GamesID;
     async.series({
       lockAccount: function(callback){ //redis修正
         
@@ -101,8 +104,9 @@ Filter.prototype.before = function (msg, session, next) {
             }
             else
             {
+              callback_2(null,200);
               //dbslave.query('SELECT mem100 from member where mem001 = ?',[session.uid],function(data){ //nsc
-              dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
+              /*dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
               {
                 if(data.ErrorCode==0)
                 {
@@ -161,7 +165,7 @@ Filter.prototype.before = function (msg, session, next) {
                 }else{ //取餘額錯誤 
                   callback_2(1,'网路连线异常');
                 }
-              });
+              });*/
             }
           }
         });

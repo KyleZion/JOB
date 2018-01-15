@@ -424,7 +424,7 @@ module.exports = function gameop()
                             num = OpenPoolNumber;
                             DB_WT = 1;
                             DB_SC = OpenPool_tmpwin;
-                            console.log(bonus110);
+                            console.log("彩池");
                         }
                     }else if(flag==2){
                         //echo "<br>有人中獎 (自然中獎) 挑選公司賺最少的號碼    扣除被玩家贏走的餘額_累積到彩池 : ".$Minimum_n2;
@@ -445,19 +445,19 @@ module.exports = function gameop()
                     var end = new Date().getTime();
                     if(gameZone == 101){
                         DB_B101 = bonus101;
-                        DB_C101 = RedisCommission;
+                        DB_C101 = RedisCommission101;
                     }
                     else if(gameZone==102){
                         DB_B102 = bonus102;
-                        DB_C102 = RedisCommission;
+                        DB_C102 = RedisCommission102;
                     }
                     else if(gameZone==105){
                         DB_B105 = bonus105;
-                        DB_C105 = RedisCommission;
+                        DB_C105 = RedisCommission105;
                     }
                     else if(gameZone==110){
                         DB_B110 = bonus110;
-                        DB_C110 = RedisCommission;
+                        DB_C110 = RedisCommission110;
                     }
                     
                     DB_num = num;
@@ -491,10 +491,10 @@ module.exports = function gameop()
                     struct_log.params.PT = DB_PT;
                     lib_gameoplog.Insert(function(res){
                         if(res){
-                            console.log(1111);
+                            console.log('wintype'+DB_WT);
                             callback_D(null,0);
                         }else{
-                            console.log(2222);
+                            console.log('寫入資料庫失敗');
                             callback_D(1,0);
                         }
                     });

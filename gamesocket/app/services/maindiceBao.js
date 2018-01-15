@@ -20,19 +20,22 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 		{
 			Timeout = true;
 			status = 'F';
-			redis.hset('GS:GAMESERVER:diceBao', "Status"+gameZone, 'F');
-			//關盤DB
-			var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
-			var lib_gameClose = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_52",struct_games);
-			struct_games.params.gas009 = 1;
-			struct_games.where.gas004 = gameZone;
-			struct_games.where.id = gameID;
-			lib_gameClose.Update(function(res){
-				if(!res){
-					console.log('關盤'+gameID);
-					messageService.broadcast('connector','diceBaoStatus'+gameZone,{'status':status});
-				}
-			});
+			messageService.broadcast('connector','diceBaoStatus'+gameZone,{'status':status});
+			setTimeout(function(){
+			    redis.hset('GS:GAMESERVER:diceBao', "Status"+gameZone, 'F');
+				//關盤DB
+				var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+				var lib_gameClose = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_52",struct_games);
+				struct_games.params.gas009 = 1;
+				struct_games.where.gas004 = gameZone;
+				struct_games.where.id = gameID;
+				lib_gameClose.Update(function(res){
+					if(!res){
+						console.log('關盤'+gameID);
+					}
+				});
+			},3000);
+			
 		}
 		if(Timeout)
 		{

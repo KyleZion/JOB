@@ -24,14 +24,15 @@ var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
-	var betData = ((JSON.stringify(JSON.parse(msg.bet).data)).slice(1,-1)).split(','); //將C2傳來的下注內容string轉JSON
-	//console.log(betData);
+	var betData = (JSON.stringify(JSON.parse(msg.bet).bets).slice(1,-1)).split(','); //將C2傳來的下注內容string轉JSON
+	console.log(betData);
 	//betData=tmp.split(','); //取JSON data
-	var gameID=(JSON.parse(msg.bet).data).GamesID;
-	var channelID = (JSON.parse(msg.bet).data).channelID
+	var gameID=JSON.parse(msg.bet).GamesID;
+	var channelID = JSON.parse(msg.bet).channelID
 	var betPlay = new Array();
 	//var betValue =new Array();
-	var amount = (JSON.parse(msg.bet).data).total;//下注總金額
+	var amount = JSON.parse(msg.bet).total;//下注總金額
+	console.log(gameID);
 	var betkey=''; 
 	var bet2='';
 	var b015 = 0;
