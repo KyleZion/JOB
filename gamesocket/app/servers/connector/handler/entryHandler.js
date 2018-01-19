@@ -261,7 +261,7 @@ Handler.prototype.CSLogin = function(msg,session,next){
 	var uid = null;
 		iasync.series({
 			A: function(MLcallback){
-				redis.hgetall("CS:"+Token, function(err,res){
+				redis.hgetall("CS:User:"+Token, function(err,res){
 					if(err){
 						GPB.ShowLog(2,'Error:'+ err);
 						StopClient(session);

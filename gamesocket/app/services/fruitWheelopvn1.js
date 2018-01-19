@@ -69,17 +69,17 @@ module.exports = function gameop()
                 Z: function(callback_Z){ //初始化
                     async.series({
                         AA: function(callback_AA){
-                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "CommissionPercentage", function (err, res) {
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "CommissionPercentage"+gameZone, function (err, res) {
                                 if(err){
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['CommissionPercentage','FW'];
+                                        var args = ['CommissionPercentage'+gameZone,'FW'];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 CommissionPercentage = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "CommissionPercentage",data.rows[0].value);
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "CommissionPercentage"+gameZone,data.rows[0].value);
                                                 callback_AA(null,0);
                                             }/*else{
                                                 CommissionPercentage = 0.15;
@@ -94,17 +94,17 @@ module.exports = function gameop()
                             
                         },
                         BB: function(callback_BB){
-                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "takePercentage", function (err, res) {
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "takePercentage"+gameZone, function (err, res) {
                                 if(err){
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['takePercentage','FW'];
+                                        var args = ['takePercentage'+gameZone,'FW'];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 takePercentage = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "takePercentage",data.rows[0].value);
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "takePercentage"+gameZone,data.rows[0].value);
                                                 callback_BB(null,0);
                                             }/*else{
                                                 takePercentage = 0.15;
@@ -118,17 +118,17 @@ module.exports = function gameop()
                             });
                         },
                         CC: function(callback_CC){
-                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolPercentage", function (err, res) {
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolPercentage"+gameZone, function (err, res) {
                                 if(err){
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['OpenPoolPercentage','FW'];
+                                        var args = ['OpenPoolPercentage'+gameZone,'FW'];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 OpenPoolPercentage = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolPercentage", data.rows[0].value);
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolPercentage"+gameZone, data.rows[0].value);
                                                 callback_CC(null,0);
                                             }/*else{
                                                 OpenPoolPercentage = 0.15;
@@ -142,17 +142,17 @@ module.exports = function gameop()
                             });
                         },
                         DD: function(callback_DD){
-                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolBase", function (err, res) {
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolBase"+gameZone, function (err, res) {
                                 if(err){
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['OpenPoolBase','FW'];
+                                        var args = ['OpenPoolBase'+gameZone,'FW'];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 OpenPoolBase = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolBase", data.rows[0].value);
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolBase"+gameZone, data.rows[0].value);
                                                 callback_DD(null,0);
                                             }/*else{
                                                 OpenPoolBase = 0.15;
@@ -166,17 +166,17 @@ module.exports = function gameop()
                             });
                         },
                         EE: function(callback_EE){
-                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "PoolThresholdMaxPercentage", function (err, res) {
+                            redis.hget('GS:GAMESERVER:GAMECONTROL:051', "PoolThresholdMaxPercentage"+gameZone, function (err, res) {
                                 if(err){
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['PoolThresholdMaxPercentage','FW'];
+                                        var args = ['PoolThresholdMaxPercentage'+gameZone,'FW'];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 PoolThresholdMaxPercentage = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "PoolThresholdMaxPercentage", data.rows[0].value);
+                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "PoolThresholdMaxPercentage"+gameZone, data.rows[0].value);
                                                 callback_EE(null,0);
                                             }/*else{
                                                 PoolThresholdMaxPercentage = 0.15;

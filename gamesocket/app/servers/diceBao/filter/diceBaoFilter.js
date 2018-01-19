@@ -25,19 +25,21 @@ var bypass = {
 }
 
 Filter.prototype.before = function (msg, session, next) {
-  var gameID = 0;
+  var ServergameID = 0;
   var checkStatus = false;
   var lockAccount = 0;
-  console.log(msg);
   if(msg.route=="diceBao.diceBaoHandler.B")
   {
     var betData = JSON.parse(msg.bet).bets;
     var channelID = JSON.parse(msg.bet).channelID;
     var total = JSON.parse(msg.bet).total
-    gameID = JSON.parse(msg.bet).GamesID;
+    var ClientgameID = JSON.parse(msg.bet).GamesID;
+    //console.log(betData);
+    /*console.log(channelID);
+    console.log(total);
+    console.log(ClientgameID);*/
     async.series({
       lockAccount: function(callback){ //redis修正
-        
         redis.sismember("GS:lockAccount:diceBao",session.uid,function(err,res){
           if(res==0){
             redis.sadd("GS:lockAccount:diceBao",session.uid);
@@ -50,8 +52,7 @@ Filter.prototype.before = function (msg, session, next) {
         });
       },
       checkChannel: function(callback){
-        console.log(betData);
-        if(channelID==101 || channelID==102 || channelID==105 || channelID==110)
+        if(channelID==101 || channelID==102 || channelID==105)
         {
           callback(null,200);
         }
@@ -87,14 +88,14 @@ Filter.prototype.before = function (msg, session, next) {
             if(res==null){
               callback_1(1,500);
             }else{
-              gameID=res;
+              ServergameID=res;
               callback_1(null,200);
             }
           }
         });
       },
       checkBet: function(callback_2){
-        dbslave.query('SELECT count(*) as c FROM bet_g52 where bet005 = ? and bet009 = ? and betstate = ?  and bet012 = ?',[session.uid,gameID,0,channelID],function(data)
+        dbslave.query('SELECT count(*) as c FROM bet_g52 where bet005 = ? and bet009 = ? and betstate = ?  and bet012 = ?',[session.uid,ServergameID,0,channelID],function(data)
         {
           if(data.ErrorCode==0)
           {
@@ -106,7 +107,7 @@ Filter.prototype.before = function (msg, session, next) {
             {
               callback_2(null,200);
               //dbslave.query('SELECT mem100 from member where mem001 = ?',[session.uid],function(data){ //nsc
-              /*dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
+              dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
               {
                 if(data.ErrorCode==0)
                 {
@@ -130,10 +131,10 @@ Filter.prototype.before = function (msg, session, next) {
                         //檢查沒有押注就送出
                         callback_A(1,'未下注');
                       } 
-                      else if(betData.total===0 || sessionMoney<betData.total){ //檢查Client下注總金額和下注內容金額有無相同
+                      else if(total===0 || sessionMoney<total){ //檢查Client下注總金額和下注內容金額有無相同
                         callback_A(1,'馀额不足或下注错误');
                       }
-                      else if(betData.GamesID!=gameID){
+                      else if(ServergameID!=ClientgameID){
                         //檢查期數
                         callback_A(1,'下注期数错误');
                       }
@@ -165,7 +166,7 @@ Filter.prototype.before = function (msg, session, next) {
                 }else{ //取餘額錯誤 
                   callback_2(1,'网路连线异常');
                 }
-              });*/
+              });
             }
           }
         });
@@ -193,7 +194,7 @@ Filter.prototype.before = function (msg, session, next) {
   {
     redis.sismember("GS:lockAccount:diceBao",session.uid,function(err,res){
       if(res==0){ 
-        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); 
+        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); 
       }
       else{
         next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
@@ -206,7 +207,6 @@ Filter.prototype.before = function (msg, session, next) {
 };
 
 Filter.prototype.after = function (err, msg, session, resp, next) {
-  
   next(err, resp);
 };
 

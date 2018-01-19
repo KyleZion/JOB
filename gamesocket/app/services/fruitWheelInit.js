@@ -3,6 +3,7 @@ var async = require('async');
 var messageService = require('./messageService.js');
 var exp = module.exports;
 var mainfruitWheel = require('./mainfruitWheel.js');
+var gameNumop = new(require('./fruitWheelopvn1.js'))();
 
 Date.prototype.addSeconds = function(s){
 	this.setSeconds(this.getSeconds()+s);

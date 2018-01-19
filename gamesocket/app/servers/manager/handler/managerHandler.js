@@ -90,6 +90,7 @@ handler.Transfer = function(msg,session,next){
 	var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
 	async.series({
 		A: function(callback_A){
+			console.log('callbackA');
 			var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
 			/*struct_amount.params.transfer_type = 51;
 			struct_amount.params.transfer_no = '';
@@ -106,6 +107,7 @@ handler.Transfer = function(msg,session,next){
 		    //mid,金額,amountlogSQL
 			lib_games.DeductMoney(session.uid,msg.amount,struct_amount,function(result)
 			{
+			  console.log('callbackA DB');
 			  switch(result)
 			  {
 			    case -1:
@@ -133,6 +135,7 @@ handler.Transfer = function(msg,session,next){
 			});
 		},
 		B: function(callback_B){
+			console.log('callbackB');
 			//GET/POST 到API
 			var http = require('http'); 
 			var qs = require('querystring'); 
@@ -149,11 +152,13 @@ handler.Transfer = function(msg,session,next){
 			    method: 'GET' 
 			}; 
 			var req = http.request(options, function (res) { 
+				console.log('callbackBRES');
 				//console.log(res);
 			    //console.log('STATUS: ' + res.statusCode); 
 			    //console.log('HEADERS: ' + JSON.stringify(res.headers)); 
 			    res.setEncoding('utf8'); 
 			    res.on('data', function (chunk) {
+			    	console.log('callbackB data chunk');
 			        console.log('BODY: ' + chunk);
 			        var data = JSON.parse(chunk)
 			        if(data.ErrorCode==0){
@@ -169,12 +174,14 @@ handler.Transfer = function(msg,session,next){
 			req.end();
 		},
 		C: function(callback_C){
+			console.log('callbackC');
 			var struct_mem100 = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 			    //var lib_amount = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("member2",struct_sql);
 			    var lib_mem100 = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("users",struct_mem100);
 			    struct_mem100.select.mem100 = "1";
 			    struct_mem100.where.mid = session.uid;
 			    lib_mem100.Select(function(data){
+			    	console.log('callbackC DB');
 			    	callback_C(null,data[0].mem100);
 			});
 		}
