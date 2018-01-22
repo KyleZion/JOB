@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      APP
+    </title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <meta http-equiv="content-style-type" content="text/css" />
+    <meta http-equiv="content-scripte-type" content="text/javascript" />
+    <meta name="author" content="netease" />
+    <meta name="version" content="1.0" />
+    <meta name="keywords" content="pomelo" />
+    <script src="js/lib/jquery.min.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+      
+      });
+    function enterMain(){
+      alert('登入成功!');
+      window.location.assign("main.html");
+      }
+    </script>
+ 
+  </head>
+  <body>
+    <div class="g-doc">
+      <div class="g-banner" style="border:none">
+        <div class="logo">
+          <div class="img"></div>
+        </div>
+      </div>
+      <div class="g-background" style="margin:0px auto;">
+        <div class="g-content">
+          <a href="#"><img src="index.jpg"></a>
+        </div>
+        <div style="border:1px blue solid;padding:0px;">
+          <span style="font-size:36px;"><b>Welcome! <i>BREATHE</i> APP !</b></span>
+        </div>
+        <br><br>
+        <div class="g-button">
+          <input id="login_google" type="button" value="使用GOOGLE帳號登入" onclick="enterMain()"/>
+        </div>
+        <br>
+        <div class="g-button">
+          <input id="login_facebook" type="button" value="使用FACEBOOK帳號登入" onclick="enterMain()"/>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

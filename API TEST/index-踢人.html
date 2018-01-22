@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      Pomelo
+    </title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <meta http-equiv="content-style-type" content="text/css" />
+    <meta http-equiv="content-scripte-type" content="text/javascript" />
+    <meta name="author" content="netease" />
+    <meta name="version" content="1.0" />
+    <meta name="keywords" content="pomelo" />
+    <script src="js/lib/socket.io.js"></script>
+    <script src="js/lib/pomeloclient.js"></script>
+    <script src="js/lib/jquery.min.js"></script>
+    <script type="text/javascript">
+    $( document ).ready(function() {
+      
+      });
+    pomelo.on('onKick',function(data){
+      console.log(data);
+    });
+
+      var pomelo = window.pomelo;
+      /*var host = "192.168.88.75";
+      var port = "3110";*/
+      var host = "60.244.116.180";
+      var port = "3010";
+
+      function connector() {
+        pomelo.init({
+          host: host,
+          port: port,
+          log: true
+        }, function() {
+        pomelo.request("c.e.C", '', function(data) {
+            console.log(data)
+          });
+        });
+      }
+      function CSLogin(){
+        var token= $("#token").val();
+          pomelo.request('c.e.S', {'Token': token},function(data){
+            console.log(data);
+         });  
+      }
+      function KickMember(){
+        var uid= $("#uid").val();
+          pomelo.request('m.m.K', {'uid':uid },function(data){
+            console.log(data);
+         });  
+      }
+      function GetMembers(){
+        pomelo.request('m.m.G', '',function(data){
+            console.log(data);
+        });
+        /*pomelo.request("c.e.o",'', function(data) {
+           console.log(data);
+          });*/
+      }
+
+    </script>
+ 
+  </head>
+  <body>
+    <div class="g-doc">
+      <div class="g-banner" style="border:none">
+        <div class="logo">
+          <div class="img"></div>
+        </div>
+      </div>
+      <div class="g-background">
+        <div class="g-content">
+          <textarea id="message" rows="3" cols="80"></textarea>
+        </div>
+      </div>
+      <div class="g-link">
+        <span>uid: </span><input id="uid" type="text" size="10" value="62748" />
+        <!-- <span>db4CStoken: </span><input id="token" type="text" size="30" value="050de918c16e3e36c8cc948c99a6a589"/> -->
+        <span>db3CStoken: </span><input id="token" type="text" size="30" value="1c7096d71170891ea2eb4d91623af20c" />
+      </div>
+      <br><br>
+      <div class="g-button">
+        <input id="test" type="button" value="Connect" onclick="connector()"/>
+      </div>
+      <br><br>
+      <div class="g-button">
+        <input id="test_login" type="button" value="Login Server" onclick="CSLogin()"/>
+      </div>
+      <br><br>
+      <div class="g-button">
+        <input id="getMembers" type="button" value="getMembers Server" onclick="GetMembers()"/>
+      </div>
+      <br><br>
+      <div class="g-button">
+        <input id="KickMember" type="button" value="KickMember Server" onclick="KickMember()"/>
+      </div>
+      <br><br>
+    </div>
+  </body>
+</html>

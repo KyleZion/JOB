@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" class="app">
+<head>
+  <meta charset="utf-8" />
+
+  
+  
+  <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" />
+  <link rel="stylesheet" href="css/font.css" type="text/css" />
+  <link rel="stylesheet" href="css/app.css" type="text/css" />
+  <script src="js/jquery.min.js"></script>
+  
+  
+   <script src="js/charts/easypiechart/jquery.easy-pie-chart.js"></script>
+  <script>
+	$(document).ready(function () {
+	
+		var $this = $('#easypiechart');
+		$data = $this.data(); 
+		$step = $this.find('.step');
+		$target_value = parseInt($($data.target).text());
+		$value = 0;
+		
+		
+	
+	
+		$('#easypiechart').easyPieChart($data);
+		$('#easypiechart').data('easyPieChart').update(100 - 50);
+		
+	});
+   
+  </script>
+</head>
+<body class="">
+  <div class="">
+
+	<span class="fa-stack fa-2x pull-left m-r-sm">
+	  <i class="fa fa-circle fa-stack-2x " style="color:white"></i>
+	  <i class="fa fa-stack-1x ">12</i>
+	  <span
+		  class="easypiechart pos-abt"
+		  id="easypiechart" 
+		  data-percent="100" 
+		  data-line-width="4" 
+		  data-track-Color="#fff" 
+		  data-scale-Color="false" 
+		  data-size="50" 
+		  data-line-cap='butt' 
+		  data-animate="500" 
+		  data-target="#bugs"
+		  data-update="500">
+	  </span>
+	</span>
+	<a class="clear" href="#"></a>
+  </div>
+  
+
+	
+	
+</body>
+</html>
