@@ -1,11 +1,10 @@
 var async = require('async');
 var pomelo = require('pomelo');
-var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 
 module.exports = function gameop()
 {
     this.gameopvn1 =function (dbmaster,dbslave,redis,gameID,gamebetdata,gameZone,callback) {
-
+        var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
         var bonus101 = 0;
         var bonus102 = 0;
         var bonus105 = 0;
@@ -49,10 +48,10 @@ module.exports = function gameop()
         var Minimum_np_tmpwin = 0;
         var Minimum_np_ordercoins = 0;
         var Maximum_np_Number = 0;
-        var Maximum_np = 0;
+        var Maximum_np = -99999999;
         var Maximum_np_tmpwin = 0;
         var Maximum_np_ordercoins = 0;
-        var nppositive = 0;
+        var nppositive = false;
             
         var Last_tmpwin = 0;
         var Last_ordercoins = 0;
@@ -64,7 +63,6 @@ module.exports = function gameop()
             var gameNum = getOpenNum();
             callback({'ErrorCode':0,'ErrorMessage':'','gameNum': gameNum}) ;
         }else{
-            console.log('真算');
             async.series({
                 Z: function(callback_Z){ //初始化
                     async.series({
@@ -74,8 +72,8 @@ module.exports = function gameop()
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
-                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['CommissionPercentage'+gameZone,'FW'];
+                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
+                                        var args = ['CommissionPercentage','FW',gameZone];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 CommissionPercentage = data.rows[0].value;
@@ -99,8 +97,8 @@ module.exports = function gameop()
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
-                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['takePercentage'+gameZone,'FW'];
+                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
+                                        var args = ['takePercentage','FW',gameZone];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 takePercentage = data.rows[0].value;
@@ -123,8 +121,8 @@ module.exports = function gameop()
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
-                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['OpenPoolPercentage'+gameZone,'FW'];
+                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
+                                        var args = ['OpenPoolPercentage','FW',gameZone];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 OpenPoolPercentage = data.rows[0].value;
@@ -147,8 +145,8 @@ module.exports = function gameop()
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
-                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['OpenPoolBase'+gameZone,'FW'];
+                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
+                                        var args = ['OpenPoolBase','FW',gameZone];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 OpenPoolBase = data.rows[0].value;
@@ -171,8 +169,8 @@ module.exports = function gameop()
                                     //DU_VIC:錯誤處理
                                 }else{
                                     if(res==null){ //redis 無資料
-                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ?";
-                                        var args = ['PoolThresholdMaxPercentage'+gameZone,'FW'];
+                                        var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
+                                        var args = ['PoolThresholdMaxPercentage','FW',gameZone];
                                         dbslave.query(sql,args,function(data){
                                             if(data.ErrorCode==0){
                                                 PoolThresholdMaxPercentage = data.rows[0].value;
@@ -193,7 +191,11 @@ module.exports = function gameop()
                         FF: function(callback_FF){
                             redis.hgetall('GS:Bonus:051', function (err, res) {
                                 if(err){
-
+                                    bonus101 = 0;
+                                    bonus102 = 0;
+                                    bonus105 = 0;
+                                    bonus110 = 0;
+                                    callback_FF(null,0);
                                 }else{
                                     if(res!=null){
                                         bonus101 = Number(res.RedisBonus101);
@@ -209,7 +211,11 @@ module.exports = function gameop()
                         GG: function(callback_GG){
                             redis.hgetall('GS:Commission:051', function (err, res) {
                                 if(err){
-                                    
+                                    RedisCommission101 = 0;
+                                    RedisCommission102 = 0;
+                                    RedisCommission105 = 0;
+                                    RedisCommission110 = 0;
+                                    callback_GG(null,0);
                                 }else{
                                     if(res!=null){
                                         RedisCommission101 = Number(res.RedisCommission101);
@@ -224,9 +230,7 @@ module.exports = function gameop()
                     },
 
                     function(err, results) {
-                        console.log(err);
                         console.log(results);
-                        console.log(typeof CommissionPercentage);
                         callback_Z(null,0)
                     });
                     
@@ -275,6 +279,7 @@ module.exports = function gameop()
                         CanOpenPool = true;
                       }else{
                         var OpenPoolR = Math.floor(Math.random() * 100);
+                        console.log("開獎池機率"+OpenPoolR);
                         CanOpenPool = OpenPoolR> OpenPoolPercentage;
                       }
                     }
@@ -324,16 +329,16 @@ module.exports = function gameop()
                             nppositive = true;
                         }
                         
-                        if( np <= 0 && np >= Maximum_np && tmpwin <= 0){  //如果公司輸  取 輸最少的
+                        if( np <= 0 && np >= Maximum_np && tmpwin >= 0){  //如果公司輸  取 輸最少的
                             Maximum_np_Number = i;
                             Maximum_np = np;
                             Maximum_np_tmpwin = tmpwin;
                             Maximum_np_ordercoins = ordercoins;
                         }
-                        /*console.log(i);
-                        console.log(np);
-                        console.log(tmpwin);
-                        console.log(ordercoins);*/
+                        console.log("獎號"+i);
+                        console.log("np"+np);
+                        console.log("tmpwin"+tmpwin);
+                        console.log("總下注額"+ordercoins);
                         Last_tmpwin = tmpwin;
                         Last_ordercoins = ordercoins;
                     }
@@ -375,6 +380,7 @@ module.exports = function gameop()
                             DB_ordercoins = Maximum_np_ordercoins;
                             DB_SC = Maximum_np_tmpwin;
                             DB_WT = 4;
+                            console.log('輸最少'+ num);
                         }else{
                             //這個彩種有沒有人中獎
                             //echo "<br>沒有人中獎  | 累積到彩池 : ".$Minimum_n2;
@@ -424,7 +430,6 @@ module.exports = function gameop()
                             num = OpenPoolNumber;
                             DB_WT = 1;
                             DB_SC = OpenPool_tmpwin;
-                            console.log("彩池");
                         }
                     }else if(flag==2){
                         //echo "<br>有人中獎 (自然中獎) 挑選公司賺最少的號碼    扣除被玩家贏走的餘額_累積到彩池 : ".$Minimum_n2;
@@ -502,7 +507,6 @@ module.exports = function gameop()
             },
             function(err, results) {
                 if(!err){
-                    console.log(bonus110);
                     redis.hset('GS:Bonus:051', "RedisBonus101", bonus101);
                     redis.hset('GS:Bonus:051', "RedisBonus102", bonus102);
                     redis.hset('GS:Bonus:051', "RedisBonus105", bonus105);
@@ -521,7 +525,7 @@ function getOpenNum(){
     var gameNum=-1; //開獎號碼初始化
     //  先開獎
     gameNum=Math.floor(Math.random() * 7);
-    console.log("開獎號:"+gameNum);
+    //console.log("開獎號:"+gameNum);
     /*開獎號碼
     6 - 櫻桃
     5 - 橘子
