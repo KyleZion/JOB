@@ -32,7 +32,6 @@ Filter.prototype.before = function (msg, session, next) {
   var lockAccount = 0;
   if(msg.route == "fruitWheel.fruitWheelHandler.B")
   {
-    console.log(msg);
     var betData = (JSON.parse(msg.bet)).data;
     var channelID = betData.channelID;
     async.series({

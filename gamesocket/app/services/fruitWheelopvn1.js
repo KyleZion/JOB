@@ -59,7 +59,7 @@ module.exports = function gameop()
         var num = 0;
         var start = new Date().getTime();
         if(gamebetdata.length==0){
-            console.log('沒有注單不需要算');
+            //console.log('沒有注單不需要算');
             var gameNum = getOpenNum();
             callback({'ErrorCode':0,'ErrorMessage':'','gameNum': gameNum}) ;
         }else{
@@ -230,7 +230,7 @@ module.exports = function gameop()
                     },
 
                     function(err, results) {
-                        console.log(results);
+                        //console.log(results);
                         callback_Z(null,0)
                     });
                     
@@ -279,7 +279,7 @@ module.exports = function gameop()
                         CanOpenPool = true;
                       }else{
                         var OpenPoolR = Math.floor(Math.random() * 100);
-                        console.log("開獎池機率"+OpenPoolR);
+                        //console.log("開獎池機率"+OpenPoolR);
                         CanOpenPool = OpenPoolR> OpenPoolPercentage;
                       }
                     }
@@ -496,7 +496,7 @@ module.exports = function gameop()
                     struct_log.params.PT = DB_PT;
                     lib_gameoplog.Insert(function(res){
                         if(res){
-                            console.log('wintype'+DB_WT);
+                            //console.log('wintype'+DB_WT);
                             callback_D(null,0);
                         }else{
                             console.log('寫入資料庫失敗');

@@ -20,7 +20,6 @@ exp.init = function (gameZone) {
 				gameMade(dbmaster,dbslave,redis,gameZone);
 			}else
 			{
-				//補開獎
 				gameMade(dbmaster,dbslave,redis,gameZone);
 			}
 		}
@@ -95,7 +94,7 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 			init_Game.Insert(function(res){
 				if(!!res){
 					gameID=res
-					console.log('insert games_51 success');
+					//console.log('insert games_51 success');
 					callback_2(null,gameID);
 				}
 				
@@ -132,7 +131,7 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 			if(err){
 				console.log('期數未開');
 			}else{
-				console.log('開盤:'+result);
+				//console.log('開盤:'+result);
 				redis.hset('GS:GAMESERVER:fruitWheel', "GameID"+gameZone, gameID);
 				redis.hset('GS:GAMESERVER:fruitWheel', "endTime"+gameZone, endtime);
 				redis.hset('GS:GAMESERVER:fruitWheel', "gameHistory"+gameZone, gameHistory);

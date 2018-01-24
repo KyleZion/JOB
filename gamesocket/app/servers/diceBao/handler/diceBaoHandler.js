@@ -24,6 +24,7 @@ var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
+	console.log(msg);
 	var betData = (JSON.stringify(JSON.parse(msg.bet).bets).slice(1,-1)).split(','); //將C2傳來的下注內容string轉JSON
 	console.log(betData);
 	//betData=tmp.split(','); //取JSON data
@@ -32,7 +33,6 @@ handler.bet = function(msg,session,next){
 	var betPlay = new Array();
 	//var betValue =new Array();
 	var amount = JSON.parse(msg.bet).total;//下注總金額
-	console.log(gameID);
 	var betkey=''; 
 	var bet2='';
 	var b015 = 0;
@@ -68,10 +68,10 @@ handler.bet = function(msg,session,next){
 			}
 		},
 		Z: function(callback_Z){
-			for(var i=0;i<betData.length-3;i++){
+			for(var i=0;i<betData.length;i++){
 				if(betData[i].split(':')[1]!=0){
 					//amount= amount+betData[i]; //計算下注總金額
-					betPlay.push(Number((betData[i].split(':')[0]).replace(/\"/g, "")));
+					//betPlay.push(Number((betData[i].split(':')[0]).replace(/\"/g, "")));
 					b015 +=1 ;
 					//betValue[i]=betData[i];
 				}
@@ -115,7 +115,7 @@ handler.bet = function(msg,session,next){
 			});
 		},
 		B: function(callback_B){
-			betPlay=betPlay.join(',');
+			betPlay=betData.join(',');
 			betkey=gid+PUB.getSn(13);
 			var checkSn=true;
 			//檢查唯一單號

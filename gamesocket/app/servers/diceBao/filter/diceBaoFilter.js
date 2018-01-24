@@ -21,14 +21,15 @@ var bypass = {
     "O":"GetBetTotal",
     "G":"GetGameSet",
     "A":"AddtoChannel",
-    "L":"LeaveChannel"
+    "L":"LeaveChannel",
+    "bet":"bet"
 }
 
 Filter.prototype.before = function (msg, session, next) {
   var ServergameID = 0;
   var checkStatus = false;
   var lockAccount = 0;
-  if(msg.route=="diceBao.diceBaoHandler.B")
+  if(msg.route == "diceBao.diceBaoHandler.B")
   {
     var betData = JSON.parse(msg.bet).bets;
     var channelID = JSON.parse(msg.bet).channelID;
@@ -188,12 +189,13 @@ Filter.prototype.before = function (msg, session, next) {
         //console.log(res); //OK
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); //放在最後一行
       }
-    })//async.series END
+    });//async.series END
   }
   else if(msg.route == "diceBao.diceBaoHandler.A")
   {
     redis.sismember("GS:lockAccount:diceBao",session.uid,function(err,res){
       if(res==0){ 
+        console.log('222222222');
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); 
       }
       else{
@@ -202,6 +204,7 @@ Filter.prototype.before = function (msg, session, next) {
     });
   }
   else{ //非下注route
+    console.log('333333333333333');
    var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); //放在最後一行
   }
 };
