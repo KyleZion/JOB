@@ -80,11 +80,27 @@ handler.KickMember =function(msg,session,next){
 			}
 		}
 	});
-	
+}
+
+handler.Stop =function(msg,session,next){
+	var cp = require('child_process');
+	var cmd = "pomelo stop -h 127.0.0.1 -P 3005 "+ msg.ServerID;
+	cp.exec(cmd, function(err, stdout, stderr) {
+	  //console.warn(stdout);
+	  next(null,{'ErrorCode':0,'ErrorMessage':'Server已下架'});
+	});
+}
+
+handler.Add =function(msg,session,next){
+	var cp = require('child_process');
+	var cmd = "pomelo add id="+msg.ServerID+" host=127.0.0.1 port="+msg.Port+" serverType="+msg.ServerType;
+	cp.exec(cmd, function(err, stdout, stderr) {
+	  //console.warn(stdout);
+	  next(null,{'ErrorCode':0,'ErrorMessage':'Server已上架'});
+	});
 }
 
 handler.Transfer = function(msg,session,next){
-	console.log('轉帳handle');
 	var async = require('async');
 	var logId=0;
 	var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID

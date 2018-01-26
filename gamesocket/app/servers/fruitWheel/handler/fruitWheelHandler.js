@@ -21,6 +21,7 @@ var gid='051';
 var gameDao = require('../../../dao/gameDao');
 var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
 var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+var cp = require('child_process').exec;
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){

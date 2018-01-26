@@ -566,7 +566,7 @@ function gamePlaybet(gdata,num){
                 break;
         }
         if(multiple != 0){
-            var result = (Number(betValue[num])* multiple * Number(gdata.bet016) )+ Number(betValue[num]);
+            var result = Number(betValue[num])* multiple * Number(gdata.bet016);
             return result;
         }
     }else{
