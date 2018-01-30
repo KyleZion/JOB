@@ -52,6 +52,7 @@ module.exports = function gameop()
         var Maximum_np_tmpwin = 0;
         var Maximum_np_ordercoins = 0;
         var nppositive = false;
+        var bonusRate = 0;
             
         var Last_tmpwin = 0;
         var Last_ordercoins = 0;
@@ -286,7 +287,7 @@ module.exports = function gameop()
                     callback_B(null,0)
                 },
                 C: function(callback_C){
-                    for(var i=0 ; i<7 ; i++){
+                    for(var i=0 ; i<8 ; i++){
                         var tmpwin = 0;
                         //var item = 0;
                         for(var j=0 ; j<gamebetdata.length ; j++){
@@ -297,7 +298,7 @@ module.exports = function gameop()
                                 //item++
                             }
                         }
-                        np = ordercoins - tmpwin - ThisTimeBonus - Commission;
+                        np = ordercoins - tmpwin - ThisTimeBonus - Commission;//押分 - 贏分 - 彩池分數 - 佣金  = 可以被中獎的分數(如果都沒有人中 就累積彩池)
                         var poolflag = false;
                         if(CanOpenPool == true && RedisBonus >100){
                             poolflag = true;
@@ -305,8 +306,7 @@ module.exports = function gameop()
                             if(tmpwin == 0){
 
                             }
-
-                            if(RedisBonus * PoolThresholdMaxPercentage > (tmpwin)){ //最大獎
+                            if(RedisBonus * PoolThresholdMaxPercentage >= (tmpwin)){
                                 if(tmpwin > OpenPool_tmpwin){
                                     OpenPool_np = np;
                                     OpenPoolNumber = i;
@@ -315,6 +315,16 @@ module.exports = function gameop()
                                     flag = 1;
                                 }
                             }
+                            if(RedisBonus * PoolThresholdMaxPercentage >= (ordercoins) && i == 7){
+                                console.log('bonus計算')
+                                bonusRate = Math.floor((RedisBonus * PoolThresholdMaxPercentage)/ ordercoins);
+                                OpenPool_np = np - (ordercoins * bonusRate) + ordercoins;
+                                OpenPoolNumber = i;
+                                OpenPool_tmpwin = ordercoins * bonusRate;
+                                OpenPool_ordercoins = ordercoins;
+                                flag = 1;
+                            }
+                            
                         }
                         if ( CanOpenPool == false   || ( poolflag == true && flag!=1) ){
                             if( np >= 0 && tmpwin >= 0 ){ //這個號碼   公司會賺錢
@@ -335,10 +345,10 @@ module.exports = function gameop()
                             Maximum_np_tmpwin = tmpwin;
                             Maximum_np_ordercoins = ordercoins;
                         }
-                        console.log("獎號"+i);
+                        /*console.log("獎號"+i);
                         console.log("np"+np);
                         console.log("tmpwin"+tmpwin);
-                        console.log("總下注額"+ordercoins);
+                        console.log("總下注額"+ordercoins);*/
                         Last_tmpwin = tmpwin;
                         Last_ordercoins = ordercoins;
                     }
@@ -539,38 +549,43 @@ function getOpenNum(){
 
 function gamePlaybet(gdata,num){
     var betValue = gdata.bet014.split(",");
-    if(betValue[num]!=0){
-        var multiple = 0;
-        switch(num)
-        {
-            case 0:
-                multiple=58;
-                break;
-            case 1:
-                multiple=28;
-                break;
-            case 2:
-                multiple=14;
-                break;
-            case 3:
-                multiple=11;
-                break;
-            case 4:
-                multiple=7;
-                break;
-            case 5:
-                multiple=3;
-                break;
-            case 6:
-                multiple=2;
-                break;
-        }
-        if(multiple != 0){
-            var result = Number(betValue[num])* multiple * Number(gdata.bet016);
-            return result;
+    if(num!=7){
+        if(betValue[num]!=0){
+            var multiple = 0;
+            switch(num)
+            {
+                case 0:
+                    multiple=58;
+                    break;
+                case 1:
+                    multiple=28;
+                    break;
+                case 2:
+                    multiple=14;
+                    break;
+                case 3:
+                    multiple=11;
+                    break;
+                case 4:
+                    multiple=7;
+                    break;
+                case 5:
+                    multiple=3;
+                    break;
+                case 6:
+                    multiple=2;
+                    break;
+            }
+            if(multiple != 0){
+                var result = Number(betValue[num])* multiple * Number(gdata.bet016);
+                return result;
+            }
+        }else{
+            return 0;
         }
     }else{
-        return 0;
+        return Number(gdata.bet017);
     }
+    
 }
 
