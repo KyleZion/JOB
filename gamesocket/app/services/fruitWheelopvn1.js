@@ -284,7 +284,7 @@ module.exports = function gameop()
                         CanOpenPool = OpenPoolR> OpenPoolPercentage;
                       }
                     }
-                    callback_B(null,0)
+                    callback_B(null,0);
                 },
                 C: function(callback_C){
                     for(var i=0 ; i<8 ; i++){
@@ -390,7 +390,7 @@ module.exports = function gameop()
                             DB_ordercoins = Maximum_np_ordercoins;
                             DB_SC = Maximum_np_tmpwin;
                             DB_WT = 4;
-                            console.log('輸最少'+ num);
+                            //console.log('輸最少'+ num);
                         }else{
                             //這個彩種有沒有人中獎
                             //echo "<br>沒有人中獎  | 累積到彩池 : ".$Minimum_n2;
@@ -522,7 +522,7 @@ module.exports = function gameop()
                     redis.hset('GS:Bonus:051', "RedisBonus105", bonus105);
                     redis.hset('GS:Bonus:051', "RedisBonus110", bonus110);
                     console.log('最後開:'+num)
-                 callback({'ErrorCode':0,'ErrorMessage':'','gameNum': num}) ;
+                 callback({'ErrorCode':0,'ErrorMessage':'','gameNum': num,'bonusRate': bonusRate}) ;
                 }
                 
             });

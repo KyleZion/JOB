@@ -5,7 +5,7 @@ var asyncLoop = require('node-async-loop');
 var logger = require('pomelo-logger').getLogger('Service-log',__filename);
 var serverIP='127.0.0.1';
 
-exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callback_Calculate){
+exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,bonusRate,callback_Calculate){
 	async.waterfall([
 		function(callback)
 		{
@@ -33,6 +33,9 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 				case 6:
 					multiple=2;
 					break;
+				case 7:
+					multiple=bonusRate;
+					break;
 			}
 			callback(null,multiple);
 		},
@@ -58,25 +61,30 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 		},
 		function(multiple,Odds,callback)
 		{
-			var winResult=[];
-			var item=0;
-			for(var i=0;i<opBet.length;i++)
-			{
-				var betValue = opBet[i].bet014.split(",");
-					for(var key in betValue)
-					{
-						if(betValue[key]!=0)
+			if(gameNum==7){
+				
+			}else{
+				var winResult=[];
+				var item=0;
+				for(var i=0;i<opBet.length;i++)
+				{
+					var betValue = opBet[i].bet014.split(",");
+						for(var key in betValue)
 						{
-							if(key==gameNum)
+							if(betValue[key]!=0)
 							{
-								winResult[item]=opBet[i];//此處不可用winResult[i]
-								winResult[item].Val=betValue[key];
-								item++;
+								if(key==gameNum)
+								{
+									winResult[item]=opBet[i];//此處不可用winResult[i]
+									winResult[item].Val=betValue[key];
+									item++;
+								}
 							}
 						}
-					}
+				}
+				callback(null,winResult,multiple,Odds);
 			}
-			callback(null,winResult,multiple,Odds);
+			
 		},
 		function(winResult,multiple,Odds,callback){
 			console.log("開獎完畢:"+gamesID);

@@ -16,8 +16,9 @@ var bypass = {
     "K":"KickMember",
     "G":"GetMembers",
     "T":"Transfer",
-    "S":"Stop",
-    "A":"Add"
+    "P":"Stop",
+    "A":"Add",
+    "S":"ServerStatus"
 }
 
 Filter.prototype.before = function (msg, session, next) {

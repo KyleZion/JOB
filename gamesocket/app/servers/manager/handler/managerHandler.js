@@ -87,6 +87,7 @@ handler.Stop =function(msg,session,next){
 	var cmd = "pomelo stop -h 127.0.0.1 -P 3005 "+ msg.ServerID;
 	cp.exec(cmd, function(err, stdout, stderr) {
 	  //console.warn(stdout);
+	  //console.warn(stderr);
 	  next(null,{'ErrorCode':0,'ErrorMessage':'Server已下架'});
 	});
 }
@@ -98,6 +99,22 @@ handler.Add =function(msg,session,next){
 	  //console.warn(stdout);
 	  next(null,{'ErrorCode':0,'ErrorMessage':'Server已上架'});
 	});
+}
+
+handler.ServerStatus =function(msg,session,next){
+	var serverList =['fruitWheel','diceBao'];
+	var status=[];
+	for(var i in serverList){
+		console.log(serverList[i]);
+		if(pomelo.app.getServersByType(serverList[i]).length==0){
+			console.log(serverList[i]);
+		}
+	}
+	if(pomelo.app.getServerTypes().length==0){
+		next(null,{'ErrorCode':0,'ErrorMessage':'Server未啟動','StatusCode':1});
+	}else{
+		next(null,{'ErrorCode':0,'ErrorMessage':'Server已啟動','StatusCode':0});
+	}
 }
 
 handler.Transfer = function(msg,session,next){

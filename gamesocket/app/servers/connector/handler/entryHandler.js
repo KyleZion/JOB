@@ -67,7 +67,8 @@ Handler.prototype.MemberLogout = function(msg,session,next){
 }
 Handler.prototype.MemberLogin = function(msg,session,next){
 	var Token = msg.Token;
-	var GameName= msg.GameType;
+	var GameName = msg.GameType;
+	var gameCode = GameTypeToGameCode(GameName);
 	var iasync = require('async');
 	var userdata;
 	var uid = null;
@@ -101,6 +102,22 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 				}else{
 					MLcallback(null,0);
 				}
+			},
+			U: function(MLcallback){
+				if(GameName!='transfer'){
+					redis.hget("GS:LOBBY:GAMESTATUS:LOBBY_GAME_STATUS",gameCode,function(err,obj){
+						if(err){
+							MLcallback(1,'伺服器维护中，请稍后再试');
+						}else{
+							if(obj=='0'){
+								MLcallback(null,0);
+							}else{
+								MLcallback(1,'伺服器维护中，请稍后再试');
+							}
+						}
+					});
+				}
+				
 			},
 			A: function(MLcallback){
 				redis.hgetall(GPB.rKey_Web_user+Token, function(err,res){
@@ -522,4 +539,13 @@ function Task2_Init_Session(callback,session)
         });
     }
 	
-	
+function GameTypeToGameCode(type){
+	switch(type){
+		case "fruitWheel":
+			return 51;
+			break;
+		case "diceBao":
+			return 52;
+			break;
+	}
+}

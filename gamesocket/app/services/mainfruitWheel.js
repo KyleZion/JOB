@@ -81,7 +81,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 									callback(null,gameNum);*/
 									gameNumop.gameopvn1(dbmaster,dbslave,redis,gameID,data.rows,gameZone,function(data){
 										if(data.ErrorCode==0){
-											callback(null,data.gameNum);
+											callback(null,data.gameNum,data.bonusRate);
 											//console.log('結算完成');
 										}else{
 											console.log('結算錯誤1');
@@ -92,10 +92,14 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 							});
 							//callback(null,gameNum);//將gameNum傳到第二層
 						},
-						function(gameNum,callback){
+						function(gameNum,bonusRate,callback){
 							var struct_gameop = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 							var lib_gameop = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_gameop);
-							struct_gameop.params.gas008 = gameNum;
+							if(bonusRate!=0){
+								struct_gameop.params.gas008 = gameNum+"|"+bonusRate;
+							}else{
+								struct_gameop.params.gas008 = gameNum;
+							}
 							struct_gameop.where.gas004 = gameZone;
 							struct_gameop.where.id = gameID;
 							lib_gameop.Update(function(res){
@@ -103,18 +107,18 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 									//console.log('寫獎號完成:'+gameNum);
 									//VIC: push message to frontend refactory
 									//修改messageService方法
-									setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum});}, 5000);
-									callback(null,gameNum);
+									setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum,'BonusRate':bonusRate});}, 5000);
+									callback(null,gameNum,bonusRate);
 								}
 							});
 						},
-						function(gameNum,callback){
+						function(gameNum,bonusRate,callback){
 							//select 本期下注成功的注單
-							dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
+							dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
 								if(data.ErrorCode==0){
 									//開始結算
 									//var opBet =data.rows;
-									gameService.CalculateBet(dbmaster,dbslave,gameID,gameNum,data.rows,gameZone,function(data){
+									gameService.CalculateBet(dbmaster,dbslave,gameID,gameNum,data.rows,gameZone,bonusRate,function(data){
 										if(data.ErrorCode==0){
 											callback(null,gameNum);
 											//console.log('結算完成');
