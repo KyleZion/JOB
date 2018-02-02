@@ -125,7 +125,7 @@ handler.bet = function(msg,session,next){
 						{ //如果有資料則return true 無則return false
 							if(data.rows.length== 0)
 							{
-								console.log('單號未重複');
+								//console.log('單號未重複');
 								checkSn=false;
 								bet2=betkey+'0001';
 								trans_no=bet2;
@@ -143,7 +143,7 @@ handler.bet = function(msg,session,next){
 								struct_bet.params.bet015 = b015;
 								struct_bet.params.bet016 = odds;
 								struct_bet.params.bet017 = amount;
-								struct_bet.params.bet018 = 170000;
+								struct_bet.params.bet018 = 0;
 								struct_bet.params.bet034 =md5(md5str);
 								struct_bet.params.bydate =PUB.formatDate()
 								struct_bet.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();

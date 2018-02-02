@@ -62,7 +62,7 @@ module.exports = function gameop()
         if(gamebetdata.length==0){
             //console.log('沒有注單不需要算');
             var gameNum = getOpenNum();
-            callback({'ErrorCode':0,'ErrorMessage':'','gameNum': gameNum}) ;
+            callback({'ErrorCode':0,'ErrorMessage':'','gameNum': gameNum,'bonusRate':bonusRate}) ;
         }else{
             async.series({
                 Z: function(callback_Z){ //初始化
@@ -281,7 +281,7 @@ module.exports = function gameop()
                       }else{
                         var OpenPoolR = Math.floor(Math.random() * 100);
                         //console.log("開獎池機率"+OpenPoolR);
-                        CanOpenPool = OpenPoolR> OpenPoolPercentage;
+                        CanOpenPool = OpenPoolR > OpenPoolPercentage;
                       }
                     }
                     callback_B(null,0);
@@ -306,6 +306,7 @@ module.exports = function gameop()
                             if(tmpwin == 0){
 
                             }
+                            bonusRate = Math.floor((RedisBonus * PoolThresholdMaxPercentage)/ ordercoins);
                             if(RedisBonus * PoolThresholdMaxPercentage >= (tmpwin)){
                                 if(tmpwin > OpenPool_tmpwin){
                                     OpenPool_np = np;
@@ -315,9 +316,8 @@ module.exports = function gameop()
                                     flag = 1;
                                 }
                             }
-                            if(RedisBonus * PoolThresholdMaxPercentage >= (ordercoins) && i == 7){
-                                console.log('bonus計算')
-                                bonusRate = Math.floor((RedisBonus * PoolThresholdMaxPercentage)/ ordercoins);
+                            if(RedisBonus * PoolThresholdMaxPercentage >= (ordercoins) && i == 7 && bonusRate<=9){
+                                console.log('bonus計算');
                                 OpenPool_np = np - (ordercoins * bonusRate) + ordercoins;
                                 OpenPoolNumber = i;
                                 OpenPool_tmpwin = ordercoins * bonusRate;
@@ -479,11 +479,9 @@ module.exports = function gameop()
                     DB_Period = gameID
                     DB_PT = (end - start)/1000;
                     //======================================================================================
-                    //echo "<br>累積後彩池bonus13:".$bonus13;
-                    //echo "<br>累積後彩池bonus14:".$bonus14;
-                    //echo "<br>累積後彩池bonus15:".$bonus15;
+
                     //======================================================================================
-                    //echo "<br>中獎號碼:".$num;
+
                     var struct_log = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
                     var lib_gameoplog = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("game_open_logs",struct_log);
                     struct_log.params.DT = DB_DT;
@@ -521,7 +519,7 @@ module.exports = function gameop()
                     redis.hset('GS:Bonus:051', "RedisBonus102", bonus102);
                     redis.hset('GS:Bonus:051', "RedisBonus105", bonus105);
                     redis.hset('GS:Bonus:051', "RedisBonus110", bonus110);
-                    console.log('最後開:'+num)
+                    //console.log('最後開:'+num+'&'+bonusRate);
                  callback({'ErrorCode':0,'ErrorMessage':'','gameNum': num,'bonusRate': bonusRate}) ;
                 }
                 

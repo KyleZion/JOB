@@ -6,64 +6,89 @@ var logger = require('pomelo-logger').getLogger('Service-log',__filename);
 var serverIP='127.0.0.1';
 
 exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,bonusRate,callback_Calculate){
-	async.waterfall([
-		function(callback)
-		{
-			var multiple=1;
-			switch(gameNum)
-			{
-				case 0:
-					multiple=58;
-					break;
-				case 1:
-					multiple=28;
-					break;
-				case 2:
-					multiple=14;
-					break;
-				case 3:
-					multiple=11;
-					break;
-				case 4:
-					multiple=7;
-					break;
-				case 5:
-					multiple=3;
-					break;
-				case 6:
-					multiple=2;
-					break;
-				case 7:
-					multiple=bonusRate;
-					break;
+	console.log(opBet);
+	if(gameNum==7 && bonusRate!==0){
+		async.series({
+			A: function(callback_A){
+				dbmaster.update('UPDATE bet_g51 SET betstate=1 where bet009 = ? and bet003 = ? and bet012= ? ',[gamesID,0,gameZone],function(data){
+					if(data.ErrorCode==0){
+						callback_A(null,0);
+					}else{
+						console.log("開獎錯誤");
+						callback_A(-1,'開獎錯誤');
+					}
+				});
+			},
+			B: function(callback_B){
+				idWinMoneysResult(dbmaster,dbslave,opBet,bonusRate,gamesID,gameZone,-1,function(data){
+					if(data.ErrorCode==0){
+						callback_B(null,data.result);
+					}else{
+						callback_B(-2,data.ErrorMessage);
+					}
+				});	
 			}
-			callback(null,multiple);
 		},
-		function(multiple,callback)
-		{
-			var Odds=1; //區號倍數
-			switch(gameZone)
-			{
-				case 101:
-					Odds = 1
-					break;
-				case 102:
-					Odds = 2
-					break;
-				case 105:
-					Odds = 5
-					break;
-				case 110:
-					Odds = 10
-					break;
-			}
-			callback(null,multiple,Odds);
-		},
-		function(multiple,Odds,callback)
-		{
-			if(gameNum==7){
-				
+		function(err, results) {
+			if(err){
+				callback_Calculate({'ErrorCode':err,'ErrorMessage':results});
 			}else{
+				callback_Calculate({'ErrorCode': 0,'ErrorMessage': '','result':results});
+			}
+		});
+	}else{
+		async.waterfall([
+			function(callback)
+			{
+				var multiple=1;
+				switch(gameNum)
+				{
+					case 0:
+						multiple=58;
+						break;
+					case 1:
+						multiple=28;
+						break;
+					case 2:
+						multiple=14;
+						break;
+					case 3:
+						multiple=11;
+						break;
+					case 4:
+						multiple=7;
+						break;
+					case 5:
+						multiple=3;
+						break;
+					case 6:
+						multiple=2;
+						break;7
+				}
+				callback(null,multiple);
+			},
+			function(multiple,callback)
+			{
+				var Odds=1; //區號倍數
+				switch(gameZone)
+				{
+					case 101:
+						Odds = 1
+						break;
+					case 102:
+						Odds = 2
+						break;
+					case 105:
+						Odds = 5
+						break;
+					case 110:
+						Odds = 10
+						break;
+				}
+				callback(null,multiple,Odds);
+			},
+			function(multiple,Odds,callback)
+			{
 				var winResult=[];
 				var item=0;
 				for(var i=0;i<opBet.length;i++)
@@ -82,61 +107,58 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,bonusR
 							}
 						}
 				}
-				callback(null,winResult,multiple,Odds);
-			}
-			
-		},
-		function(winResult,multiple,Odds,callback){
-			console.log("開獎完畢:"+gamesID);
-			dbmaster.update('UPDATE bet_g51 SET betstate=1 where bet009 = ? and bet003 = ? and bet012= ? ',[gamesID,0,gameZone],function(data){
-				if(data.ErrorCode==0){
-					//console.log("開獎完畢進入派獎");
-					//console.log(winResult);
-					callback(null,winResult,multiple,Odds);
-				}else{
-					console.log("開獎錯誤");
-					callback(-1,'開獎錯誤');
-				}
-			});
-			
-		},
-		function(winResult,multiple,Odds,callback){
-			if(winResult.length!=0){
-				idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,Odds,function(data){
+				callback(null,winResult,multiple,Odds);		
+			},
+			function(winResult,multiple,Odds,callback){
+				dbmaster.update('UPDATE bet_g51 SET betstate=1 where bet009 = ? and bet003 = ? and bet012= ? ',[gamesID,0,gameZone],function(data){
 					if(data.ErrorCode==0){
-						callback(null,data.result);
+						//console.log("開獎完畢進入派獎");
+						//console.log(winResult);
+						callback(null,winResult,multiple,Odds);
 					}else{
-						callback(-2,data.ErrorMessage);
+						console.log("開獎錯誤");
+						callback(-1,'開獎錯誤');
 					}
-				});	
-			}else{
-				callback(null,'No One Win and No Enter idWinMoneysResult');
+				});
+			},
+			function(winResult,multiple,Odds,callback){
+				if(winResult.length!=0){
+					idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,Odds,function(data){
+						if(data.ErrorCode==0){
+							callback(null,data.result);
+						}else{
+							callback(-2,data.ErrorMessage);
+						}
+					});	
+				}else{
+					callback(null,'No One Win and No Enter idWinMoneysResult');
+				}
 			}
-		}
-	],
-		function(err,value){
-			if(err){
-				callback_Calculate({'ErrorCode':err,'ErrorMessage':value});
-			}else{
-				//console.log("idWinMoneysResultCallBack:")
-				//console.log(value);
-				callback_Calculate({'ErrorCode': 0,'ErrorMessage': '','result':value});
-			}
+		],
+			function(err,value){
+				if(err){
+					callback_Calculate({'ErrorCode':err,'ErrorMessage':value});
+				}else{
+					callback_Calculate({'ErrorCode': 0,'ErrorMessage': '','result':value});
+				}
 
 		});
+	}
 }
 
 function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,Odds,callback_Win)
 {
-	if(winResult.length==0){
+	/*if(winResult.length==0){
 		callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':null});
-	}
+	}*/
 	var award =0;
 	asyncLoop(winResult, function (item, next)
 	{
-		// award=(Number(item.Val) * Odds * multiple) + (Number(item.Val)* Odds);
-		award=(Number(item.Val) * Odds * multiple)
-		//var tmp=[item.bet002,item.bet005];
+		if(Odds>0){
+			award=(Number(item.Val) * Odds * multiple);
+		}else{
+			award=(Number(item.bet017) * multiple);
+		}
 		async.waterfall([
 			//先更新注單並寫入中獎金額
 			function(callback)
@@ -145,8 +167,13 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,
 				var lib_gameop = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("bet_g51",struct_betgop);
 				struct_betgop.params.betstate = 1;
 				struct_betgop.params.betwin = 1;
+				struct_betgop.params.bet018 = multiple;
 				struct_betgop.params.bet032 = award;
-				struct_betgop.params.bet033 = item.Val;
+				if(Odds>0){
+					struct_betgop.params.bet033 = item.Val;
+				}else{
+					struct_betgop.params.bet033 = item.bet017;
+				}
 				struct_betgop.where.bet002 = item.bet002;
 				struct_betgop.where.bet003 = 0;
 				struct_betgop.where.bet012 = gameZone;
@@ -172,7 +199,6 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,
 			{
 				dbmaster.query('SELECT mem100 FROM users where mid = ?',[item.bet005],function(data){ //duegame
 					if(data.ErrorCode==0){//開始結算
-						//callback(null,data.rows[0].mem100,award); //nsc
 						callback(null,data.rows[0].mem100,award); //duegame
 					}else{
 						callback(501,'取得中獎注單帳號餘額錯誤');

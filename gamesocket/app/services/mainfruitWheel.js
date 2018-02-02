@@ -95,7 +95,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 						function(gameNum,bonusRate,callback){
 							var struct_gameop = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 							var lib_gameop = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_gameop);
-							if(bonusRate!=0){
+							if(bonusRate!=0 && bonusRate<=9){
 								struct_gameop.params.gas008 = gameNum+"|"+bonusRate;
 							}else{
 								struct_gameop.params.gas008 = gameNum;
