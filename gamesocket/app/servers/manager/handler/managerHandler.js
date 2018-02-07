@@ -62,24 +62,128 @@ handler.GetMembers =function(msg,session,next){
 }
 
 handler.KickMember =function(msg,session,next){
-	redis.hget("GS:USER:"+msg.uid,"GAMETYPE",function(err,obj){
-		if(err){
-			next(new Error('Redis Error'),500);
-		}else{
-			if(obj=='000' || obj == '0'){
-				next(null,{'ErrorCode':601,'ErrorMessage':'該會員不在遊戲中！'});
-			}else if(obj==null){
-				next(null,{'ErrorCode':602,'ErrorMessage':'該會員不存在！'});
+	var sessionService = pomelo.app.get('backendSessionService');
+	if(msg.cmdType==1){ //踢出一個玩家
+		redis.hget("GS:USER:"+msg.uid,"GAMETYPE",function(err,obj){
+			if(err){
+				next(new Error('Redis Error'),500);
 			}else{
-				var sessionService = pomelo.app.get('backendSessionService');
-				messageService.pushMessageToPlayer({'uid':msg.uid, sid:'connector-server-1'},'onKick',{'message':1});
-				sessionService.kickByUid('connector-server-1',msg.uid,function(res){
-					console.log(res);
-					next(null,{'ErrorCode':600,'ErrorMessage':'已踢出玩家'});
-				});
+				if(obj=='000' || obj == '0'){
+					next(null,{'ErrorCode':601,'ErrorMessage':'該會員不在遊戲中！'});
+				}else if(obj==null){
+					next(null,{'ErrorCode':602,'ErrorMessage':'該會員不存在！'});
+				}else{
+					messageService.pushMessageToPlayer({'uid':msg.uid, sid:'connector-server-1'},'onKick',{'message':1});
+					sessionService.kickByUid('connector-server-1',msg.uid,function(res){
+						console.log(res);
+						next(null,{'ErrorCode':600,'ErrorMessage':'已踢出玩家'});
+					});
+				}
 			}
-		}
-	});
+		});
+	}else if(msg.cmdType==0 && msg['serverType']!=0){ //踢出該server上所有玩家
+		var serverList={'FW':'fruitWheel','DG':'diceBao'}
+		var keys;
+		async.series({
+			A: function(callback){
+				redis.keys("GS:USER:*",function(err,res){ 
+					if(err==null){
+						keys = res;
+						callback(null,res);
+					}
+					else
+						callback(1,err);
+				});
+			},
+			B: function(callback){
+				var i = 0;
+				var serverType = serverList[msg['serverType']];
+				async.whilst(
+					function () { 
+						return i < keys.length; 
+					},
+					function (wcallback) {
+						var key = keys[i];
+						var uid = key.substr(8);
+						redis.hget(key,'GAMETYPE',function (err, obj) {
+							if(obj!='000' && obj==serverType){
+								messageService.pushMessageToPlayer({'uid':uid, sid:'connector-server-1'},'onKick',{'message':'KICK000'});
+								sessionService.kickByUid('connector-server-1',uid,function(res){
+									wcallback();
+								});
+							}
+							else{
+								wcallback();
+							}
+						});
+						i++;
+					},
+					function (err) {
+						callback(null,0);
+					}
+				);
+			}
+		},
+		function(err, results) {
+			if(!err){
+				next(null,{'ErrorCode':600,'ErrorMessage':'已踢出所有玩家'});
+			}else{
+				next(null,{'ErrorCode':603,'ErrorMessage':'執行錯誤'});
+			}
+
+		});
+	}else if(msg.cmdType==0 && msg['serverType']==0){ //踢出電子遊戲所有玩家
+		var keys;
+		async.series({
+			A: function(callback){
+				redis.keys("GS:USER:*",function(err,res){ 
+					if(err==null){
+						keys = res;
+						callback(null,res);
+					}
+					else
+						callback(1,err);
+				});
+			},
+			B: function(callback){
+				var i = 0;
+				async.whilst(
+					function () { 
+						return i < keys.length; 
+					},
+					function (wcallback) {
+						var key = keys[i];
+						var uid = key.substr(8);
+						redis.hget(key,'GAMETYPE',function (err, obj) {
+							if(obj!='000'){
+								messageService.pushMessageToPlayer({'uid':uid, sid:'connector-server-1'},'onKick',{'message':'KICK000'});
+								sessionService.kickByUid('connector-server-1',uid,function(res){
+									wcallback();
+								});
+							}
+							else{
+								wcallback();
+							}
+						});
+						i++;
+					},
+					function (err) {
+						callback(null,0);
+					}
+				);
+			}
+		},
+		function(err, results) {
+			if(!err){
+				next(null,{'ErrorCode':600,'ErrorMessage':'已踢出所有玩家'});
+			}else{
+				next(null,{'ErrorCode':603,'ErrorMessage':'執行錯誤'});
+			}
+		});
+	}else{
+		next(null,{'ErrorCode':603,'ErrorMessage':'執行錯誤'});
+	}
+
 }
 
 handler.Stop =function(msg,session,next){
@@ -103,18 +207,24 @@ handler.Add =function(msg,session,next){
 
 handler.ServerStatus =function(msg,session,next){
 	var serverList =['fruitWheel','diceBao'];
-	var status=[];
-	for(var i in serverList){
-		console.log(serverList[i]);
-		if(pomelo.app.getServersByType(serverList[i]).length==0){
-			console.log(serverList[i]);
+	var code = {'fruitWheel':'51','diceBao':'52'};
+	var trans = {'fruitWheel':'FW','diceBao':'DG'};;
+	var status = {};
+	async.series({
+		A: function(callback){
+			for(var i in serverList){
+				if(pomelo.app.getServersByType(serverList[i]).length!=0){
+					status[code[serverList[i]]]=[200,serverList[i],trans[serverList[i]]];
+				}else{
+					status[code[serverList[i]]]=[500,serverList[i],trans[serverList[i]]];;
+				}
+			}
+			callback(null,0);
 		}
-	}
-	if(pomelo.app.getServerTypes().length==0){
-		next(null,{'ErrorCode':0,'ErrorMessage':'Server未啟動','StatusCode':1});
-	}else{
-		next(null,{'ErrorCode':0,'ErrorMessage':'Server已啟動','StatusCode':0});
-	}
+	},
+		function(err, results){
+			next(null,{'ErrorCode':0,'ErrorMessage':'','ServerStatus':status});
+		});
 }
 
 handler.Transfer = function(msg,session,next){

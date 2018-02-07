@@ -104,7 +104,9 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 				}
 			},
 			U: function(MLcallback){
-				if(GameName!='transfer'){
+				if(GameName=='transfer'){
+					MLcallback(null,0);
+				}else{
 					redis.hget("GS:LOBBY:GAMESTATUS:LOBBY_GAME_STATUS",gameCode,function(err,obj){
 						if(err){
 							MLcallback(1,'伺服器维护中，请稍后再试');
@@ -136,7 +138,13 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 						else{
 							userdata = res;
 							uid=res.id;
-							MLcallback(null,0);
+							//測試用
+							if(uid!='62685' && GameName=='diceBao'){
+								MLcallback(1,'伺服器维护中，请稍后再试');
+							}else{
+								MLcallback(null,0);
+							}
+							//-------
 						}
 					}
 				});
@@ -222,7 +230,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 						else
 						{
 							GPB.ShowLog(0,"转帐后或退出游戏后请稍后10秒再进行动作！");
-							MLcallback(1,"转帐后或退出游戏后请稍后10秒再进行动作！ ");
+							MLcallback(1,"请稍后10秒再进行动作！");
 						}
 					});
 				}
@@ -252,6 +260,9 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					Close(session);
 				}else if(results.T!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.T});
+					Close(session);
+				}else if(results.U!=0){
+					next(null,{'ErrorCode':1,'ErrorMessage':results.U});
 					Close(session);
 				}else if(results.A!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.A});

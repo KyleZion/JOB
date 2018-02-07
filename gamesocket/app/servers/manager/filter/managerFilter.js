@@ -23,7 +23,6 @@ var bypass = {
 
 Filter.prototype.before = function (msg, session, next) {
   	if(msg.route == "manager.managerHandler.K"){
-  		console.log(msg.uid);
   		if(msg.uid == null){
   			next(new Error('UID Error'),'ID參數錯誤');
   		}else{

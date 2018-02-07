@@ -6,7 +6,7 @@ var logger = require('pomelo-logger').getLogger('Service-log',__filename);
 var serverIP='127.0.0.1';
 
 exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,bonusRate,callback_Calculate){
-	console.log(opBet);
+	//console.log(opBet);
 	if(gameNum==7 && bonusRate!==0){
 		async.series({
 			A: function(callback_A){

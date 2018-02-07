@@ -4,8 +4,12 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 	var lib_OG = require(app.getBase()+'/app/lib/lib_OpenGame.js');
 	var OG = new lib_OG(pomelo,app,async,redis,dbslave,dbmaster,messageService,GameName,GameShowName,GameID,GameZone);
 
-	
-	this.Made = function(Made_callback,GameSeconds)
+	Date.prototype.addSeconds = function(s){
+		this.setSeconds(this.getSeconds()+s);
+		return this;
+	}
+
+	this.Made = function(GameSeconds,Made_callback)
 	{
 		var InsertID = 0;
 		var Period='';
@@ -98,5 +102,3 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 
 	}
 }
-
-

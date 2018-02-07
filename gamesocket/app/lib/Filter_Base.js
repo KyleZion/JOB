@@ -3,8 +3,6 @@ module.exports = function Filter_Base(bypass,msg,next,name)
 	var async = require('async');
 	var ts=(msg.route).split('.');
   	var method = bypass[ts[2]];
-  	console.log(ts);
-  	console.log("method"+method)
  	async.waterfall([
   		function(callback_1){	
      		if( method!=null)

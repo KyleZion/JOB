@@ -317,7 +317,7 @@ module.exports = function gameop()
                                 }
                             }
                             if(RedisBonus * PoolThresholdMaxPercentage >= (ordercoins) && i == 7 && bonusRate<=9){
-                                console.log('bonus計算');
+                                //console.log('bonus計算');
                                 OpenPool_np = np - (ordercoins * bonusRate) + ordercoins;
                                 OpenPoolNumber = i;
                                 OpenPool_tmpwin = ordercoins * bonusRate;

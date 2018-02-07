@@ -70,9 +70,9 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 	}
 	// 取得所有沒有開獎的期數
 	this.GetUnOpenGames = function(callback){
-		var Sql = 'SELECT gas003 FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ';
+		var Sql = 'SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ';
 		console.log("GetUnOpenGames"+Sql);
-		dbslave.query('SELECT gas003 FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[1,GameZone],function(data){
+		dbslave.query('SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[GameZone],function(data){
 			if(data.ErrorCode==0)
 				callback(data.rows);
 			else
@@ -93,7 +93,7 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 	}
 	// 	依照期數取得所有注單
 	this.GetBets= function(callback,PeriodID){
-		dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g'+GameID+' where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,GameZone],function(data){
+		dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g'+GameID+' where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,GameZone],function(data){
 			if(data.ErrorCode==0)
 				callback(data.rows);
 			else
@@ -102,7 +102,7 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 	}
 	// 取得所有為開獎注單
 	this.GetUnOpenBets = function(callback){
-		dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g'+GameID+' where bet012 = ? order by id',[0],function(data){
+		dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g'+GameID+' where bet012 = ? order by id',[0],function(data){
 			if(data.ErrorCode==0)
 				callback(data.rows);
 			else
@@ -130,7 +130,7 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 	}
 
 	// ------ Money & Log -------------------------------------------------------------
-	this.GetUserMoneyMsater = function(callback,mid){
+	this.GetUserMoneyMaster = function(callback,mid){
 		dbmaster.query('SELECT mem100 FROM users where mid = ?',[mid],function(data){ //duegame
 			if(data.ErrorCode==0){
 				callback(data.rows[0].mem100); 
