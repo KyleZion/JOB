@@ -70,6 +70,28 @@ NND.SQLEX = function (sql, args, callback) {
     });
 };
 
+NND.SpQuery = function (sql, args, callback) {
+    const resourcePromise = _pool.acquire();
+    resourcePromise.then(function (client) {
+        client.query(sql, args, function (error,results,fields) {
+            console.log(error); //成功null
+            console.log('--------');
+            console.log(results); //RowDataPacket
+            console.log('--------');
+            //console.log(fields);//FieldPacket 
+            if(!error){
+                //成功err==null
+                callback({'ErrorCode': 0,'ErrorMessage':'','rows':results}); 
+            }
+            _pool.release(client);  
+        });
+    })
+    .catch(function (err) {
+        console.error('[SQLQuery Error:]'+ err.stack);
+        callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
+    });
+};
+
 /**
  * Close connection pool.
  */
@@ -89,6 +111,7 @@ sqlclient.init = function(app) {
 		sqlclient.update = NND.SQLEX;
 		sqlclient.delete = NND.SQLEX;
 		sqlclient.query = NND.SQLQuery;
+        sqlclient.spquery = NND.SpQuery;
 		return sqlclient;
 	}
 };

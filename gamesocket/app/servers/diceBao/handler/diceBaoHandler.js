@@ -116,8 +116,30 @@ handler.bet = function(msg,session,next){
 		},
 		B: function(callback_B){
 			betPlay=betData.join(',');
-			betkey=gid+PUB.getSn(13);
-			var checkSn=true;
+			betkey=gid+session.uid+new Date().getTime();
+			bet2=betkey+'0001';
+			trans_no=bet2;
+			var md5str = session.uid+gameID;
+			struct_bet.params.betkey = betkey;
+			struct_bet.params.betstate = 0;
+			struct_bet.params.betwin = 0;
+			struct_bet.params.bet002 = bet2;
+			struct_bet.params.bet003 = 0;
+			struct_bet.params.bet005 = session.uid;
+			struct_bet.params.bet009 = gameID;
+			struct_bet.params.bet011 = 1151;
+			struct_bet.params.bet012 = channelID;
+			struct_bet.params.bet014 = betValue;
+			struct_bet.params.bet015 = b015;
+			struct_bet.params.bet016 = odds;
+			struct_bet.params.bet017 = amount;
+			struct_bet.params.bet018 = 0;
+			struct_bet.params.bet034 =md5(md5str);
+			struct_bet.params.bydate =PUB.formatDate()
+			struct_bet.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
+			struct_bet.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
+			callback_B(null,0);
+			/*var checkSn=true;
 			//檢查唯一單號
 			async.whilst(
 				function() //test function: while test is true
@@ -164,7 +186,7 @@ handler.bet = function(msg,session,next){
 						callback_B(null,0);
 					}
 				}
-			);
+			);*/
 		},
 		C: function(callback_C){
 			var lib_bet = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("bet_g52",struct_bet);
@@ -177,7 +199,7 @@ handler.bet = function(msg,session,next){
 					callback_C(0,0);
 				}else{
 					console.log('Insert betg52 fail');
-					logger.error('Insert betg52 Error');
+					logger.error('Insert betg52 Error'); 
 					async.parallel([
 						function(cb){
 							gameDao.delAmountlogById(logId,cb);

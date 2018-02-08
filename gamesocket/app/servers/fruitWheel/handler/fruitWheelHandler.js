@@ -113,7 +113,6 @@ handler.bet = function(msg,session,next){
 		B: function(callback_B){
 			betValue=betValue.join(',');
 			betkey=gid+session.uid+new Date().getTime();
-			var checkSn=true; 
 			bet2=betkey+'0001';
 			trans_no=bet2;
 			var md5str = session.uid+gameID;
@@ -136,6 +135,7 @@ handler.bet = function(msg,session,next){
 			struct_bet.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
 			struct_bet.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
 			callback_B(null,0);
+			//var checkSn=true; 
 			//檢查唯一單號 2017-02-05 VIC 去除迴圈query比對單號問題
 			/*async.whilst(
 				function() //test function: while test is true
