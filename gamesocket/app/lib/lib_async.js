@@ -37,5 +37,21 @@ module.exports = function lib_amount(struct_amountlog)
 		
 		});
 	}
+	this.example_whilst =function()
+	{
+		async.whilst(
+			function() //test function: while test is true
+			{ return i<param; },
+			function(callback) {
+				callback(null,param);
+			},
+			function (err, checkSn){
+				if(!param)
+				{
+					//callback_B(null,0);
+				}
+			}
+		);
+	}
 	
 }

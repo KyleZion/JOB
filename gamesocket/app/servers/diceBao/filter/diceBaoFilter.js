@@ -19,10 +19,9 @@ var bypass = {
     "H":"GetHistory",
     "S":"GetStatus",
     "O":"GetBetTotal",
-    "G":"GetGameSet",
     "A":"AddtoChannel",
     "L":"LeaveChannel",
-    "bet":"bet"
+    "G":"GetGameSet"
 }
 
 Filter.prototype.before = function (msg, session, next) {
@@ -35,10 +34,6 @@ Filter.prototype.before = function (msg, session, next) {
     var channelID = JSON.parse(msg.bet).channelID;
     var total = JSON.parse(msg.bet).total
     var ClientgameID = JSON.parse(msg.bet).GamesID;
-    //console.log(betData);
-    /*console.log(channelID);
-    console.log(total);
-    console.log(ClientgameID);*/
     async.series({
       lockAccount: function(callback){ //redis修正
         redis.sismember("GS:lockAccount:diceBao",session.uid,function(err,res){
@@ -106,7 +101,6 @@ Filter.prototype.before = function (msg, session, next) {
             }
             else
             {
-              callback_2(null,200);
               //dbslave.query('SELECT mem100 from member where mem001 = ?',[session.uid],function(data){ //nsc
               dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
               {
@@ -177,7 +171,7 @@ Filter.prototype.before = function (msg, session, next) {
     {
       if(err)
       {
-        if(res.lockAccount==500 || res.checkStatus==500 || res.checkGameID == 500)
+        if(res.lockAccount==500 || res.checkStatus==500 || res.checkGameID == 500 || res.checkChannel ==500)
         {
           next(new Error('ServerQuestion'),'网路连线异常');
         }else{
@@ -195,7 +189,6 @@ Filter.prototype.before = function (msg, session, next) {
   {
     redis.sismember("GS:lockAccount:diceBao",session.uid,function(err,res){
       if(res==0){ 
-        console.log('222222222');
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); 
       }
       else{
@@ -204,7 +197,6 @@ Filter.prototype.before = function (msg, session, next) {
     });
   }
   else{ //非下注route
-    console.log('333333333333333');
    var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); //放在最後一行
   }
 };

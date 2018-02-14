@@ -139,12 +139,13 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 							userdata = res;
 							uid=res.id;
 							//測試用
-							if(uid!='62685' && GameName=='diceBao'){
+							/*if(uid!='62685' && GameName=='diceBao'){
 								MLcallback(1,'伺服器维护中，请稍后再试');
 							}else{
 								MLcallback(null,0);
-							}
+							}*/
 							//-------
+							MLcallback(null,0);
 						}
 					}
 				});
@@ -206,7 +207,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 							if (!uid) {
 							    return next(null, {ErrorCode: 1 });
 							}
-							var onDo = function* () {
+							var onDo = function* () { //匿名generator函數
 							    // 踢掉用户
 							    yield thunkify(sessionService.kick)(uid);
 
