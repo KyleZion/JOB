@@ -116,7 +116,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 										console.log('結算錯誤');
 										callback(data.ErrorCode,data.ErrorMessage);
 									}
-								});*/
+								});*/ 
 							}
 							});
 					},
@@ -142,4 +142,227 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 		}
 	}
 	DiceBaoMain();
+}
+
+
+function getbetValue(gameNum,numSum)
+{
+	var gameNumCombo = new Array();
+	var c=0;
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==1)){
+	    gameNumCombo[c]='8001';
+	    c++;
+  	}
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==2)){
+	    gameNumCombo[c]='8002';
+	    c++;
+	}
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==3)){
+	    gameNumCombo[c]='8003';
+	    c++;
+	}
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==4)){
+	    gameNumCombo[c]='8004';
+	    c++;
+	}
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==5)){
+	    gameNumCombo[c]='8005';
+	    c++;
+	}
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==6)){
+	    gameNumCombo[c]='8006';
+	    c++;
+	}
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])){
+	    gameNumCombo[c]='8007';
+	    c++;
+	}
+	if((gameNum[0]==1 && gameNum[1]==1) || (gameNum[1]==1 && gameNum[2]==1)){
+	    gameNumCombo[c]='8008';
+	    c++;
+	}
+	if((gameNum[0]==2 && gameNum[1]==2) || (gameNum[1]==2 && gameNum[2]==2)){
+	    gameNumCombo[c]='8009';
+	    c++;
+	}
+	if((gameNum[0]==3 && gameNum[1]==3) || (gameNum[1]==3 && gameNum[2]==3)){
+	    gameNumCombo[c]='8010';
+	    c++;
+	}
+	if((gameNum[0]==4 && gameNum[1]==4) || (gameNum[1]==4 && gameNum[2]==4)){
+	    gameNumCombo[c]='8011';
+	    c++;
+	}
+	if((gameNum[0]==5 && gameNum[1]==5) || (gameNum[1]==5 && gameNum[2]==5)){
+	    gameNumCombo[c]='8012';
+	    c++;
+	}
+	if((gameNum[0]==6 && gameNum[1]==6) || (gameNum[1]==6 && gameNum[2]==6)){
+	    gameNumCombo[c]='8013';
+	    c++;
+	}
+	if(numSum==4){
+	    gameNumCombo[c]='8014';
+	    c++;
+	}
+	if(numSum==5){
+	    gameNumCombo[c]='8015';
+	    c++;
+	}
+	if(numSum==6){
+	    gameNumCombo[c]='8016';
+	    c++;
+	}
+	if(numSum==7){
+	    gameNumCombo[c]='8017';
+	    c++;
+	}
+	if(numSum==8){
+	    gameNumCombo[c]='8018';
+	    c++;
+	}
+	if(numSum==9){
+	    gameNumCombo[c]='8019';
+	    c++;
+	}
+	if(numSum==10){
+	    gameNumCombo[c]='8020';
+	    c++;
+	}
+	if(numSum==11){
+	    gameNumCombo[c]='8021';
+	    c++;
+	}
+	if(numSum==12){
+	    gameNumCombo[c]='8022';
+	    c++;
+	}
+	if(numSum==13){
+	    gameNumCombo[c]='8023';
+	    c++;
+	}
+	if(numSum==14){
+	    gameNumCombo[c]='8024';
+	    c++;
+	}
+	if(numSum==15){
+	    gameNumCombo[c]='8025';
+	    c++;
+	}
+	if(numSum==16){
+	    gameNumCombo[c]='8026';
+	    c++;
+	}
+	if(numSum==17){
+	    gameNumCombo[c]='8027';
+	    c++;
+	}
+	if(numSum==17){
+	    gameNumCombo[c]='8027';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==2)||(gameNum[1]==1&&gameNum[2]==2)||(gameNum[0]==1&&gameNum[2]==2)){
+	    gameNumCombo[c]='8028';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==3)||(gameNum[1]==1&&gameNum[2]==3)||(gameNum[0]==1&&gameNum[2]==3)){
+	    gameNumCombo[c]='8029';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==4)||(gameNum[1]==1&&gameNum[2]==4)||(gameNum[0]==1&&gameNum[2]==4)){
+	    gameNumCombo[c]='8030';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==5)||(gameNum[1]==1&&gameNum[2]==5)||(gameNum[0]==1&&gameNum[2]==5)){
+	    gameNumCombo[c]='8031';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==6)||(gameNum[1]==1&&gameNum[2]==6)||(gameNum[0]==1&&gameNum[2]==6)){
+	    gameNumCombo[c]='8032';
+	    c++;
+	}
+	if((gameNum[0]==2&&gameNum[1]==3)||(gameNum[1]==2&&gameNum[2]==3)||(gameNum[0]==2&&gameNum[2]==3)){
+	    gameNumCombo[c]='8033';
+	    c++;
+	}
+	if((gameNum[0]==2&&gameNum[1]==4)||(gameNum[1]==2&&gameNum[2]==4)||(gameNum[0]==2&&gameNum[2]==4)){
+	    gameNumCombo[c]='8034';
+	    c++;
+	}
+	if((gameNum[0]==2&&gameNum[1]==5)||(gameNum[1]==2&&gameNum[2]==5)||(gameNum[0]==2&&gameNum[2]==5)){
+	    gameNumCombo[c]='8035';
+	    c++;
+	}
+	if((gameNum[0]==2&&gameNum[1]==6)||(gameNum[1]==2&&gameNum[2]==6)||(gameNum[0]==2&&gameNum[2]==6)){
+	    gameNumCombo[c]='8036';
+	    c++;
+	}
+	if((gameNum[0]==3&&gameNum[1]==4)||(gameNum[1]==3&&gameNum[2]==4)||(gameNum[0]==3&&gameNum[2]==4)){
+	    gameNumCombo[c]='8037';
+	    c++;
+	}
+	if((gameNum[0]==3&&gameNum[1]==5)||(gameNum[1]==3&&gameNum[2]==5)||(gameNum[0]==3&&gameNum[2]==5)){
+	    gameNumCombo[c]='8038';
+	    c++;
+	}
+	if((gameNum[0]==3&&gameNum[1]==6)||(gameNum[1]==3&&gameNum[2]==6)||(gameNum[0]==3&&gameNum[2]==6)){
+	    gameNumCombo[c]='8039';
+	    c++;
+	}
+	if((gameNum[0]==4&&gameNum[1]==5)||(gameNum[1]==4&&gameNum[2]==5)||(gameNum[0]==4&&gameNum[2]==5)){
+	    gameNumCombo[c]='8040';
+	    c++;
+	}
+	if((gameNum[0]==4&&gameNum[1]==6)||(gameNum[1]==4&&gameNum[2]==6)||(gameNum[0]==4&&gameNum[2]==6)){
+	    gameNumCombo[c]='8041';
+	    c++;
+	}
+	if((gameNum[0]==5&&gameNum[1]==6)||(gameNum[1]==5&&gameNum[2]==6)||(gameNum[0]==5&&gameNum[2]==6)){
+	    gameNumCombo[c]='8042';
+	    c++;
+	}
+	if(gameNum[0]==1 || gameNum[1]==1 || gameNum[2]==1){
+	    gameNumCombo[c]='8043';
+	    c++;
+	}
+	if(gameNum[0]==2 || gameNum[1]==2 || gameNum[2]==2){
+	    gameNumCombo[c]='8044';
+	    c++;
+	}
+	if(gameNum[0]==3 || gameNum[1]==3 || gameNum[2]==3){
+	    gameNumCombo[c]='8045';
+	    c++;
+	}
+	if(gameNum[0]==4 || gameNum[1]==4 || gameNum[2]==4){
+	    gameNumCombo[c]='8046';
+	    c++;
+	}
+	if(gameNum[0]==5 || gameNum[1]==5 || gameNum[2]==5){
+	    gameNumCombo[c]='8047';
+	    c++;
+	}
+	if(gameNum[0]==6 || gameNum[1]==6 || gameNum[2]==6){
+	    gameNumCombo[c]='8048';
+	    c++;
+	}
+	if(gameNum[0]==6 || gameNum[1]==6 || gameNum[2]==6){
+	    gameNumCombo[c]='8048';
+	    c++;
+	}
+	if(gameNum[3]==2){
+	    gameNumCombo[c]='8049';
+	    c++;
+	}
+	if(gameNum[3]==1){
+	    gameNumCombo[c]='8050';
+	    c++;
+	}
+	if(gameNum[4]==1){
+	    gameNumCombo[c]='8051';
+	    c++;
+	}
+	if(gameNum[4]==0){
+	    gameNumCombo[c]='8052';
+	    c++;
+	}
 }

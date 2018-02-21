@@ -19,7 +19,6 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 			for(var i=0;i<opBet.length;i++){
 				//var playType = opBet[i].bet011;
 				switch(opBet[i].bet011){
-					
 					case 8001:
 					case 8002:
 					case 8003:
