@@ -9,7 +9,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 	var status='';
 	//進入流程控制 
 	var EndTime = Date.parse(endtime);//Date.parse(data.rows[0].endtime);
-
+	var gameNumComb = 0;
 	function DiceBaoMain() 
 	{
 		var NowTime  = Date.parse(new Date());
@@ -83,7 +83,12 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 						else
 							gameNum[4] = 1;
 
-						callback(null,gameNum);//將gameNum傳到第二層
+						transGameNum(gameNum,sum).then(data =>{
+							gameNumComb = data;
+							callback(null,gameNum);//將gameNum傳到第二層
+						}).catch(error =>{
+							callback(1,error);//將gameNum傳到第二層
+						});
 					},
 					function(gameNum,callback){
 						var struct_gameop = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
@@ -96,7 +101,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 								console.log('寫獎號完成:'+gameNum);
 								//VIC: push message to frontend refactory
 								//修改messageService方法
-								setTimeout(function(){ messageService.broadcast('connector','diceBaogameop'+gameZone,{'gameNum':gameNum});}, 20000);
+								//setTimeout(function(){ messageService.broadcast('connector','diceBaogameop'+gameZone,{'gameNum':gameNum,'gameNumComb':gameNumComb});}, 5000);
 								callback(null,gameNum);
 							}
 						});
@@ -125,19 +130,19 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 						dbmaster.update('UPDATE games_52 SET gas012 = ? where id = ? and gas004 = ?',[1,gameID,gameZone],function(data){	
 							if(data.ErrorCode==0){
 								console.log(gameID+'期已結算結果');
+								messageService.broadcast('connector','diceBaogameop'+gameZone,{'gameNum':gameNum,'gameNumComb':gameNumComb});
 								callback(null,gameNum);
 							}
 						});
 					}
 				],function(err, results) {
 					if(err){
-						console.log('結算失敗20秒後送獎號到前台:'+results);
+						console.log('結算失敗'+results);
 					}else{
-						console.log('結算完20秒後送獎號到前台:'+results);
-						//setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':results});}, 20000);
+						console.log('結算完成'+results);
 					}
 				});
-				setTimeout(function(){ diceBaoInit.init(gameZone); }, 30000);
+				setTimeout(function(){ diceBaoInit.init(gameZone); }, 11000);
 			}, 5000);
 		}
 	}
@@ -145,7 +150,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 }
 
 
-function getbetValue(gameNum,numSum)
+async function transGameNum(gameNum,numSum)
 {
 	var gameNumCombo = new Array();
 	var c=0;
@@ -365,4 +370,5 @@ function getbetValue(gameNum,numSum)
 	    gameNumCombo[c]='8052';
 	    c++;
 	}
+	return gameNumCombo;
 }
