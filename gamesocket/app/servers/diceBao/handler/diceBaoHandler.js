@@ -44,7 +44,7 @@ handler.bet = function(msg,session,next){
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	async.series({
 			A: function(callback_A){
-				odds=getOdds(channelID);
+				//odds=getOdds(channelID); //骰寶移除賠率
 				callback_A(null,0)
 			},
 			B: function(callback_B){
@@ -528,10 +528,10 @@ handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);
 	channelService.add(session.uid,session.frontendId);//加入channel,房間
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':msg.ChannelID}); //觸發該玩家監聽訊息function
-	var odds = PUB.getOddsbyChannel(msg.ChannelID);
-	console.log(msg.ChannelID);
-	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'odds':odds});//回傳區號,賠率
+	var odds = PUB.getBetLimit(msg.ChannelID);
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'odds':odds});//回傳區號,下注上限
 }
+
 handler.LeaveChannel = function(msg,session,next){
 	if(msg.ChannelID==0)
 	{
@@ -540,182 +540,36 @@ handler.LeaveChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  false);
 	channelService.leave(session.uid,session.frontendId);
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
-	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':0});
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
 }
 
-function getbetValue(code)
-{
-	switch(code)
+handler.GameResult = function(msg,session,next){
+	if(msg.ChannelID==0)
 	{
-		case 8001:
-			return '1,1,1'; //豹子
-			break;
-		case 8002:
-			return '2,2,2';
-			break;
-		case 8003:
-			return '3,3,3';
-			break;
-		case 8004:
-			return '4,4,4';
-			break;
-		case 8005:
-			return '5,5,5';
-			break;
-		case 8006:
-			return '6,6,6';
-			break;
-		case 8007:
-			return '7,7,7';
-			break;
-		case 8008:
-			return '1,1'; //雙骰
-			break;
-		case 8009:
-			return '2,2';
-			break;
-		case 8010:
-			return '3,3';
-			break;
-		case 8011:
-			return '4,4';
-			break;
-		case 8012:
-			return '5,5';
-			break;
-		case 8013:
-			return '6,6';
-			break;
-		case 8014:
-			return '4';//和值
-			break;
-		case 8015:
-			return '5';
-			break;
-		case 8016:
-			return '6';
-			break;
-		case 8017:
-			return '7';
-			break;
-		case 8018:
-			return '8';
-			break;
-		case 8019:
-			return '9';
-			break;
-		case 8020:
-			return '10';
-			break;
-		case 8021:
-			return '11';
-			break;
-		case 8022:
-			return '12';
-			break;
-		case 8023:
-			return '13';
-			break;
-		case 8024:
-			return '14';
-			break;
-		case 8025:
-			return '15';
-			break;
-		case 8026:
-			return '16';
-			break;
-		case 8027:
-			return '17';
-			break;
-		case 8028:
-			return '1,2';//二不同骰
-			break;
-		case 8029:
-			return '1,3';
-			break;
-		case 8030:
-			return '1,4';
-			break;
-		case 8031:
-			return '1,5';
-			break;
-		case 8032:
-			return '1,6';
-			break;
-		case 8033:
-			return '2,3';
-			break;
-		case 8034:
-			return '2,4';
-			break;
-		case 8035:
-			return '2,5';
-			break;
-		case 8036:
-			return '2,6';
-			break;
-		case 8037:
-			return '3,4';
-			break;
-		case 8038:
-			return '3,5';
-			break;
-		case 8039:
-			return '3,6';
-			break;
-		case 8040:
-			return '4,5';
-			break;
-		case 8041:
-			return '4,6';
-			break;
-		case 8042:
-			return '5,6';
-			break;
-		case 8043:
-			return '1001';//單骰
-			break;
-		case 8044:
-			return '1002';
-			break;
-		case 8045:
-			return '1003';
-			break;
-		case 8046:
-			return '1004';
-			break;
-		case 8047:
-			return '1005';
-			break;
-		case 8048:
-			return '1006';
-			break;
-		case 8049:
-			return 1; //大
-			break;
-		case 8050:
-			return 0;//小
-			break;
-		case 8051:
-			return 1;//單
-			break;
-		case 8052:
-			return 0;//雙
-			break;
+		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
 	}
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
 }
 
-function getOdds(channelID){
+handler.GameRange = function(msg,session,next){
+	if(msg.ChannelID==0)
+	{
+		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
+	}
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
+}
+
+function getBetLimit(channelID){
 	switch(channelID){
 		case 101:
-			return 1;
+			return '100-50000';
 			break;
 		case 102:
-			return 2;
+			return '50-10000';
 			break;
 		case 105:
-			return 5
+			return '10-1000';
 			break;
+		case 
 	}
 }

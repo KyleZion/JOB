@@ -21,7 +21,8 @@ var bypass = {
     "O":"GetBetTotal",
     "A":"AddtoChannel",
     "L":"LeaveChannel",
-    "G":"GetGameSet"
+    "G":"GetGameSet",
+    "R":"GameResult"
 }
 
 Filter.prototype.before = function (msg, session, next) {

@@ -131,6 +131,8 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 							if(data.ErrorCode==0){
 								console.log(gameID+'期已結算結果');
 								messageService.broadcast('connector','diceBaogameop'+gameZone,{'gameNum':gameNum,'gameNumComb':gameNumComb});
+								redis.hset('GS:GAMESERVER:diceBao', "lastGameNum"+gameZone, gameNum);
+								redis.hset('GS:GAMESERVER:diceBao', "lastGameComb"+gameZone, gameNumComb);
 								callback(null,gameNum);
 							}
 						});
@@ -344,10 +346,6 @@ async function transGameNum(gameNum,numSum)
 	}
 	if(gameNum[0]==5 || gameNum[1]==5 || gameNum[2]==5){
 	    gameNumCombo[c]='8047';
-	    c++;
-	}
-	if(gameNum[0]==6 || gameNum[1]==6 || gameNum[2]==6){
-	    gameNumCombo[c]='8048';
 	    c++;
 	}
 	if(gameNum[0]==6 || gameNum[1]==6 || gameNum[2]==6){
