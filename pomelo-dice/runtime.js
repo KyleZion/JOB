@@ -54,6 +54,7 @@ cr.plugins_.pomelo_dice = function(runtime)
 		this.isSuccess;
 		this.ErrorMessage = '';
 		this.Odds = 0;
+		this.GameNumComb = null;
 	};
 	
 	var instanceProto = pluginProto.Instance.prototype;
@@ -262,7 +263,8 @@ cr.plugins_.pomelo_dice = function(runtime)
 				instance.Odds = res['odds'];
 				GAMEOPLISTEN =function(data){
 					instance.OpData = data['gameNum'];
-					//console.log(data);
+					instance.GameNumComb = JSON.stringify(data['gameNumComb']);
+					runtime.trigger(pluginProto.cnds.OnGameNumComb,instance)
 					runtime.trigger(pluginProto.cnds.OnOpData,instance);
 				}
 				STATUSLISTEN = function(data){
@@ -272,6 +274,7 @@ cr.plugins_.pomelo_dice = function(runtime)
 				}
 				pomelo.on('diceBaogameop'+res['cid'],GAMEOPLISTEN);
 			    pomelo.on('diceBaoStatus'+res['cid'],STATUSLISTEN);
+			    //gameOP COMBO
 			    pomelo.removeListener('lobbyDiceBao',LOBBYLISTEN);
 				instance.isSuccess = 1;
 				runtime.trigger(pluginProto.cnds.OnChannel,instance);
@@ -312,11 +315,11 @@ cr.plugins_.pomelo_dice = function(runtime)
 			}
 		});
 	}
-	instanceProto.GetGameSet = function()
+	instanceProto.GetGameResult = function()
 	{
 		var runtime = this.runtime;
 		var instance = this;
-		pomelo.request("d.d.G",{'cid':instance.ChannelID},function(gs){
+		pomelo.request("d.d.R",{'cid':instance.ChannelID},function(gr){
 			if(gs['ErrorCode']==0){
 				instance.GameSet = gs['GameSet'];
 				instance.isSuccess = 1;
@@ -488,6 +491,10 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		return true;
 	};
+	cnds.OnGameNumComb=function()
+	{
+		return true;
+	};
 	cnds.OnError=function()
 	{
 		return true;
@@ -575,6 +582,10 @@ cr.plugins_.pomelo_dice = function(runtime)
 	exps.GameSet = function (result) 
 	{
 		result.set_any(this.GameSet);
+	}
+	exps.GameNumComb = function(result)
+	{
+		result.set_any(this.GameNumComb);
 	}
 	exps.isSuccess= function(result)
 	{
