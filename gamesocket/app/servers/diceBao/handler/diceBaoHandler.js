@@ -407,9 +407,9 @@ handler.GetHistory = function(msg,session,next){
 						);
 					}else{ //success
 						var record = new Array();
-						record[0] = res.lobbyHistory101;
-						record[1] = res.lobbyHistory102;
-						record[2] = res.lobbyHistory105;
+						record[0] = res.lobbyHistory111;
+						record[1] = res.lobbyHistory222;
+						record[2] = res.lobbyHistory333;
 						console.log(record);
 						next(null,{'ErrorCode':0,'ErrorMessage':'','History':record});
 					}
@@ -443,9 +443,9 @@ handler.GetStatus = function(msg,session,next){  //Redis
 						);
 					}else{ //success
 						var record = new Array();
-						record[0] = res.Status101;
-						record[1] = res.Status102;
-						record[2] = res.Status105;
+						record[0] = res.Status111;
+						record[1] = res.Status222;
+						record[2] = res.Status333;
 						next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':record});
 					}
 				}
@@ -544,11 +544,12 @@ handler.LeaveChannel = function(msg,session,next){
 }
 
 handler.GameResult = function(msg,session,next){
-	if(msg.ChannelID==0)
-	{
-		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
-	}
-	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
+	redis.hget('GS:GAMESERVER:diceBao',"lastGameComb"+msg.ChannelID,function(err1,res1){
+		redis.hget('GS:GAMESERVER:diceBao',"lastGameNum"+msg.ChannelID,function(err2,res2){
+				next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':res2,'gameNumComb':res1});
+		});
+	});
+	next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':gameNum,'gameNumComb':gameNumComb});
 }
 
 handler.GameRange = function(msg,session,next){
@@ -556,18 +557,18 @@ handler.GameRange = function(msg,session,next){
 	{
 		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
 	}
-	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':getBetLimit(channelID)});
 }
 
 function getBetLimit(channelID){
 	switch(channelID){
-		case 101:
+		case 111:
 			return '100-50000';
 			break;
-		case 102:
+		case 222:
 			return '50-10000';
 			break;
-		case 105:
+		case 333:
 			return '10-1000';
 			break;
 		case 

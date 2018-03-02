@@ -35,8 +35,8 @@ exp.init = function (gameZone) {
 				//開盤
 				console.log(data.rows);
 				GM.Made(25,function(insertID,endTime){
-					console.log(insertID);
-					console.log(endTime);
+					/*console.log(insertID);
+					console.log(endTime);*/
 					messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
 					fruitWheelmain.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
 				});

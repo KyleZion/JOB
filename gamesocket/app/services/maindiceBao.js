@@ -9,7 +9,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 	var status='';
 	//進入流程控制 
 	var EndTime = Date.parse(endtime);//Date.parse(data.rows[0].endtime);
-	var gameNumComb = 0;
+	var gameNumComb;
 	function DiceBaoMain() 
 	{
 		var NowTime  = Date.parse(new Date());
@@ -131,8 +131,8 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 							if(data.ErrorCode==0){
 								console.log(gameID+'期已結算結果');
 								messageService.broadcast('connector','diceBaogameop'+gameZone,{'gameNum':gameNum,'gameNumComb':gameNumComb});
-								redis.hset('GS:GAMESERVER:diceBao', "lastGameNum"+gameZone, gameNum);
-								redis.hset('GS:GAMESERVER:diceBao', "lastGameComb"+gameZone, gameNumComb);
+								redis.hset('GS:GAMESERVER:diceBao', "lastGameNum"+gameZone, gameNum.toString());
+								redis.hset('GS:GAMESERVER:diceBao', "lastGameComb"+gameZone, gameNumComb.toString());
 								callback(null,gameNum);
 							}
 						});
