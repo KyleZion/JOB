@@ -53,7 +53,7 @@ cr.plugins_.pomelo_dice = function(runtime)
 		this.GameSet = '';
 		this.isSuccess;
 		this.ErrorMessage = '';
-		this.Odds = 0;
+		this.Limit = 0;
 		this.GameNumComb = null;
 	};
 	
@@ -260,7 +260,7 @@ cr.plugins_.pomelo_dice = function(runtime)
 		pomelo.request("d.d.A",{'ChannelID':joinID},function(res){
 			if(res['ErrorCode']==0){
 				instance.ChannelID = res['cid'];
-				instance.Odds = res['odds'];
+				instance.Limit = res['limit'];
 				GAMEOPLISTEN =function(data){
 					instance.OpData = data['gameNum'];
 					instance.GameNumComb = JSON.stringify(data['gameNumComb']);
@@ -291,7 +291,7 @@ cr.plugins_.pomelo_dice = function(runtime)
 		pomelo.request("d.d.L",{'ChannelID':leaveID},function(res){
 			if(res['ErrorCode']==0){
 				instance.ChannelID = res['cid'];
-				instance.Odds = 0;
+				instance.Limit = res['limit'];;
 				pomelo.removeListener('diceBaogameop'+leaveID,GAMEOPLISTEN);
 				pomelo.removeListener('diceBaoStatus'+leaveID,STATUSLISTEN);
 				LOBBYLISTEN =function(data){
@@ -320,14 +320,15 @@ cr.plugins_.pomelo_dice = function(runtime)
 		var runtime = this.runtime;
 		var instance = this;
 		pomelo.request("d.d.R",{'cid':instance.ChannelID},function(gr){
-			if(gs['ErrorCode']==0){
-				instance.GameSet = gs['GameSet'];
+			if(gr['ErrorCode']==0){
+				iinstance.OpData = gr['gameNum'];
+				instance.GameNumComb = JSON.stringify(gr['gameNumComb']);
 				instance.isSuccess = 1;
 				runtime.trigger(pluginProto.cnds.OnGameSet,instance);
 			}else{
 				instance.GameSet = 0 ;
 				instance.isSuccess = -1;
-				instance.ErrorMessage = gs['ErrorMessage'];
+				instance.ErrorMessage = gr['ErrorMessage'];
 				runtime.trigger(pluginProto.cnds.OnError,instance);
 			}
 		});
@@ -575,9 +576,9 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		result.set_any(this.LobbyStatus4);
 	};
-	exps.Odds = function (result) 
+	exps.Limit = function (result) 
 	{
-		result.set_any(this.Odds);
+		result.set_any(this.Limit);
 	}
 	exps.GameSet = function (result) 
 	{

@@ -22,7 +22,8 @@ var bypass = {
     "A":"AddtoChannel",
     "L":"LeaveChannel",
     "G":"GetGameSet",
-    "R":"GameResult"
+    "R":"GameResult",
+    "E":"GameRestrict"
 }
 
 Filter.prototype.before = function (msg, session, next) {

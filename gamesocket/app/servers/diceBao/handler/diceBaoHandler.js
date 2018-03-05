@@ -34,7 +34,7 @@ handler.bet = function(msg,session,next){
 	var betkey=''; 
 	var bet2='';
 	var b015 = 0;
-	var odds = 1;
+	//var odds = 1;
 	var trans_no='';
 	var betDataCheck=false;
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
@@ -122,7 +122,7 @@ handler.bet = function(msg,session,next){
 					struct_bet.params.bet012 = channelID;
 					struct_bet.params.bet014 = betPlay[0].replace(/\"/g, "");
 					struct_bet.params.bet015 = 1;
-					struct_bet.params.bet016 = odds;
+					struct_bet.params.bet016 = 1;
 					struct_bet.params.bet017 = betPlay[1];
 					struct_bet.params.bet018 = 0;
 					struct_bet.params.bet034 =md5(md5str);
@@ -528,39 +528,39 @@ handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);
 	channelService.add(session.uid,session.frontendId);//加入channel,房間
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':msg.ChannelID}); //觸發該玩家監聽訊息function
-	var odds = PUB.getBetLimit(msg.ChannelID);
-	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'odds':odds});//回傳區號,下注上限
+	var limit = PUB.getBetRestrict(msg.ChannelID);
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'limit':limit});//回傳區號,下注上下限
 }
 
 handler.LeaveChannel = function(msg,session,next){
 	if(msg.ChannelID==0)
 	{
-		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':0});
+		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','limit':0});
 	}
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  false);
 	channelService.leave(session.uid,session.frontendId);
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
-	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','limit':["100-50000","50-10000","10-1000"]});
 }
 
 handler.GameResult = function(msg,session,next){
 	redis.hget('GS:GAMESERVER:diceBao',"lastGameComb"+msg.ChannelID,function(err1,res1){
 		redis.hget('GS:GAMESERVER:diceBao',"lastGameNum"+msg.ChannelID,function(err2,res2){
-				next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':res2,'gameNumComb':res1});
+			next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':res2,'gameNumComb':res1});
 		});
 	});
 	next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':gameNum,'gameNumComb':gameNumComb});
 }
 
-handler.GameRange = function(msg,session,next){
+handler.GameRestrict = function(msg,session,next){
 	if(msg.ChannelID==0)
 	{
-		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':["100-50000","50-10000","10-1000"]});
+		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','limit':["100-50000","50-10000","10-1000"]});
 	}
-	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','odds':getBetLimit(channelID)});
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','limit':getBetRestrict(channelID)});
 }
 
-function getBetLimit(channelID){
+function getBetRestrict(channelID){
 	switch(channelID){
 		case 111:
 			return '100-50000';

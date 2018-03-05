@@ -26,7 +26,7 @@ exp.broadcast = function (stype, route, msg) {
     if (err) {  
         console.log(err);  
     }  
-});  
+});
 };
 
 /*exp.pushMessageByAOI = function (area, msg, pos, ignoreList) {

@@ -85,7 +85,7 @@ AddExpression(16,ef_return_any,"2桌狀態","遊戲參數","LobbyStatus2","2桌�
 AddExpression(17,ef_return_any,"3桌狀態","遊戲參數","LobbyStatus3","3桌狀態");
 AddExpression(18,ef_return_any,"1:10區狀態XX","遊戲參數XX","LobbyStatus4","1:10區狀態XX");
 AddExpression(19,ef_return_any,"遊戲局數","遊戲參數","GameSet","遊戲局數");
-AddExpression(20,ef_return_any,"回傳賠率","遊戲參數","Odds","回傳賠率");
+AddExpression(20,ef_return_any,"下注上下限參數","遊戲參數","Odds","下注上下限參數");
 AddExpression(21,ef_return_any,"開獎桌面組合顯示參數","遊戲參數","GameNumComb","開獎桌面組合顯示參數");
 ACESDone();
 
