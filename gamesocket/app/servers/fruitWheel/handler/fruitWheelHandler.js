@@ -18,7 +18,7 @@ var md5 = require('md5');
 var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
 var sessionService = pomelo.app.get('sessionService');
 var gid='051';
-var gameDao = require('../../../dao/gameDao');
+var gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
 var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
 var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 //===固定==============================================================

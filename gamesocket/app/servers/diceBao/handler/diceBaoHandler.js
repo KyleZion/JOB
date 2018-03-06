@@ -18,7 +18,7 @@ var messageService = require(pomelo.app.getBase()+'/app/services/messageService.
 var sessionService = pomelo.app.get('sessionService');
 var gid='052';
 //var channel = pomelo.app.get('channelService').getChannel('connect',false);
-var gameDao = require('../../../dao/gameDao');
+var gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
 var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入amount_log,回傳amount_log Index ID
 var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 //===固定==============================================================
@@ -30,7 +30,7 @@ handler.bet = function(msg,session,next){
 	var channelID = JSON.parse(msg.bet).channelID
 	var betPlay = new Array();
 	//var betValue =new Array();
-	var amount = JSON.parse(msg.bet).total;//下注總金額
+	var amount = 0//下注金額
 	var betkey=''; 
 	var bet2='';
 	var b015 = 0;
@@ -75,8 +75,10 @@ handler.bet = function(msg,session,next){
 					struct_amount.params.game_id = '52';
 					struct_amount.params.game_name = gameID;
 					struct_amount.params.mid = session.uid;
+					betPlay=betData[count].split(':');
+					console.log(betPlay);
 				    //mid,金額,amountlogSQL
-					lib_games.DeductMoney(session.uid,amount,struct_amount,function(result)
+					lib_games.DeductMoney(session.uid,betPlay[1],struct_amount,function(result)
 					{
 					  switch(result)
 					  {
@@ -105,8 +107,6 @@ handler.bet = function(msg,session,next){
 					});
 				},
 				B: function(callback_B){
-					betPlay=betData[count].split(':');
-					console.log(betPlay);
 					//betkey=gid+session.uid+new Date().getTime();
 					bet2=betkey+'000'+count;
 					trans_no=bet2;
@@ -148,7 +148,7 @@ handler.bet = function(msg,session,next){
 									gameDao.delAmountlogById(logId,cb);
 								},
 								function(cb){
-									gameDao.addMoney(amount,session.uid,cb);
+									gameDao.addMoney(betPlay[1],session.uid,cb);
 								}
 							],
 							function(err,results){
@@ -185,7 +185,7 @@ handler.bet = function(msg,session,next){
 									gameDao.delAmountlogById(logId,cb);
 								},
 								function(cb){
-									gameDao.addMoney(amount,session.uid,cb);
+									gameDao.addMoney(betPlay[1],session.uid,cb);
 								}
 							],
 							function(err,results){
@@ -206,7 +206,7 @@ handler.bet = function(msg,session,next){
 				function(err, results) { //series執行結果
 					if(err)//錯誤則刪單並退錢
 					{
-						next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'});
+						next(null,{'ErrorCode':1,'ErrorMessage':'网路连线异常，代碼'});
 					}else{
 						//console.log("下注完成");
 						async.waterfall([
@@ -498,14 +498,14 @@ handler.GetBetTotal = function(msg,session,next){ //Redis
 }
 
 handler.GetGameSet =function(msg,session,next){
-	redis.hget('GS:GAMESERVER:diceBao', "GameSet"+msg.cid, function (err, res) {
+	redis.hget('GS:GAMESERVER:diceBao', "GameSet"+msg.ChannelID, function (err, res) {
 		if(err){
 			next(new Error('redis error'),500);
 		}else{
 			if(res==null){
 				async.waterfall([
 					function(cb) {
-						gameDao.getGameSet(51,msg.cid,cb);
+						gameDao.getGameSet(51,msg.ChannelID,cb);
 					}
 				], 
 					function(err,resDao) {
@@ -527,8 +527,8 @@ handler.GetGameSet =function(msg,session,next){
 handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);
 	channelService.add(session.uid,session.frontendId);//加入channel,房間
-	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':msg.ChannelID}); //觸發該玩家監聽訊息function
-	var limit = PUB.getBetRestrict(msg.ChannelID);
+	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0}); //觸發該玩家監聽訊息function
+	var limit = getBetRestrict(msg.ChannelID);
 	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'limit':limit});//回傳區號,下注上下限
 }
 
@@ -546,10 +546,10 @@ handler.LeaveChannel = function(msg,session,next){
 handler.GameResult = function(msg,session,next){
 	redis.hget('GS:GAMESERVER:diceBao',"lastGameComb"+msg.ChannelID,function(err1,res1){
 		redis.hget('GS:GAMESERVER:diceBao',"lastGameNum"+msg.ChannelID,function(err2,res2){
-			next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':res2,'gameNumComb':res1});
+			next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':res2,'gameNumComb':res1.split(',')});
 		});
 	});
-	next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':gameNum,'gameNumComb':gameNumComb});
+	//next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':gameNum,'gameNumComb':gameNumComb});
 }
 
 handler.GameRestrict = function(msg,session,next){
@@ -571,6 +571,5 @@ function getBetRestrict(channelID){
 		case 333:
 			return '10-1000';
 			break;
-		case 
 	}
 }

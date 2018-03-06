@@ -27,7 +27,7 @@ AddAction(2, 0, "登入", "遊戲動作", "登入Token <i>{0}</i>", "登入遊�
 AddAction(3, 0, "登出", "遊戲動作", "登出", "登出遊戲.","MemberLogout");
 AddStringParam("下注","請填下注內容","\"\"");
 AddAction(4, 0, "下注","遊戲動作","下注 <b>{0}</b>","下注號碼","bet");
-AddAction(5,0, "取得期數","遊戲動作","取得期數","取得期數","GetGameID");
+AddAction(5,0, "取得期數ID","遊戲動作","取得期數ID","取得期數ID","GetGameID");
 AddAction(6, 0, "取得餘額","遊戲動作","取得帳戶餘額,成功回傳參數1,失敗-1","帳戶餘額","GetMoney");
 AddAction(7, 0, "取得本局時間","遊戲動作","取得本局時間","取得本局時間,若為0則表示觀盤開獎","GetTimeZone");
 AddAction(8, 0, "取得Server狀態","遊戲動作","取得Server狀態","取得Server狀態","GetStatus");
@@ -39,6 +39,7 @@ AddAction(11, 0, "加入遊戲區","遊戲動作","加入遊戲區賠率<i>{0}</
 AddNumberParam("遊戲區號","輸入離開的區號","\"\"");
 AddAction(12, 0, "離開遊戲區","遊戲動作","離開遊戲區","離開遊戲區","LeaveChannel");
 AddAction(13, 0, "取得遊戲局數","遊戲動作","取得遊戲局數","取得遊戲局數","GetGameSet");
+AddAction(14, 0, "開獎中途進入取得開獎結果","遊戲動作","取得開獎結果","取得開獎結果","GetGameResult");
 //======================================================================================================================================
 
 //cf_trigger cf_fake_trigger****
@@ -85,7 +86,7 @@ AddExpression(16,ef_return_any,"2桌狀態","遊戲參數","LobbyStatus2","2桌�
 AddExpression(17,ef_return_any,"3桌狀態","遊戲參數","LobbyStatus3","3桌狀態");
 AddExpression(18,ef_return_any,"1:10區狀態XX","遊戲參數XX","LobbyStatus4","1:10區狀態XX");
 AddExpression(19,ef_return_any,"遊戲局數","遊戲參數","GameSet","遊戲局數");
-AddExpression(20,ef_return_any,"下注上下限參數","遊戲參數","Odds","下注上下限參數");
+AddExpression(20,ef_return_any,"下注上下限及桌號參數","遊戲參數","param","下注上下限及桌號參數");
 AddExpression(21,ef_return_any,"開獎桌面組合顯示參數","遊戲參數","GameNumComb","開獎桌面組合顯示參數");
 ACESDone();
 

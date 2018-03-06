@@ -273,11 +273,14 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					Close(session);
 				}				
 			}else{
-				//channel.add(uid,session.frontendId);
+				//channel.add(uid,session.frontendId)
 				/*var a=sessionService.getClientAddressBySessionId(session.id);
 				console.log('getClient!!!');*/
-				messageService.pushMessageToPlayer({'uid':uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
-				next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata});
+				if(gameCode==52){
+					next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata,'param':{'limit':["100-50000","50-10000","10-1000"],'channel':[111,222,333]}});
+				}else{
+					next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata});
+				}
 			}
 		});
 }

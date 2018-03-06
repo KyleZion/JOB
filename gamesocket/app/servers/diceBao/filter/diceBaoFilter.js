@@ -36,6 +36,8 @@ Filter.prototype.before = function (msg, session, next) {
     var channelID = JSON.parse(msg.bet).channelID;
     var total = JSON.parse(msg.bet).total
     var ClientgameID = JSON.parse(msg.bet).GamesID;
+    var min =0;
+    var max =0;
     async.series({
       lockAccount: function(callback){ //redis修正
         redis.sismember("GS:lockAccount:diceBao",session.uid,function(err,res){
@@ -50,8 +52,17 @@ Filter.prototype.before = function (msg, session, next) {
         });
       },
       checkChannel: function(callback){
-        if(channelID==101 || channelID==102 || channelID==105)
-        {
+        if(channelID==111){
+          max = 50000;
+          min = 100;
+          callback(null,200);
+        }else if(channelID==222){
+          max = 10000;
+          min = 50;
+          callback(null,200);
+        }else if(channelID==333){
+          max = 1000;
+          min = 10;
           callback(null,200);
         }
         else{
@@ -111,14 +122,14 @@ Filter.prototype.before = function (msg, session, next) {
                   //var sessionMoney=data.rows[0].mem100;
                   var sessionMoney=data.rows[0].mem100;
                   //var amount=0;//下注總金額
-                  var betDataCheck=false;
+                  var betDataCheck=true;
                   //計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
                   async.series({
                     Z: function(callback_Z){
                       for(var i in betData){
-                        if(betData[i]!=0){
+                        if(betData[i]>max && betData[i]<min){
                           //amount= amount+betData[i]; //計算下注總金額
-                          betDataCheck=true;
+                          betDataCheck=false;
                         }
                       }
                       callback_Z(null,0);
@@ -126,22 +137,17 @@ Filter.prototype.before = function (msg, session, next) {
                     A:function(callback_A){
                       if(!betDataCheck){
                         //檢查沒有押注就送出
-                        callback_A(1,'未下注');
-                      } 
-                      else if(total===0 || sessionMoney<total){ //檢查Client下注總金額和下注內容金額有無相同
+                        callback_A(1,'单一下注超出限制或低于限制');
+                      } else if(total===0 || sessionMoney<total){ //檢查Client下注總金額和下注內容金額有無相同
                         callback_A(1,'馀额不足或下注错误');
-                      }
-                      else if(ServergameID!=ClientgameID){
+                      }else if(ServergameID!=ClientgameID){
                         //檢查期數
                         callback_A(1,'下注期数错误');
-                      }
-                      else if(!channelID){
+                      }else if(!channelID){
                         callback_A(1,'游戏区号错误');
-                      }
-                      else if(!checkStatus){
+                      }else if(!checkStatus){
                         callback_A(1,'已关盘');
-                      }
-                      else if(!lockAccount){
+                      }else if(!lockAccount){
                         callback_A(1,'请勿连续下注');
                       }
                       else{
@@ -175,7 +181,7 @@ Filter.prototype.before = function (msg, session, next) {
       {
         if(res.lockAccount==500 || res.checkStatus==500 || res.checkGameID == 500 || res.checkChannel ==500)
         {
-          next(new Error('ServerQuestion'),'网路连线异常');
+          next(new Error('ServerQuestion'),'网路连线异常，代码500');
         }else{
           next(new Error('BetQuestion'),res.checkBet);
         }
