@@ -9,7 +9,7 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 		return this;
 	}
 
-	this.Made = function(GameSeconds,Made_callback)
+	this.Made = function(GameSeconds,GameHistory,LobbyHistory,Made_callback)
 	{
 		var InsertID = 0;
 		var Period='';
@@ -74,13 +74,13 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 				OG.GetHistoryNumber(function(igameHistory){
 					gameHistory = igameHistory;
 					callback_4(null);
-				},10);
+				},GameHistory);
 			},
 			function(callback_5){
 				OG.GetHistoryNumber(function(igameHistory){
 					lobbyHistory =igameHistory;
 					callback_5(null);
-				},30);
+				},LobbyHistory);
 			}
 		],
 		function(err,result){

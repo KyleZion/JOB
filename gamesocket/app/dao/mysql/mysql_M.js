@@ -74,7 +74,7 @@ NND.SpQuery = function (sql, args, callback) {
     const resourcePromise = _pool.acquire();
     resourcePromise.then(function (client) {
         client.query(sql, args, function (error,results,fields) {
-            console.log(error); //成功null
+            //console.log(error); //成功null
             console.log('--------');
             console.log(results); //RowDataPacket
             console.log('--------');

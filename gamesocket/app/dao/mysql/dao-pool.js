@@ -43,7 +43,8 @@ var createMysqlPool = function(app){
           user: mysqlConfig.user,
           password: mysqlConfig.password,
           database: mysqlConfig.database,
-          port:mysqlConfig.port
+          port:mysqlConfig.port,
+          multipleStatements: true
         });
         resolve(client);
       })

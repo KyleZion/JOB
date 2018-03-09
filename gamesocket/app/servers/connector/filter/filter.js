@@ -26,7 +26,5 @@ Filter.prototype.before = function (msg, session, next) {
 };
 
 Filter.prototype.after = function (err, msg, session, resp, next) {
-
   next(err, resp);
 };
-
