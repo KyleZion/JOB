@@ -14,6 +14,7 @@ var GPB = new(require(pomelo.app.getBase()+'/app/consts/Base_Param.js'))();
 var redis=pomelo.app.get('redis');
 var async=require('async');
 var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+var dbmaster=pomelo.app.get('dbmaster');
 //===固定==============================================================
 
 
@@ -24,16 +25,17 @@ handler.Transfer = function(msg,session,next){
 	async.series({
 		A: function(callback_A){
 			console.log('callbackA');
-			var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
-			/*struct_amount.params.transfer_type = 51;
-			struct_amount.params.transfer_no = '';
-			struct_amount.params.from_gkey = 'MAIN';
-			struct_amount.params.to_gkey = 'CTL';
-			struct_amount.params.operator = session.uid;
-			struct_amount.params.uip = session.get('memberdata').ip;
-			struct_amount.params.otype = 'm';
-			struct_amount.params.gameid = '0';
-			struct_amount.params.bydate = formatDate();*/
+			var sql ="CALL spModifyAmount(?,?,?,?,?,?,@id); SELECT @id;";
+			dbmaster.spquery(sql,[51,0,0,'',session.uid,msg.amount,0],(data) =>{
+			    var logId = data.rows[3][0]['@id'];
+			    //console.log(logId);
+			    callback_A(0,logId);
+			    if (data.ErrorCode!=0) {
+			      callback_A(-1,logId);
+			    }
+			    //console.log(fields);
+			});
+			/*var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
 			struct_amount.params.type = 51;
 			struct_amount.params.game_id = 0;
 			struct_amount.params.game_name = 0;
@@ -47,7 +49,7 @@ handler.Transfer = function(msg,session,next){
 			      console.log('查無此id');
 			      callback_A(-1,result);
 			      break;
-			    case -2:
+			    case -2: 
 			      console.log('餘額不足');
 			      callback_A(-2,result);
 			      break;
@@ -65,7 +67,7 @@ handler.Transfer = function(msg,session,next){
 			      callback_A(0,result);
 			      break;
 			  }
-			});
+			});*/
 		},
 		B: function(callback_B){
 			console.log('callbackB');
@@ -108,7 +110,16 @@ handler.Transfer = function(msg,session,next){
 		},
 		C: function(callback_C){
 			console.log('callbackC');
-			var struct_mem100 = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+			let sql ="CALL spSelectMemberMem100(?);";
+			dbmaster.spquery(sql,[session.uid],(data) =>{
+			    //res = data.rows[3][0]['@a'];
+			    console.log(data.rows[0][0]['mem100']);
+			    callback_C(null,data.rows[0][0]['mem100']);
+			    if (data.ErrorCode!=0) {
+			      return console.warn(data.message);
+			    }
+			});
+			/*var struct_mem100 = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
 			    //var lib_amount = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("member2",struct_sql);
 			    var lib_mem100 = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("users",struct_mem100);
 			    struct_mem100.select.mem100 = "1";
@@ -116,7 +127,7 @@ handler.Transfer = function(msg,session,next){
 			    lib_mem100.Select(function(data){
 			    	console.log('callbackC DB');
 			    	callback_C(null,data[0].mem100);
-			});
+			});*/
 		}
 	},
 	function(err, results)

@@ -108,7 +108,11 @@ handler.bet = function(msg,session,next){
 				},
 				B: function(callback_B){
 					//betkey=gid+session.uid+new Date().getTime();
-					bet2=betkey+'000'+count;
+					if(count>10){
+						bet2=betkey+'00'+count;
+					}else{
+						bet2=betkey+'000'+count;
+					}
 					trans_no=bet2;
 					var md5str = session.uid+gameID;
 					struct_bet.params.betkey = betkey;

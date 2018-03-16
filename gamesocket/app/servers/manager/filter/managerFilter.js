@@ -15,9 +15,9 @@ var Filter = function() {
 var bypass = {
     "K":"KickMember",
     "G":"GetMembers",
-    "T":"Transfer",
     "P":"Stop",
     "A":"Add",
+    "T":"Transfer",
     "S":"ServerStatus"
 }
 
@@ -29,26 +29,10 @@ Filter.prototype.before = function (msg, session, next) {
   			var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
   		}
   	}
-    else if(msg.route == "manager.managerHandler.T"){
-        redis.hget(GPB.rKey_USER+session.uid, "TRANS_TIME", function (err, obj) {
-        var timeDiff = (Math.abs(new Date() - new Date(obj).getTime()))/1000;
-        if(timeDiff>60) //連續轉帳不能低於60秒
-        {
-          if(msg.amount<10){
-            next(new Error('amountError'),'转帐额度需在10元以上');
-          }else{
-            var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"transferFilter"); //放在最後一行
-          }
-        }
-        else
-        {
-          next(new Error('TimeError'),'请勿频繁转帐！');
-        }
-      });
-    }else{
-  		var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
-  	}
-};
+    else{
+      		var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"fruitWheelFilter"); //放在最後一行
+      	}
+    };
 
 Filter.prototype.after = function (err, msg, session, resp, next) {
   next(err, resp);

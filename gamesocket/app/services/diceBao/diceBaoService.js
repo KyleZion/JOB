@@ -4,44 +4,30 @@ var pomelo = require('pomelo');
 var asyncLoop = require('node-async-loop');
 var logger = require('pomelo-logger').getLogger('Service-log',__filename);
 var serverIP='127.0.0.1';
-var numSum=0;
-exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callback_Calculate)
+exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone,callback_Calculate)
 {
 	async.waterfall([
-		function(callback)
-		{
-			numSum=gameNum[0]+gameNum[1]+gameNum[2];
-			callback(null,gameNum);
-		},
-		function(gameNum,callback){
+		function(callback){
 			var winResult=[];
 			var item=0;
 			for(var i=0;i<opBet.length;i++){
-				//var playType = opBet[i].bet011;
-				switch(opBet[i].bet011){
+				switch(opBet[i].bet014){
 					case 8001:
 					case 8002:
 					case 8003:
 					case 8004:
 					case 8005:
 					case 8006://三同骰單一
-						var playData=opBet[i].bet014.split(',')
-						if(playData[0]==gameNum[0] && playData[1]==gameNum[1] && playData[2]==gameNum[2])
-						{
-							winResult[item]=opBet[i];
-							winResult[item].Val=opBet[i].bet017;
-							winResult[item].multiple=180;
-							item++;
-						}
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						winResult[item].multiple=180;
+						item++;
 					break;
 					case 8007://三同骰全骰
-						if(gameNum[0]==gameNum[1] && gameNum[1]==gameNum[2] && gameNum[2]==gameNum[0])
-						{
 							winResult[item]=opBet[i];
 							winResult[item].Val=opBet[i].bet017;
 							winResult[item].multiple=31;
 							item++;
-						}
 					break;
 					case 8008:
 					case 8009:
@@ -49,26 +35,10 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 					case 8011:
 					case 8012:
 					case 8013://二同骰
-					//先檢查開獎號是否
-					if((gameNum[0]==gameNum[1]) || (gameNum[1]==gameNum[2] ))
-					{
-						var playData=opBet[i].bet014.split(',');
-						var WinCount=0;
-						for(var key in playData)
-						{
-							if((playData[key]==gameNum[0] && gameNum[0]==gameNum[1]) || (playData[key]==gameNum[1] && gameNum[1]==gameNum[2]))
-							{
-								WinCount++;
-							}
-						}
-						if(WinCount==2)
-						{
-							winResult[item]=opBet[i];
-							winResult[item].Val=opBet[i].bet017;
-							winResult[item].multiple=11;
-							item++;
-						}
-					}
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						winResult[item].multiple=11;
+						item++;
 					break;
 					case 8014:
 					case 8015:
@@ -84,14 +54,10 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 					case 8025:
 					case 8026:
 					case 8027://和值
-						var playData=opBet[i].bet014;
-						if(playData==numSum)
-						{
-							winResult[item]=opBet[i];
-							winResult[item].Val=opBet[i].bet017;
-							winResult[item].multiple=multipleDecide_Sum(numSum);
-							item++;
-						}
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						winResult[item].multiple=multipleDecide_Sum(numSum);
+						item++;
 					break;
 					case 8028:
 					case 8029:
@@ -108,14 +74,10 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 					case 8040:
 					case 8041:
 					case 8042://二不同骰
-						var playData=opBet[i].bet014.split(',');
-						if((playData[0]==gameNum[0] || playData[0]==gameNum[1] || playData[0]==gameNum[2]) && (playData[1]==gameNum[0] || playData[1]==gameNum[1] || playData[1]==gameNum[2]) )
-						{
-							winResult[item]=opBet[i];
-							winResult[item].Val=opBet[i].bet017;
-							winResult[item].multiple=6;
-							item++;
-						}
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						winResult[item].multiple=6;
+						item++;
 					break;
 					case 8043:
 					case 8044:
@@ -123,53 +85,23 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 					case 8046:
 					case 8047:
 					case 8048://單一骰
-						var playData=opBet[i].bet014;
-						for(var key in gameNum)
-						{
-							if (playData==gameNum[key])
-							{
-								winResult[item]=opBet[i];
-								winResult[item].Val=opBet[i].bet017;
-								winResult[item].multiple=multipleDecide_Single(gameNum);
-								item++;
-							}
-						}
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						winResult[item].multiple=multipleDecide_Single(gameNum);
+						item++;
 					break;
 					case 8049:
 					case 8050:
 					case 8051:
 					case 8052://大小單雙
-						var playData=opBet[i].bet014;
-						var WinZone_1 =0;
-						var WinZone_2 =0;
-						 if(numSum>10)
-						 {
-						 	WinZone_1 =9010;
-						 }else{
-						 	WinZone_1 =9009;
-						 }
-						 if(numSum % 2 ==0)
-						 {
-						 	WinZone_2 =9008;
-						 }else{
-						 	WinZone_2 =9007;
-						 }
-						 if(playData==WinZone_1)
-						 {
-						 	winResult[item]=opBet[i];
-							winResult[item].Val=opBet[i].bet017;
-							winResult[item].multiple=1;
-							item++;
-						 }
-						 if(playData==WinZone_2){
-						 	winResult[item]=opBet[i];
-							winResult[item].Val=opBet[i].bet017;
-							winResult[item].multiple=1;
-							item++;
-						 }
+					 	winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						winResult[item].multiple=1;
+						item++;
 					break;
 				}
-			}			callback(null,winResult);
+			}			
+			callback(null,winResult);
 		},
 			function(winResult,callback){
 			console.log("開獎完畢:"+gamesID)
@@ -200,7 +132,6 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,callba
 
 function idWinMoneysResult(dbmaster,dbslave,winResult,callback_Win)
 	{
-		console.log(winResult);
 		if(winResult.length==0){
 			callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':null});
 		}

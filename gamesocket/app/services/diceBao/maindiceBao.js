@@ -108,12 +108,10 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 					},
 					function(gameNum,callback){
 						//select 本期下注成功的注單
-						dbslave.query('SELECT bet002,bet005,bet014 FROM bet_g52 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
+						dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g52 where bet009 = ? and bet003 = ? and bet012 = ? and bet014 IN (?)  order by id',[gameID,0,gameZone,gameNumComb],function(data){
 							if(data.ErrorCode==0){
-								//開始結算 暫時不結算
-								
-								callback(null,gameNum);
-								/*diceBaoService.CalculateBet(dbmaster,dbslave,gameID,gameNum,data.rows,gameZone,function(data){
+								//開始結算 
+								diceBaoService.CalculateBet(dbmaster,dbslave,gameID,gameNum,sum,data.rows,gameZone,function(data){
 									if(data.ErrorCode==0){
 										callback(null,gameNum);
 										console.log('結算完成');
@@ -121,7 +119,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 										console.log('結算錯誤');
 										callback(data.ErrorCode,data.ErrorMessage);
 									}
-								});*/ 
+								});
 							}
 							});
 					},
@@ -144,7 +142,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 						console.log('結算完成'+results);
 					}
 				});
-				setTimeout(function(){ diceBaoInit.init(gameZone); }, 11000);
+				setTimeout(function(){ diceBaoInit.init(gameZone); }, 15000);
 			}, 5000);
 		}
 	}
