@@ -46,10 +46,6 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 				status='O';
 				redis.hset('GS:GAMESERVER:diceBao', "Status"+gameZone, 'O');
 				messageService.broadcast('connector','diceBaoStatus'+gameZone,{'status':status});
-				setTimeout(function(){ 
-					messageService.broadcast('connector','diceBaoStatus'+gameZone,{'status':'C'}); 
-					redis.hset('GS:GAMESERVER:diceBao', "Status"+gameZone, 'C');
-				}, 6000); //總計11秒
 				console.log("Timeout");
 				//clearTimeout(gameopx);
 				async.waterfall([
@@ -116,7 +112,6 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 						dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g52 where bet009 = ? and bet003 = ? and bet012 = ? and bet014 IN (?)  order by id',[gameID,0,gameZone,gameNumComb],function(data){
 							if(data.ErrorCode==0){
 								//開始結算 
-								//console.log(data);
 								diceBaoService.CalculateBet(dbmaster,dbslave,gameID,gameNum,sum,data.rows,gameZone,function(data){
 									if(data.ErrorCode==0){
 										callback(null,gameNum);
@@ -127,7 +122,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 									}
 								});
 							}
-						});
+							});
 					},
 					function(gameNum,callback){
 						//更新games gas012 已結算
@@ -148,7 +143,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 						console.log('結算完成'+results);
 					}
 				});
-				setTimeout(function(){ diceBaoInit.init(gameZone); }, 15000); //總計20秒後
+				setTimeout(function(){ diceBaoInit.init(gameZone); }, 15000);
 			}, 5000);
 		}
 	}

@@ -4,97 +4,96 @@ var pomelo = require('pomelo');
 var asyncLoop = require('node-async-loop');
 var logger = require('pomelo-logger').getLogger('Service-log',__filename);
 var serverIP='127.0.0.1';
-var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone,callback_Calculate)
 {
 	async.waterfall([
 		function(callback){
-			var winResult=new Array();
+			var winResult=[];
 			var item=0;
 			for(var i=0;i<opBet.length;i++){
 				switch(opBet[i].bet014){
-					case '8001':
-					case '8002':
-					case '8003':
-					case '8004':
-					case '8005':
-					case '8006'://三同骰單一
+					case 8001:
+					case 8002:
+					case 8003:
+					case 8004:
+					case 8005:
+					case 8006://三同骰單一
 						winResult[item]=opBet[i];
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=180;
 						item++;
 					break;
-					case '8007'://三同骰全骰
+					case 8007://三同骰全骰
 						winResult[item]=opBet[i];
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=31;
 						item++;
 					break;
-					case '8008':
-					case '8009':
-					case '8010':
-					case '8011':
-					case '8012':
-					case '8013'://二同骰
+					case 8008:
+					case 8009:
+					case 8010:
+					case 8011:
+					case 8012:
+					case 8013://二同骰
 						winResult[item]=opBet[i];
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=11;
 						item++;
 					break;
-					case '8014':
-					case '8015':
-					case '8016':
-					case '8017':
-					case '8018':
-					case '8019':
-					case '8020':
-					case '8021':
-					case '8022':
-					case '8023':
-					case '8024':
-					case '8025':
-					case '8026':
-					case '8027'://和值
+					case 8014:
+					case 8015:
+					case 8016:
+					case 8017:
+					case 8018:
+					case 8019:
+					case 8020:
+					case 8021:
+					case 8022:
+					case 8023:
+					case 8024:
+					case 8025:
+					case 8026:
+					case 8027://和值
 						winResult[item]=opBet[i];
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=multipleDecide_Sum(numSum);
 						item++;
 					break;
-					case '8028':
-					case '8029':
-					case '8030':
-					case '8031':
-					case '8032':
-					case '8033':
-					case '8034':
-					case '8035':
-					case '8036':
-					case '8037':
-					case '8038':
-					case '8039':
-					case '8040':
-					case '8041':
-					case '8042'://二不同骰
+					case 8028:
+					case 8029:
+					case 8030:
+					case 8031:
+					case 8032:
+					case 8033:
+					case 8034:
+					case 8035:
+					case 8036:
+					case 8037:
+					case 8038:
+					case 8039:
+					case 8040:
+					case 8041:
+					case 8042://二不同骰
 						winResult[item]=opBet[i];
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=6;
 						item++;
 					break;
-					case '8043':
-					case '8044':
-					case '8045':
-					case '8046':
-					case '8047':
-					case '8048'://單一骰
+					case 8043:
+					case 8044:
+					case 8045:
+					case 8046:
+					case 8047:
+					case 8048://單一骰
 						winResult[item]=opBet[i];
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=multipleDecide_Single(gameNum);
 						item++;
 					break;
-					case '8049':
-					case '8050':
-					case '8051':
-					case '8052'://大小單雙
+					case 8049:
+					case 8050:
+					case 8051:
+					case 8052://大小單雙
 					 	winResult[item]=opBet[i];
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=1;
@@ -114,9 +113,8 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 			});
 		},
 		function(winResult,callback){
-			console.log(winResult);
 			if(winResult.length!=0){
-				idWinMoneysResult(dbmaster,dbslave,winResult,gamesID,function(data){
+				idWinMoneysResult(dbmaster,dbslave,winResult,function(data){
 					if(data.ErrorCode==0);
 					callback(null,data.result);
 				});	
@@ -127,26 +125,27 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 	],
 		function(err,value){
 			//console.log("52idWinMoneysResultCallBack:");
-			console.log(value+':'+gameZone);
+			//console.log(value);
 			callback_Calculate({'ErrorCode': 0,'ErrorMessage': ''});
 		});
 }
 
-function idWinMoneysResult(dbmaster,dbslave,winResult,gamesID,callback_Win)
+function idWinMoneysResult(dbmaster,dbslave,winResult,callback_Win)
 	{
 		if(winResult.length==0){
 			callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':null});
 		}
+		var award =0;
 		// Get object key with: item.key 
 		// Get associated value with: item.value 
 		asyncLoop(winResult, function (item, next)
 		{
-			var award=(item.Val * item.multiple)+ Number(item.Val);
+			award=(item.Val * item.multiple)+ Number(item.Val);
 			//var tmp=[item.bet002,item.bet005];
 			async.waterfall([
 				//先更新注單並寫入中獎金額
 				function(callback){
-					var args=[1,1,award,1,0,item.bet002]
+					var args=[1,1,award,item.Val,0,item.bet002]
 					dbmaster.update('UPDATE bet_g52 SET betstate = ?, betwin = ?, bet032 = ?,bet033 = ? where bet003 = ? and bet002 = ?',args,function(data){
 		    			if(data.ErrorCode==0){
 		    				console.log("資料庫派獎betg52更新成功");
@@ -172,8 +171,8 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,gamesID,callback_Win)
 					struct_amount.params.mid = item.bet005;
 					struct_amount.params.money = award;
 					struct_amount.params.balance = memmoney;
-					struct_amount.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
-					struct_amount.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
+					struct_amount.params.created_at = formatDate()+" "+formatDateTime();
+					struct_amount.params.updated_at = formatDate()+" "+formatDateTime();
 					var lib_amount = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("amount_log",struct_amount);
 					lib_amount.Insert(function(id){
 						if(!!id){

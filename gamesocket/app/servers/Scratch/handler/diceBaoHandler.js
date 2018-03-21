@@ -60,7 +60,7 @@ handler.bet = function(msg,session,next){
 			}
 		},
 		function(err, results) { 
-			//console.log(results);
+			console.log(results);
 		});
 	var count = 0;
 	async.whilst(
@@ -108,7 +108,7 @@ handler.bet = function(msg,session,next){
 				},
 				B: function(callback_B){
 					//betkey=gid+session.uid+new Date().getTime();
-					if(count>=10){
+					if(count>10){
 						bet2=betkey+'00'+count;
 					}else{
 						bet2=betkey+'000'+count;
