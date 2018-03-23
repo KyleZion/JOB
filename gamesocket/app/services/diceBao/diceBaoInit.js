@@ -45,7 +45,7 @@ exp.init = function (gameZone) {
 }
 
 var gameMade = function(dbmaster,dbslave,redis,gameZone){
-	
+	//var OG = new (require(pomelo.app.getBase()+'/app/lib/lib_OpenGame.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,messageService,GameName,GameShowName,GameID,GameZone);
 	var gameID = 0;
 	var Period='';
 	var endtime='';

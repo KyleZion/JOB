@@ -33,8 +33,8 @@ exp.init = function (gameZone) {
 						}
 					});*/
 				//開盤
-				console.log(data.rows);
-				GM.Made(25,function(insertID,10,30,endTime){
+				//console.log(data.rows);
+				GM.Made(25,function(insertID,endTime){
 					/*console.log(insertID);
 					console.log(endTime);*/
 					messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});

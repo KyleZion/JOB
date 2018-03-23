@@ -148,9 +148,6 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,opBet,gameZone,bonusR
 
 function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,Odds,callback_Win)
 {
-	/*if(winResult.length==0){
-		callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':null});
-	}*/
 	var award =0;
 	asyncLoop(winResult, function (item, next)
 	{

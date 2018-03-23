@@ -9,36 +9,42 @@ var Handler = function(app) {
 };
 //===固定==============================================================
 var handler = Handler.prototype;
-const redis=pomelo.app.get('redis');
-const dbmaster=pomelo.app.get('dbmaster');
-const dbslave=pomelo.app.get('dbslave');
-const async=require('async');
-const md5 = require('md5');
-const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
-const sessionService = pomelo.app.get('sessionService');
-const GameName = 'diceBao'
-const CasinoId = 52;
-const gid='052';
-const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
+var redis=pomelo.app.get('redis');
+var dbmaster=pomelo.app.get('dbmaster');
+var dbslave=pomelo.app.get('dbslave');
+var async=require('async');
+var md5 = require('md5');
+var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
+var sessionService = pomelo.app.get('sessionService');
+const casinoId='053';
+const 
+//var channel = pomelo.app.get('channelService').getChannel('connect',false);
+var gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
 const lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入amount_log,回傳amount_log Index ID
 const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
-const tableHandler = new(require(pomelo.app.getBase()+'/app/lib/lib_TableHandler.js'))(pomelo,async,redis,dbslave,dbmaster,messageService,GameName,CasinoId);
-const code = require(pomelo.app.getBase()+'/app/consts/code.js');
+const HAN = new(require(pomelo.app.getBase()+'/app/lib/lib_Handler.js'))();
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
 	var betData = (JSON.stringify(JSON.parse(msg.bet).bets).slice(1,-1)).split(','); //將C2傳來的下注內容string轉JSON
+	//betData=tmp.split(','); //取JSON data
 	var gameID=JSON.parse(msg.bet).GamesID;
 	var channelID = JSON.parse(msg.bet).channelID
 	var betPlay = new Array();
+	//var betValue =new Array();
 	var amount = 0//下注金額
 	var betkey=''; 
 	var bet2='';
+	var b015 = 0;
+	//var odds = 1;
 	var trans_no='';
+	var betDataCheck=false;
+	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	var logId = 0;
 	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
 	var afterBetMoney = 0;
-	/*async.series({
+	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
+	async.series({
 			A: function(callback_A){
 				//odds=getOdds(channelID); //骰寶移除賠率
 				callback_A(null,0)
@@ -48,7 +54,7 @@ handler.bet = function(msg,session,next){
 					if(betData[i].split(':')[1]!=0){
 						//amount= amount+betData[i]; //計算下注總金額
 						//betPlay.push(Number((betData[i].split(':')[0]).replace(/\"/g, "")));
-						//b015 +=1 ;
+						b015 +=1 ;
 						//betValue[i]=betData[i];
 					}
 				}
@@ -56,8 +62,8 @@ handler.bet = function(msg,session,next){
 			}
 		},
 		function(err, results) { 
-			//console.log(results);
-	});*/
+			console.log(results);
+		});
 	var count = 0;
 	async.whilst(
 		function() //test function: while test is true
@@ -104,7 +110,7 @@ handler.bet = function(msg,session,next){
 				},
 				B: function(callback_B){
 					//betkey=gid+session.uid+new Date().getTime();
-					if(count>=10){
+					if(count>10){
 						bet2=betkey+'00'+count;
 					}else{
 						bet2=betkey+'000'+count;
@@ -245,7 +251,7 @@ handler.bet = function(msg,session,next){
 			});
 		},
 		function (err, n){
-			//console.log("結束count:"+n);
+			console.log("結束count:"+n);
 			if(!err)
 			{
 				redis.hset('GS:USER:'+session.uid, "ALIVE_TIME",PUB.formatDate()+" "+PUB.formatDateTime());
@@ -259,65 +265,201 @@ handler.bet = function(msg,session,next){
 }
 
 handler.GetGameID =function(msg,session,next){
-	tableHandler.GetGameID(GameName,msg.cid,function (data) {
-		if(data.ErrorCode==code.OK){
-			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','res':data.ID});
+	redis.hget('GS:GAMESERVER:diceBao', "GameID"+msg.cid, function (err, res) {
+		if(err){
+			next(new Error('redis error'),500);
 		}else{
-			next(new Error(data.ErrorMessage),data.ErrorCode);
+			if(res==null){
+				async.waterfall([
+					function(cb) {
+						gameDao.getGameId(52,msg.cid,cb);
+					}
+				], 
+					function(err,resDao) {
+						if(err) {
+							next(new Error('SQL error'),500);
+						}else{
+							next(null,{'ErrorCode':0,'ErrorMessage':'','ID':resDao});
+						}
+					}
+				);
+			}else{ //success
+				next(null,{'ErrorCode':0,'ErrorMessage':'','ID':res});
+			}
 		}
 	});
 }
 
 handler.GetGameSet =function(msg,session,next){
-	tableHandler.GetGameSet(GameName,msg.cid,function (data) {
-		if(data.ErrorCode==code.OK){
-			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','res':data.GameSet});
-		}else{
-			next(new Error(data.ErrorMessage),data.ErrorCode);
-		}
-	});
+	HAN.GetGameSet()
 }
 
 handler.GetMoney =function(msg,session,next){
-	tableHandler.GetUserMoneyMaster(session.uid,function (data) {
-		if(data.ErrorCode==code.OK){
-			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','res':data.Money});
-		}else{
-			next(new Error(data.ErrorMessage),data.ErrorCode);
+	async.waterfall([
+		function(cb) {
+			gameDao.getMoney(session.uid, cb);
 		}
-	});
+	], 
+		function(err,resDao) {
+			if(err) {
+				next(new Error('SQL error'),500);
+			}else{
+				next(null,{'ErrorCode':0,'ErrorMessage':'','Money':resDao});
+			}
+		}
+	);
 }
 
 handler.GetTimeZone = function(msg,session,next){
-	tableHandler.GetTimeZone(GameName,msg.cid,function (data) {
-		if(data.ErrorCode==code.OK){
-			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','res':data.TimeZone});
+	var nowtime = PUB.formatDate()+" "+PUB.formatDateTime();
+	redis.hget('GS:GAMESERVER:diceBao', "endTime"+msg.cid, function (err, res) {
+		if(err){
+			next(new Error('redis error'),500);
 		}else{
-			next(new Error(data.ErrorMessage),data.ErrorCode);
+			if(res==null){
+				async.waterfall([
+					function(cb) {
+						gameDao.getTimezone(nowtime,msg.cid,cb);
+					}
+				], 
+					function(err,resDao) {
+						if(err) {
+							next(new Error('SQL error'),500);
+						}else{
+							next(null,{'ErrorCode':0,'ErrorMessage':'','TimeZone':resDao});
+						}
+					}
+				);
+			}else{
+				var endtime = res;
+				var timezone = (Date.parse(endtime)-Date.parse(nowtime))/1000;
+				next(null,{'ErrorCode':0,'ErrorMessage':'','TimeZone':timezone});
+			}
 		}
 	});
 }
 
 handler.GetHistory = function(msg,session,next){ 
-	tableHandler.GetHistory(GameName,msg.cid,count,function (data) {
-		if(data.ErrorCode==code.OK){
-			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','res':data.History});
-		}else{
-			next(new Error(data.ErrorMessage),data.ErrorCode);
-		}
-	});
+	switch(msg.count){
+		case 20:
+			redis.hget('GS:GAMESERVER:diceBao', "gameHistory"+msg.cid, function (err, res) {
+				if(err){
+					next(new Error('redis error'),500);
+				}else{
+					if(res==null){
+
+						async.waterfall([
+							function(cb) {
+								gameDao.getHistory(msg.count,cb);
+							}
+						], 
+							function(err,resDao) {
+								if(err) {
+									next(new Error('SQL error'),500);
+								}else{
+									var history = resDao.split("|");
+									next(null,{'ErrorCode':0,'ErrorMessage':'','History':history});
+								}
+							}
+						);
+					}else{ //success
+						var history = res.split("|");
+						next(null,{'ErrorCode':0,'ErrorMessage':'','History':history});
+					}
+				}
+			});
+			break;
+		case 10:
+			redis.hgetall('GS:GAMESERVER:diceBao', function (err, res) {
+				if(err){
+					next(new Error('redis error'),500);
+				}else{
+					if(res==null){
+						async.waterfall([
+							function(cb) {
+								gameDao.getHistory(msg.count,cb);
+							}
+						], 
+							function(err,resDao) {
+								if(err) {
+									next(new Error('SQL error'),500);
+								}else{
+									next(null,{'ErrorCode':0,'ErrorMessage':'','History':resDao});
+								}
+							}
+						);
+					}else{ //success
+						var record = new Array();
+						record[0] = res.lobbyHistory111;
+						record[1] = res.lobbyHistory222;
+						record[2] = res.lobbyHistory333;
+						console.log(record);
+						next(null,{'ErrorCode':0,'ErrorMessage':'','History':record});
+					}
+				}
+			});
+			break;
+		default:
+			next(null,{'ErrorCode':0,'ErrorMessage':'','History':'000'});
+	}
 }
 
 handler.GetStatus = function(msg,session,next){  //Redis
-	tableHandler.GetStatus(GameName,msg.cid,count,function (data) {
-		if(data.ErrorCode==code.OK){
-			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','res':data.GetStatus});
-		}else{
-			next(new Error(data.ErrorMessage),data.ErrorCode);
-		}
-	});
+	if(msg.cid==0){ 
+		redis.hgetall('GS:GAMESERVER:diceBao', function (err, res) {
+				if(err){
+					next(new Error('redis error'),500);
+				}else{
+					if(res==null){
+						async.waterfall([
+							function(cb) {
+								gameDao.getStatus(0,cb);
+							}
+						], 
+							function(err,resDao) {
+								if(err) {
+									next(new Error('SQL error'),500);
+								}else{
+									next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':resDao});
+								}
+							}
+						);
+					}else{ //success
+						var record = new Array();
+						record[0] = res.Status111;
+						record[1] = res.Status222;
+						record[2] = res.Status333;
+						next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':record});
+					}
+				}
+		});
+	}else{
+		redis.hget('GS:GAMESERVER:diceBao', "Status"+msg.cid, function (err, res) {
+			if(err){
+				next(new Error('redis error'),500);
+			}else{
+				if(res==null){
+					async.waterfall([
+						function(cb) {
+							gameDao.getStatus(msg.cid,cb);
+						}
+					], 
+						function(err,resDao) {
+							if(err) {
+								next(new Error('SQL error'),500);
+							}else{
+								next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':resDao});
+							}
+						}
+					);
+				}else{ //success
+					next(null,{'ErrorCode':0,'ErrorMessage':'','GetStatus':res});
+				}
+			}
+		});
+	}
 }
-/*handler.GetBetTotal = function(msg,session,next){ //Redis
+handler.GetBetTotal = function(msg,session,next){ //Redis
 	var NowBetTotal=[0,0,0,0,0,0,0];
 
 	async.waterfall([
@@ -336,7 +478,34 @@ handler.GetStatus = function(msg,session,next){  //Redis
 			}
 		}
 	);
-}*/
+}
+
+handler.GetGameSet =function(msg,session,next){
+	redis.hget('GS:GAMESERVER:diceBao', "GameSet"+msg.ChannelID, function (err, res) {
+		if(err){
+			next(new Error('redis error'),500);
+		}else{
+			if(res==null){
+				async.waterfall([
+					function(cb) {
+						gameDao.getGameSet(51,msg.ChannelID,cb);
+					}
+				], 
+					function(err,resDao) {
+						if(err) {
+							next(new Error('SQL error'),500);
+						}else{
+							var GameSet = resDao.substring(8)
+							next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':GameSet});
+						}
+					}
+				);
+			}else{ //success
+				next(null,{'ErrorCode':0,'ErrorMessage':'','GameSet':res});
+			}
+		}
+	});
+}
 
 handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);
@@ -347,7 +516,8 @@ handler.AddtoChannel = function(msg,session,next){
 }
 
 handler.LeaveChannel = function(msg,session,next){
-	if(msg.ChannelID==0){
+	if(msg.ChannelID==0)
+	{
 		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','limit':0});
 	}
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  false);
@@ -366,7 +536,8 @@ handler.GameResult = function(msg,session,next){
 }
 
 handler.GameRestrict = function(msg,session,next){
-	if(msg.ChannelID==0){
+	if(msg.ChannelID==0)
+	{
 		next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','limit':["100-50000","50-10000","10-1000"]});
 	}
 	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','limit':getBetRestrict(channelID)});

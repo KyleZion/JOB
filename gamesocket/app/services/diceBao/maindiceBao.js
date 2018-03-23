@@ -364,11 +364,11 @@ async function transGameNum(gameNum,numSum)
 	    gameNumCombo[c]='8050';
 	    c++;
 	}
-	if(gameNum[4]==1){
+	if(gameNum[4]==1 && gameNum[3]!=0){
 	    gameNumCombo[c]='8051';
 	    c++;
 	}
-	if(gameNum[4]==0){
+	if(gameNum[4]==0 && gameNum[3]!=0){
 	    gameNumCombo[c]='8052';
 	    c++;
 	}

@@ -139,7 +139,7 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 			}
 		});
 	}
-	this.GetUserMoneyMsater = function(callback,mid,shiftMoney){
+	this.UpdateUserMoneyMaster = function(callback,mid,shiftMoney){
 		dbmaster.update('UPDATE users SET mem100 = mem100 + ? where mid = ?',[shiftMoney,mid],function(data){  //egame
 	 		if(data.ErrorCode==0){
 	 			callback(true);
