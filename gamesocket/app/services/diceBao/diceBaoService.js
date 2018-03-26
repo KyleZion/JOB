@@ -105,7 +105,7 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 			callback(null,winResult);
 		},
 			function(winResult,callback){
-			console.log("開獎完畢:"+gamesID)
+			console.log("開獎完畢:"+gamesID);
 			dbmaster.update('UPDATE bet_g52 SET betstate=1 where bet009 = ? and bet003 = ? ',[gamesID,0],function(data){
 				if(data.ErrorCode==0){
 					console.log("52開獎完畢進入派獎");
@@ -146,8 +146,8 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,gamesID,callback_Win)
 			async.waterfall([
 				//先更新注單並寫入中獎金額
 				function(callback){
-					var args=[1,1,award,1,0,item.bet002]
-					dbmaster.update('UPDATE bet_g52 SET betstate = ?, betwin = ?, bet032 = ?,bet033 = ? where bet003 = ? and bet002 = ?',args,function(data){
+					var args=[1,1,item.multiple,award,1,0,item.bet002]
+					dbmaster.update('UPDATE bet_g52 SET betstate = ?, betwin = ?, bet018 = ?,bet032 = ?,bet033 = ? where bet003 = ? and bet002 = ?',args,function(data){
 		    			if(data.ErrorCode==0){
 		    				console.log("資料庫派獎betg52更新成功");
 		    				callback(null,award);

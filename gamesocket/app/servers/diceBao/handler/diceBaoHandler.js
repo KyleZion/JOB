@@ -8,7 +8,7 @@ var Handler = function(app) {
   this.app = app;
 };
 //===固定==============================================================
-var handler = Handler.prototype;
+const handler = Handler.prototype;
 const redis=pomelo.app.get('redis');
 const dbmaster=pomelo.app.get('dbmaster');
 const dbslave=pomelo.app.get('dbslave');
