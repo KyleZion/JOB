@@ -25,7 +25,7 @@ Cron.prototype.CheckLogin = function () {
             }*/
             console.log("Unlogin : "+seconds);
             //GPB.ShowLog(1,"Unlogin : "+seconds);
-            if(seconds>30){
+            if(seconds>30 || isNaN(seconds)){
                 Close(session);
                 console.log("Unlogin : x");
                 //GPB.ShowLog(1,"Unlogin : x");

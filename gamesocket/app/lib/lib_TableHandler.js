@@ -50,7 +50,6 @@ module.exports = function lib_TableHandler(pomelo,async,redis,dbslave,dbmaster,m
 						}
 					);
 				}else{ //success
-					console.log('aaa');
 					callback({'ErrorCode':code.OK,'ErrorMessage':'','ID':res});
 				}
 			}
@@ -88,7 +87,7 @@ module.exports = function lib_TableHandler(pomelo,async,redis,dbslave,dbmaster,m
 				}else{
 					var endtime = res;
 					var timezone = (Date.parse(endtime)-Date.parse(nowtime))/1000;
-					next({'ErrorCode':code.OK,'ErrorMessage':'','TimeZone':timezone});
+					callback({'ErrorCode':code.OK,'ErrorMessage':'','TimeZone':timezone});
 				}
 			}
 		});
