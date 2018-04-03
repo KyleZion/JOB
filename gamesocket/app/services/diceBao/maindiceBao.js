@@ -11,6 +11,8 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 	var EndTime = Date.parse(endtime);//Date.parse(data.rows[0].endtime);
 	var gameNumComb;
 	var sum = 0;
+	var twoSameCount = 0 ;
+	var threeSameCount = 0;
 	function DiceBaoMain() 
 	{
 		var NowTime  = Date.parse(new Date());
@@ -55,9 +57,12 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 				async.waterfall([
 					function(callback) {
 						var gameNum = [];
-						gameNum[0] = Math.floor((Math.random() * 6) + 1);
+						gameNum[0] = 1;
+						gameNum[1] = 3;
+						gameNum[2] = 5;
+						/*gameNum[0] = Math.floor((Math.random() * 6) + 1);
 						gameNum[1] = Math.floor((Math.random() * 6) + 1);
-						gameNum[2] = Math.floor((Math.random() * 6) + 1);
+						gameNum[2] = Math.floor((Math.random() * 6) + 1);*/
 						var tmp=0;
 						for(var i=0;i<gameNum.length;i++){
 							for(var j=i+1;j<gameNum.length;j++){
@@ -89,7 +94,9 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 							gameNum[4] = 1;
 
 						transGameNum(gameNum,sum).then(data =>{
-							gameNumComb = data;
+							gameNumComb = data[0];
+							threeSameCount = data[1];
+							twoSameCount = data[2];
 							callback(null,gameNum);//將gameNum傳到第二層
 						}).catch(error =>{
 							callback(1,error);//將gameNum傳到第二層
@@ -113,11 +120,11 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 					},
 					function(gameNum,callback){
 						//select 本期下注成功的注單
-						dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g52 where bet009 = ? and bet003 = ? and bet012 = ? and bet014 IN (?)  order by id',[gameID,0,gameZone,gameNumComb],function(data){
+						dbslave.query('SELECT betkey,bet002,bet005,bet014,bet017 FROM bet_g52 where bet009 = ? and bet003 = ? and bet012 = ? and bet014 IN (?)  order by id',[gameID,0,gameZone,gameNumComb],function(data){
 							if(data.ErrorCode==0){
 								//開始結算 
 								//console.log(data);
-								diceBaoService.CalculateBet(dbmaster,dbslave,gameID,gameNum,sum,data.rows,gameZone,function(data){
+								diceBaoService.CalculateBet(dbmaster,dbslave,gameID,gameNum,sum,data.rows,gameZone,twoSameCount,threeSameCount,function(data){
 									if(data.ErrorCode==0){
 										callback(null,gameNum);
 										console.log('結算完成');
@@ -159,29 +166,37 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 async function transGameNum(gameNum,numSum)
 {
 	var gameNumCombo = new Array();
+	let threeSameCount = 0;
+	let twoSameCount = 0;
 	var c=0;
 	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==1)){
 	    gameNumCombo[c]='8001';
+	    threeSameCount = 1;
 	    c++;
   	}
 	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==2)){
 	    gameNumCombo[c]='8002';
+	    threeSameCount = 2;
 	    c++;
 	}
 	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==3)){
 	    gameNumCombo[c]='8003';
+	    threeSameCount = 3;
 	    c++;
 	}
 	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==4)){
 	    gameNumCombo[c]='8004';
+	    threeSameCount = 4;
 	    c++;
 	}
 	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==5)){
 	    gameNumCombo[c]='8005';
+	    threeSameCount = 5;
 	    c++;
 	}
 	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==6)){
 	    gameNumCombo[c]='8006';
+	    threeSameCount = 6;
 	    c++;
 	}
 	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])){
@@ -190,26 +205,32 @@ async function transGameNum(gameNum,numSum)
 	}
 	if((gameNum[0]==1 && gameNum[1]==1) || (gameNum[1]==1 && gameNum[2]==1)){
 	    gameNumCombo[c]='8008';
+	    twoSameCount = 1;
 	    c++;
 	}
 	if((gameNum[0]==2 && gameNum[1]==2) || (gameNum[1]==2 && gameNum[2]==2)){
 	    gameNumCombo[c]='8009';
+	    twoSameCount = 2;
 	    c++;
 	}
 	if((gameNum[0]==3 && gameNum[1]==3) || (gameNum[1]==3 && gameNum[2]==3)){
 	    gameNumCombo[c]='8010';
+	    twoSameCount = 3;
 	    c++;
 	}
 	if((gameNum[0]==4 && gameNum[1]==4) || (gameNum[1]==4 && gameNum[2]==4)){
 	    gameNumCombo[c]='8011';
+	    twoSameCount = 4;
 	    c++;
 	}
 	if((gameNum[0]==5 && gameNum[1]==5) || (gameNum[1]==5 && gameNum[2]==5)){
 	    gameNumCombo[c]='8012';
+	    twoSameCount = 5;
 	    c++;
 	}
 	if((gameNum[0]==6 && gameNum[1]==6) || (gameNum[1]==6 && gameNum[2]==6)){
 	    gameNumCombo[c]='8013';
+	    twoSameCount = 6;
 	    c++;
 	}
 	if(numSum==4){
@@ -372,5 +393,5 @@ async function transGameNum(gameNum,numSum)
 	    gameNumCombo[c]='8052';
 	    c++;
 	}
-	return gameNumCombo;
+	return [gameNumCombo,threeSameCount,twoSameCount];
 }

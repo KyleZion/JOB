@@ -44,19 +44,10 @@
             console.log(data);
          });  
       }
-      function KickMember(){
-        var uid= $("#uid").val();
-          pomelo.request('m.m.K', {'uid':uid,'cmdType':0,'serverType':'FW'},function(data){
+      function check(){
+          pomelo.request('m.m.S', {'Servertype':'transfer' },function(data){
             console.log(data);
          });  
-      }
-      function GetMembers(){
-        pomelo.request('m.m.G', '',function(data){
-            console.log(data);
-        });
-        /*pomelo.request("c.e.o",'', function(data) {
-           console.log(data);
-          });*/
       }
 
     </script>
@@ -76,8 +67,8 @@
       </div>
       <div class="g-link">
         <span>uid: </span><input id="uid" type="text" size="10" value="62748" />
-        <span>db4CStoken: </span><input id="token" type="text" size="30" value="050de918c16e3e36c8cc948c99a6a589"/>
-        <!-- <span>db3CStoken: </span><input id="token" type="text" size="30" value="1c7096d71170891ea2eb4d91623af20c" /> -->
+        <!-- <span>db4CStoken: </span><input id="token" type="text" size="30" value="050de918c16e3e36c8cc948c99a6a589"/> -->
+        <span>db3CStoken: </span><input id="token" type="text" size="30" value="36904e974424324f98a1ccf01e7db0fa" />
       </div>
       <br><br>
       <div class="g-button">
@@ -89,11 +80,7 @@
       </div>
       <br><br>
       <div class="g-button">
-        <input id="getMembers" type="button" value="getMembers Server" onclick="GetMembers()"/>
-      </div>
-      <br><br>
-      <div class="g-button">
-        <input id="KickMember" type="button" value="KickMember Server" onclick="KickMember()"/>
+        <input id="check" type="button" value="check Server" onclick="check()"/>
       </div>
       <br><br>
     </div>

@@ -5,12 +5,14 @@ var asyncLoop = require('node-async-loop');
 var logger = require('pomelo-logger').getLogger('Service-log',__filename);
 var serverIP='127.0.0.1';
 var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
-exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone,callback_Calculate)
+var amountlogInsertId = new Array();
+exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone,twoSameCount,threeSameCount,callback_Calculate)
 {
 	async.waterfall([
 		function(callback){
-			var winResult=new Array();
-			var item=0;
+			var winResult = new Array();
+			var item = 0;
+			var insertCount = 0;
 			for(var i=0;i<opBet.length;i++){
 				switch(opBet[i].bet014){
 					case '8001':
@@ -23,13 +25,13 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=180;
 						item++;
-					break;
+						break;
 					case '8007'://三同骰全骰
 						winResult[item]=opBet[i];
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=31;
 						item++;
-					break;
+						break;
 					case '8008':
 					case '8009':
 					case '8010':
@@ -40,7 +42,7 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=11;
 						item++;
-					break;
+						break;
 					case '8014':
 					case '8015':
 					case '8016':
@@ -59,7 +61,7 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=multipleDecide_Sum(numSum);
 						item++;
-					break;
+						break;
 					case '8028':
 					case '8029':
 					case '8030':
@@ -79,18 +81,100 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=6;
 						item++;
-					break;
-					case '8043':
-					case '8044':
-					case '8045':
-					case '8046':
-					case '8047':
-					case '8048'://單一骰
+						break;
+					case '8043'://單一骰 VIC 20170402 市場回報修正單骰下注賠率問題
 						winResult[item]=opBet[i];
 						winResult[item].Val=opBet[i].bet017;
-						winResult[item].multiple=multipleDecide_Single(gameNum);
+						if(threeSameCount==1){
+							winResult[item].multiple=3;
+						}else if(twoSameCount==1){
+							winResult[item].multiple=2;
+						}else{
+							winResult[item].multiple=1;
+						}
+						if(amountlogInsertId.indexOf(opBet[i].bet005)==-1){
+							amountlogInsertId[insertCount]={};
+							amountlogInsertId[insertCount].id=opBet[i].bet005;
+							amountlogInsertId[insertCount].val=opBet[i].bet005;
+							insertCount++
+						}else{
+							amountlogInsertId[insertCount].val=opBet[i].bet005;
+						}
 						item++;
-					break;
+						break;
+					case '8044':
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						if(threeSameCount==2){
+							winResult[item].multiple=3;
+						}else if(twoSameCount==2){
+							winResult[item].multiple=2;
+						}else{
+							winResult[item].multiple=1;
+						}
+						item++;
+						break;
+					case '8045':
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						if(threeSameCount==3){
+							winResult[item].multiple=3;
+						}else if(twoSameCount==3){
+							winResult[item].multiple=2;
+						}else{
+							winResult[item].multiple=1;
+						}
+						if(amountlogInsertId.indexOf(opBet[i].bet005)==-1){
+							amountlogInsertId[insertCount]={};
+							amountlogInsertId[insertCount].id=opBet[i].bet005;
+							insertCount++
+						}else{
+							//amountlogInsertId[insertCount].val=opBet[i].bet005
+						}
+						item++;
+						break;
+					case '8046':
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						if(threeSameCount==4){
+							winResult[item].multiple=3;
+						}else if(twoSameCount==4){
+							winResult[item].multiple=2;
+						}else{
+							winResult[item].multiple=1;
+						}
+						item++;
+						break;
+					case '8047':
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						if(threeSameCount==5){
+							winResult[item].multiple=3;
+						}else if(twoSameCount==5){
+							winResult[item].multiple=2;
+						}else{
+							winResult[item].multiple=1;
+						}
+						if(amountlogInsertId.indexOf(opBet[i].bet005)==-1){
+							amountlogInsertId[insertCount]={opBet[i].bet005};
+							insertCount++
+						}else{
+							//amountlogInsertId[insertCount].val=opBet[i].bet005
+						}
+						item++;
+						break;
+					case '8048':
+						winResult[item]=opBet[i];
+						winResult[item].Val=opBet[i].bet017;
+						if(threeSameCount==6){
+							winResult[item].multiple=3;
+						}else if(twoSameCount==6){
+							winResult[item].multiple=2;
+						}else{
+							winResult[item].multiple=1;
+						}
+						item++;
+						break;
 					case '8049':
 					case '8050':
 					case '8051':
@@ -99,9 +183,9 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 						winResult[item].Val=opBet[i].bet017;
 						winResult[item].multiple=1;
 						item++;
-					break;
+						break;
 				}
-			}			
+			}
 			callback(null,winResult);
 		},
 			function(winResult,callback){
@@ -114,9 +198,9 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 			});
 		},
 		function(winResult,callback){
-			console.log(winResult);
+			//var res = winResult.filter(win => );
 			if(winResult.length!=0){
-				idWinMoneysResult(dbmaster,dbslave,winResult,gamesID,function(data){
+				idWinMoneysResult(dbmaster,dbslave,winResult,gamesID,amountlogInsertId,function(data){
 					if(data.ErrorCode==0);
 					callback(null,data.result);
 				});	
@@ -132,13 +216,15 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 		});
 }
 
-function idWinMoneysResult(dbmaster,dbslave,winResult,gamesID,callback_Win)
+function idWinMoneysResult(dbmaster,dbslave,winResult,gamesID,amountlogInsertId,callback_Win)
 	{
 		if(winResult.length==0){
 			callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':null});
 		}
 		// Get object key with: item.key 
 		// Get associated value with: item.value 
+		console.log(winResult);
+		console.log(amountlogInsertId);
 		asyncLoop(winResult, function (item, next)
 		{
 			var award=(item.Val * item.multiple)+ Number(item.Val);
@@ -201,12 +287,32 @@ function idWinMoneysResult(dbmaster,dbslave,winResult,gamesID,callback_Win)
 				if(err){
 					callback_Win(1,err);
 				}
-
 			});
-
 		    next();
 		}, function ()
 		{
+			/*var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
+			struct_amount.params.type = 4;
+			struct_amount.params.game_id = '52';
+			struct_amount.params.game_name = gamesID;
+			struct_amount.params.transfer_no = item.bet002;
+			struct_amount.params.mid = item.bet005;
+			struct_amount.params.money = award;
+			struct_amount.params.balance = memmoney;
+			struct_amount.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
+			struct_amount.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
+			var lib_amount = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("amount_log",struct_amount);
+			lib_amount.Insert(function(id){
+				if(!!id){
+					//amountlogid = id;
+			    	//console.log('insert amount_log_new success');
+			      	callback(null,award);
+				}else{
+					//console.log('insert amount_log_ fail');
+			      	callback(502,'insert amount_log_ fail');
+				}
+		    	
+		    });*/
 			callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':200});
 		});
 	}

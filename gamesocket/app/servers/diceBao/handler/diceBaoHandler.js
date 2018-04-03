@@ -72,7 +72,7 @@ handler.bet = function(msg,session,next){
 							struct_bet.params.bet017 = betPlay[1];
 							struct_bet.params.bet018 = 0;
 							struct_bet.params.bet034 =md5(md5str);
-							struct_bet.params.bydate =PUB.formatDate()
+							struct_bet.params.bydate =PUB.formatDate();
 							struct_bet.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
 							struct_bet.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
 							callback_AA(null,0);
@@ -154,7 +154,7 @@ handler.bet = function(msg,session,next){
 			struct_amount.params.game_name = gameID;
 			struct_amount.params.mid = session.uid;
 		    //mid,金額,amountlogSQL
-		    console.log(betTotal);
+		    //console.log(betTotal);
 			lib_games.DeductMoney(session.uid,betTotal,struct_amount,function(result)
 			{
 			  switch(result)
@@ -260,6 +260,7 @@ handler.bet = function(msg,session,next){
 }
 
 handler.GetGameID =function(msg,session,next){
+	console.log(msg);
 	tableHandler.GetGameID(GameName,msg.cid,function (data) {
 		if(data.ErrorCode==code.OK){
 			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','res':data.ID});

@@ -34,7 +34,7 @@
           log: true
         }, function() {
         pomelo.request("c.e.C", '', function(data) {
-            console.log(data)
+            console.log(data);
           });
         });
       }
@@ -45,7 +45,7 @@
       }
       function bet(){
         var gameID=$("#gameID").val();
-        pomelo.request("d.d.B", {bet:'{"channelID":105,"GamesID":'+gameID+',"total":1000,"bets":{"8034":100,"8036":100,"8037":100}}'}, function(data) {
+        pomelo.request("d.d.B", {'bet':'{"channelID":333,"GamesID":'+gameID+',"total":300,"bets":{"8043":10,"8045":1000,"8047":50}}'}, function(data) {
           console.log(data);
         });
       }
@@ -53,13 +53,25 @@
         var token= $("#token").val();
           pomelo.request('c.e.M', {'Token': token , 'GameType':'diceBao'},function(data){
             console.log(data);
-         });  
+         });
       }
       function GETID(){
-          pomelo.request("d.d.I",{'cid':105},function(gid){
+          pomelo.request("d.d.I",{'cid':333},function(gid){
             console.log(gid);
-            $("#gameID").val(gid['ID']);
-         });  
+            $("#gameID").val(gid['res']);
+         });
+      }
+      function ENTER(){
+          pomelo.request("d.d.A",{'ChannelID':111},function(gid){
+            console.log(gid);
+            //$("#gameID").val(gid['ID']);
+         });
+      }
+      function show(){
+          pomelo.request("d.d.H",{'ChannelID':111},function(gid){
+            console.log(gid);
+            //$("#gameID").val(gid['ID']);
+         });
       }
     </script>
  
@@ -92,11 +104,17 @@
       <div class="g-button">
         <input id="test_server" type="button" value="GET下注資料" onclick="GETID()"/>
       </div>
+      <br><br>
       <div class="g-button">
         <input id="test_server" type="button" value="下注" onclick="bet()"/>
       </div>
+      <br><br>
       <div class="g-button">
-        <input id="test_a" type="button" value="aaaaaa" onclick="test()"/>
+        <input id="test_a" type="button" value="aaaaaa" onclick="show()"/>
+      </div>
+      <br><br>
+      <div class="g-button">
+        <input id="enter" type="button" value="ENTER Server" onclick="ENTER()"/>
       </div>
     </div>
   </body>

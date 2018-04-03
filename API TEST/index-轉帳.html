@@ -23,11 +23,11 @@
     });
 
       var pomelo = window.pomelo;
-      //
-      var host = "127.0.0.1";
+      //var host = "127.0.0.1";
       //
       var port = "3010";
-      //var host = "60.244.116.180";
+      //
+      var host = "60.244.116.180";
       function connector() {
         pomelo.init({
           host: host,
@@ -46,7 +46,7 @@
       }
       function transfer(){
         var amount=$("#amount").val();
-        pomelo.request("m.m.T", {'amount': amount}, function(data) {
+        pomelo.request("t.t.T", {'amount': amount}, function(data) {
           console.log(data);
         });
       }

@@ -6,7 +6,6 @@ var gameDao = module.exports;
 
 gameDao.getGameId = function(CasinoId,cid,cb){
 	dbslave = pomelo.app.get('dbslave');
-	console.log(cid);
 	var sql = 'SELECT id from games_'+CasinoId+' where gas004 = ? and gas009 = ? order by id desc limit 1';
 	var args = [cid,0];
 	dbslave.query(sql,args,function(res) {
