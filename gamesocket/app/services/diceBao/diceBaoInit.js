@@ -1,29 +1,21 @@
-var pomelo = require('pomelo');
-var async = require('async');
-var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
-var exp = module.exports;
-var maindiceBao = require('./maindiceBao.js');
-
-Date.prototype.addSeconds = function(s){
-	this.setSeconds(this.getSeconds()+s);
-	return this;
-}
+const pomelo = require('pomelo');
+const async = require('async');
+const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
+const exp = module.exports;
+const maindiceBao = require('./maindiceBao.js');
 
 exp.init = function (gameZone) {
-	var dbslave =pomelo.app.get('dbslave');
-	var dbmaster =pomelo.app.get('dbmaster');
-	var redis =pomelo.app.get('redis');
+	const dbslave =pomelo.app.get('dbslave');
+	const dbmaster =pomelo.app.get('dbmaster');
+	const redis =pomelo.app.get('redis');
 	//先開盤
-	gameMade(dbmaster,dbslave,redis,gameZone);
+	const lib_TI = require(pomelo.app.getBase()+'/app/lib/lib_TableInit.js');
+	const TI = new lib_TI(pomelo,pomelo.app,async,redis,dbslave,dbmaster,messageService,'diceBao','骰宝',52,gameZone);
 	//觸發局數流程控制 Control
-	/*var lib_GM = require(pomelo.app.getBase()+'/app/lib/lib_GameMade.js');
-	var GM = new lib_GM(pomelo,pomelo.app,async,redis,dbslave,dbmaster,messageService,'diceBao','骰寶',52,gameZone);
 	dbslave.query('SELECT id from games_52 where gas004 = ? and (gas009 = ? or gas012 = ?)',[gameZone,0,0],function(data){
 		if(data.ErrorCode==0){
 			if(data.rows.length==0){
-				GM.Made(15,function(insertID,endTime){
-					console.log(insertID);
-					console.log(endTime);
+				TI.Made(35,10,20,function(insertID,endTime){
 					messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
 					maindiceBao.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
 				});
@@ -32,8 +24,8 @@ exp.init = function (gameZone) {
 				//補開獎
 
 				//開盤
-				console.log(data.rows);
-				GM.Made(15,function(insertID,10,20,endTime){
+				//console.log(data.rows);
+				TI.Made(35,10,20,function(insertID,endTime){
 					//console.log(insertID);
 					//console.log(endTime);
 					messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
@@ -41,11 +33,10 @@ exp.init = function (gameZone) {
 				});
 			}
 		}
-	});*/
+	});
 }
 
-var gameMade = function(dbmaster,dbslave,redis,gameZone){
-	//var OG = new (require(pomelo.app.getBase()+'/app/lib/lib_OpenGame.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,messageService,GameName,GameShowName,GameID,GameZone);
+/*var gameMade = function(dbmaster,dbslave,redis,gameZone){
 	var gameID = 0;
 	var Period='';
 	var endtime='';
@@ -78,7 +69,7 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 			var o_Day = yyyy+'-'+MM+'-'+dd;
 			var o_Time = h+':'+m+':'+s;
 
-			var end = TimeNow.addSeconds(15); //關盤時間向後加秒數
+			var end = TimeNow.addSeconds(35); //關盤時間向後加秒數
 			var end_yyyy = end.getFullYear();
 			var end_MM = (end.getMonth()+1<10 ? '0' : '')+(end.getMonth()+1);
 			var end_dd = (end.getDate()<10 ? '0' : '')+end.getDate();
@@ -163,6 +154,6 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 				messageService.broadcast('connector','diceBaoStatus'+gameZone,{'status':'T'});
 			}
 		});
-}
+}*/
 
 

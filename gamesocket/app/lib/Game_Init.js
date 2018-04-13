@@ -35,39 +35,39 @@ module.exports = function Game_Init(app,GS_Redis,GameName,GameShowName)
 		var all;
 		var l = 0;
 		iasync.series({
-				A: function(callback){
-					GS_Redis.keys(GPB.rKey_USER+"*",function(err,res){ 
-						if(err==null){
-							keys = res;
-							callback(null,res);
-						}
-						else
-							callback(1,err);
-					});
-				},
-				B: function(callback){
-					var i = 0;
-					iasync.whilst(
-						function () { 
-							return i < keys.length; 
-						},
-						function (wcallback) {
-							var key = keys[i];
-							GS_Redis.hget(key, "GAMETYPE", function (err, obj) {
-								if(obj==GameName){
-									GS_Redis.hset(key, "GAMETYPE","000",function(err,res){wcallback();});
-								}
-								else{
-									wcallback();
-								}
-							});
-							i++;
-						},
-						function (err) {
-							callback(null,0);
-						}
-					);
-				}
+			A: function(callback){
+				GS_Redis.keys(GPB.rKey_USER+"*",function(err,res){ 
+					if(err==null){
+						keys = res;
+						callback(null,res);
+					}
+					else
+						callback(1,err);
+				});
+			},
+			B: function(callback){
+				var i = 0;
+				iasync.whilst(
+					function () { 
+						return i < keys.length; 
+					},
+					function (wcallback) {
+						var key = keys[i];
+						GS_Redis.hget(key, "GAMETYPE", function (err, obj) {
+							if(obj==GameName){
+								GS_Redis.hset(key, "GAMETYPE","000",function(err,res){wcallback();});
+							}
+							else{
+								wcallback();
+							}
+						});
+						i++;
+					},
+					function (err) {
+						callback(null,0);
+					}
+				);
+			}
 		},
 		function(err, results) {
 			fcallback(err, results);

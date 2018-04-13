@@ -1,9 +1,17 @@
-module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,messageService,GameName,GameShowName,GameID,GameZone){
+module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,GameID,GameZone){
 
 	//console.log("lib_OpenGame:"+GameZone);
 	// ------ games -------------------------------------------------------------
 	// 設定Games 狀態 為已經結算
-	this.UpdateGamesStatusToCalculated= function(callback,AutoIndex){
+	this.UpdateGamesStatusToClosed= function(AutoIndex,callback){
+		dbmaster.update('UPDATE games_'+GameID+' SET gas009 = ? where id = ? and gas004 = ?',[1,AutoIndex,GameZone],function(data){	
+			if(data.ErrorCode==0)
+				callback(true);
+			else
+				callback(false);
+		});
+	}
+	this.UpdateGamesStatusToCalculated= function(AutoIndex,callback){
 		dbmaster.update('UPDATE games_'+GameID+' SET gas012 = ? where id = ? and gas004 = ?',[1,AutoIndex,GameZone],function(data){	
 			if(data.ErrorCode==0)
 				callback(true);
@@ -34,68 +42,8 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 			
 		});
 	}
-	// 取得歷史開獎號碼--水果盤
-	this.GetHistoryNumber= function(callback,limit)
-	{
-		var sql='SELECT gas008 FROM games_'+GameID+' where gas008 <> ? and gas004 = ? order by id desc limit ?';
-		var args=["",GameZone,limit];
-		dbslave.query(sql,args,function(data){
-			if(data.ErrorCode==0){
-				var gameHistory = "";
-				for (var key in data.rows){
-					gameHistory=gameHistory+data.rows[key].gas008+',';
-				}
-				gameHistory=gameHistory.substring(0,gameHistory.length-1);
-				callback(gameHistory);
-			}
-			else
-			{
-				callback("");
-			}
-		});
-	}
-	this.GetHistoryNumberTable= function(callback,limit)
-	{
-		var sql='SELECT gas008 FROM games_'+GameID+' where gas008 <> ? and gas004 = ? order by id desc limit ?';
-		var args=["",GameZone,limit];
-		dbslave.query(sql,args,function(data){
-			if(data.ErrorCode==0){
-				var gameHistory = "";
-				for (var key in data.rows){
-					gameHistory=gameHistory+data.rows[key].gas008+'|';
-				}
-				gameHistory=gameHistory.substring(0,gameHistory.length-1);
-				callback(gameHistory);
-			}
-			else
-			{
-				callback("");
-			}
-		});
-	}
-	this.GetLobbyHistoryNumberTable= function(callback,limit)
-	{
-		var sql='SELECT gas008 FROM games_'+GameID+' where gas008 <> ? and gas004 = ? order by id desc limit ?';
-		var args=["",GameZone,limit];
-		dbslave.query(sql,args,function(data){
-			if(data.ErrorCode==0){
-				var lobbyHistory = "";
-				for (var key in data.rows){
-					lobbyHistory = lobbyHistory+data.rows[key].gas008;
-					lobbyHistory = lobbyHistory.substring(0,lobbyHistory.length-2);
-					lobbyHistory = lobbyHistory+'|'
-				}
-				lobbyHistory=lobbyHistory.substring(0,lobbyHistory.length-1);
-				callback(lobbyHistory);
-			}
-			else
-			{
-				callback("");
-			}
-		});
-	}
 	// 新增開獎號碼
-	this.InsertNumber= function(callback,AutoIndex,gameNum){
+	this.InsertNumber= function(AutoIndex,gameNum,callback){
 		var struct_gameop = GetStruct_SQL();
 		var lib_gameop = GetLibSQL_games(struct_gameop);
 		struct_gameop.params.gas008 = gameNum;
@@ -122,7 +70,7 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 
 	// ------ betg -------------------------------------------------------------
 	// 	設定betg 注單 狀態 為已經 開獎
-	this.UpdateBetStatusToOpened= function(callback,PeriodID){
+	this.UpdateBetStatusToOpened= function(PeriodID,GameZone,callback){
 		dbmaster.update('UPDATE bet_g'+GameID+' SET betstate = 1 where bet009 = ? and bet003 = ? and bet012= ? ',[PeriodID,0,GameZone],function(data){
 			if(data.ErrorCode==0){
 				callback(true);
@@ -132,8 +80,8 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 		});
 	}
 	// 	依照期數取得所有注單
-	this.GetBets= function(callback,PeriodID){
-		dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g'+GameID+' where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,GameZone],function(data){
+	this.GetBets= function(PeriodID,callback){
+		dbslave.query('SELECT betkey,bet002,bet005,bet014,bet016,bet017 FROM bet_g'+GameID+' where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,GameZone],function(data){
 			if(data.ErrorCode==0)
 				callback(data.rows);
 			else
@@ -150,16 +98,16 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 		});
 	}
 	// 設定注單為中獎
-	this.SetBetsToWin = function(callback,AutoIndexID,WinMoney,WinBets){
+	this.SetBetsToWin = function(AutoIndexID,WinRate,WinMoney,WinBets,callback){
 		var struct_betgop = GetStruct_SQL();
 		var lib_gameop = GetLibSQL_betg(struct_betgop);
 		struct_betgop.params.betstate = 1;
 		struct_betgop.params.betwin = 1;
+		struct_betgop.params.bet018 = WinRate;
 		struct_betgop.params.bet032 = WinMoney;
 		struct_betgop.params.bet033 = WinBets;
 		struct_betgop.where.id = AutoIndexID;
 		struct_betgop.where.bet003 = 0;
-		struct_betgop.where.bet012 = GameZone;
 		lib_gameop.Update(function(res){
 			if(!res){
 				callback(true);
@@ -170,7 +118,7 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 	}
 
 	// ------ Money & Log -------------------------------------------------------------
-	this.GetUserMoneyMaster = function(callback,mid){
+	this.GetUserMoneyMaster = function(mid,callback){
 		dbmaster.query('SELECT mem100 FROM users where mid = ?',[mid],function(data){ //duegame
 			if(data.ErrorCode==0){
 				callback(data.rows[0].mem100); 

@@ -1,4 +1,4 @@
-module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,messageService,GameName,GameShowName,GameID,GameZone)
+module.exports = function lib_TableInit(pomelo,app,async,redis,dbslave,dbmaster,messageService,GameName,GameShowName,GameID,GameZone)
 {
 	//console.log("lib_GameMade:"+GameZone);
 	var lib_OG = require(app.getBase()+'/app/lib/lib_OpenGame.js');
@@ -9,7 +9,7 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 		return this;
 	}
 
-	this.Made = function(GameSeconds,GameHistory,LobbyHistory,Made_callback)
+	this.Made = function(GameSeconds,GameHistoryCount,LobbyHistoryCount,Made_callback)
 	{
 		var InsertID = 0;
 		var Period='';
@@ -71,16 +71,16 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 
 			},
 			function(callback_4){
-				OG.GetHistoryNumber(function(igameHistory){
+				OG.GetHistoryNumberTable(function(igameHistory){
 					gameHistory = igameHistory;
 					callback_4(null);
-				},GameHistory);
+				},GameHistoryCount);
 			},
 			function(callback_5){
-				OG.GetHistoryNumber(function(igameHistory){
+				OG.GetLobbyHistoryNumberTable(function(igameHistory){
 					lobbyHistory =igameHistory;
 					callback_5(null);
-				},LobbyHistory);
+				},LobbyHistoryCount);
 			}
 		],
 		function(err,result){
@@ -94,7 +94,7 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 				redis.hset('GS:GAMESERVER:'+GameName, "gameHistory"+GameZone, gameHistory);
 				redis.hset('GS:GAMESERVER:'+GameName, "lobbyHistory"+GameZone, lobbyHistory);
 				redis.hset('GS:GAMESERVER:'+GameName, "Status"+GameZone, 'T');
-				redis.hset('GS:GAMESERVER:'+GameName, "NowbetTotal"+GameZone,'0,0,0,0,0,0,0');
+				//redis.hset('GS:GAMESERVER:'+GameName, "NowbetTotal"+GameZone,'0,0,0,0,0,0,0');
 				redis.del('GS:lockAccount:'+GameName);//清空下注key值 解開退出再進入遊戲限制
 				Made_callback(InsertID,endtime);
 			}

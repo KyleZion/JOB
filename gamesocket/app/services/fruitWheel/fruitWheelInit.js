@@ -15,8 +15,8 @@ exp.init = function (gameZone) {
 		if(data.ErrorCode==0){
 			if(data.rows.length==0){
 				GM.Made(25,function(insertID,endTime){
-					console.log(insertID);
-					console.log(endTime);
+					//console.log(insertID);
+					//console.log(endTime);
 					messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
 					fruitWheelmain.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
 				});

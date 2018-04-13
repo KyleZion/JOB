@@ -1,5 +1,5 @@
-var _poolModule = require('generic-pool');
-var mysql = require('mysql');
+const _poolModule = require('generic-pool');
+const mysql = require('mysql');
 /******generic-pool最新版是用ES6，使用promise而不再使用function(callback)。http://nodejs.netease.com/topic/58a95bcb489e266d5be92744
 var createMysqlPool = function(app) {
 	var mysqlConfig = app.get('mysql');

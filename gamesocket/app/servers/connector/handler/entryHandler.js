@@ -236,18 +236,18 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					});
 				}
 				else{
-					GPB.ShowLog(0,"已经在游戏里面 原本游戏需要先断线> : "+ userdata.gamename);
+					GPB.ShowLog(0,"请先退出目前游戏："+ userdata.gamename +"，再进行下一步动作");
 					redis.hgetall(GPB.rKey_GAMESERVER+ userdata.gamename, function(err,res){  
 						if(err==null)
 						{
 							//session.Alert("已經在遊戲裡面 原本遊戲需要先斷線 : "+ res.GameShowName);
-							GPB.ShowLog(0,"已经在游戏里面 原本游戏需要先断线>> : "+ res.GameShowName);
-							MLcallback(1,"已经在游戏里面 原本游戏需要先断线 :"+res.GameShowName);
+							GPB.ShowLog(0,"请先退出目前游戏："+res.GameShowName+"，再进行下一步动作");
+							MLcallback(1,"请先退出目前游戏："+res.GameShowName+"，再进行下一步动作");
 						}
 						else
 						{
-							GPB.ShowLog(0,"已经在游戏里面 原本游戏需要先断线>>> : "+ res.GameShowName);
-							MLcallback(1,"已经在游戏里面 原本游戏需要先断线 :"+res.GameShowName);
+							GPB.ShowLog(0,"请先退出目前游戏："+res.GameShowName+"，再进行下一步动作");
+							MLcallback(1,"请先退出目前游戏："+res.GameShowName+"，再进行下一步动作");
 						}
 					});
 					
