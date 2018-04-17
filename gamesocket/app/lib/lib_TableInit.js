@@ -27,7 +27,7 @@ module.exports = function lib_TableInit(pomelo,app,async,redis,dbslave,dbmaster,
 						callback_0(null);
 					}else{
 						GameSet = (Number(res)+1).toString();
-						GameSet=GameSet.length >= 4 ? GameSet : new Array(4-GameSet.length+1).join("0") + GameSet;
+						GameSet = GameSet.length >= 4 ? GameSet : new Array(4-GameSet.length+1).join("0") + GameSet;
 						redis.hset('GS:GAMESERVER:'+GameName, "GameSet"+GameZone,GameSet);
 						callback_0(null);
 					}

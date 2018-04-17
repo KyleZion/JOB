@@ -260,7 +260,6 @@ handler.bet = function(msg,session,next){
 }
 
 handler.GetGameID =function(msg,session,next){
-	console.log(msg);
 	tableHandler.GetGameID(GameName,msg.cid,function (data) {
 		if(data.ErrorCode==code.OK){
 			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','res':data.ID});

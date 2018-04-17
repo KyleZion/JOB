@@ -1,5 +1,5 @@
 module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,GameID,GameZone){
-
+	const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 	//console.log("lib_OpenGame:"+GameZone);
 	// ------ games -------------------------------------------------------------
 	// 設定Games 狀態 為已經結算
@@ -64,7 +64,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 			if(data.ErrorCode==0)
 				callback(data.rows);
 			else
-				callback(null);
+				callback(0);
 		});
 	}
 
@@ -127,7 +127,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 			}
 		});
 	}
-	this.UpdateUserMoneyMaster = function(callback,mid,shiftMoney){
+	this.UpdateUserMoneyMaster = function(mid,shiftMoney,callback){
 		dbmaster.update('UPDATE users SET mem100 = mem100 + ? where mid = ?',[shiftMoney,mid],function(data){  //egame
 	 		if(data.ErrorCode==0){
 	 			callback(true);
@@ -136,7 +136,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 	 		}
 	 	});
 	}
-	this.InsertBetsAmountLog = function(callback,type,PeriodID,transfer_no,mid,shiftMoney,balance){
+	this.InsertBetsAmountLog = function(type,PeriodID,transfer_no,mid,shiftMoney,balance,callback){
 		var struct_amount = GetStruct_SQL(); //amount_log SQL
 		struct_amount.params.type = type;//4;
 		struct_amount.params.game_id = GameID;
@@ -144,9 +144,9 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 		struct_amount.params.transfer_no = transfer_no;
 		struct_amount.params.mid = mid;
 		struct_amount.params.money = shiftMoney;
-		struct_amount.params.balance = memmoney;
-		struct_amount.params.created_at = formatDate()+" "+formatDateTime();
-		struct_amount.params.updated_at = formatDate()+" "+formatDateTime();
+		struct_amount.params.balance = balance;
+		struct_amount.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
+		struct_amount.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
 		var lib_amount = GetLibSQL_amountlog(struct_amount);
 		lib_amount.Insert(function(id){
 			if(!!id){
