@@ -195,98 +195,98 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 }
 
 function idWinMoneysResult(dbmaster,dbslave,gameSql,winResult,gamesID,callback_Win)
-	{
-		if(winResult.length==0){
-			callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':null});
-		}
-		// Get object key with: item.key 
-		// Get associated value with: item.value 
-		var count = 0;
-		async.whilst(
-			function() //test function: while test is true
-			{ return count<winResult.length; },
-			function(callback) {
-				async.waterfall([
-					//先更新注單並寫入中獎金額
-					function(callback){
-						var award=Number(winResult[count].Val * winResult[count].multiple)+ Number(winResult[count].Val);
-						var args=[1,1,winResult[count].multiple,award,1,0,winResult[count].id]
-			  	 		gameSql.SetBetsToWin(winResult[count].id,winResult[count].multiple,award,1,function(res){
-							if(res){
-								console.log("資料庫派獎betg52更新成功");
-			    				if(winResult[count].bet032==null){
-			    					winResult[count].bet032 = award;
-			    				}
-			    				else{
-			    					winResult[count].bet032 = winResult[count].bet032 + award;
-			    				}
-			    				callback(null,award);
-							}
+{
+	if(winResult.length==0){
+		callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':null});
+	}
+	// Get object key with: item.key 
+	// Get associated value with: item.value 
+	var count = 0;
+	async.whilst(
+		function() //test function: while test is true
+		{ return count<winResult.length; },
+		function(callback) {
+			async.waterfall([
+				//先更新注單並寫入中獎金額
+				function(callback){
+					var award=Number(winResult[count].Val * winResult[count].multiple)+ Number(winResult[count].Val);
+					var args=[1,1,winResult[count].multiple,award,1,0,winResult[count].id]
+		  	 		gameSql.SetBetsToWin(winResult[count].id,winResult[count].multiple,award,1,function(res){
+						if(res){
+							console.log("資料庫派獎betg52更新成功");
+		    				if(winResult[count].bet032==null){
+		    					winResult[count].bet032 = award;
+		    				}
+		    				else{
+		    					winResult[count].bet032 = winResult[count].bet032 + award;
+		    				}
+		    				callback(null,award);
+						}
+					});
+				},
+				//取得中獎注單帳號餘額
+				function(award, callback){
+					if(count+1>=winResult.length){
+						gameSql.GetUserMoneyMaster(winResult[count].bet005,function(res){
+							if(res>=0 && res !=null)
+							callback(null,res,1);
 						});
-					},
-					//取得中獎注單帳號餘額
-					function(award, callback){
-						if(count+1>=winResult.length){
+					}else{
+						if(winResult[count].bet005==winResult[count+1].bet005){
+							winResult[count+1].bet032 =winResult[count].bet032;
+							callback(null,0,-1);
+						}else{
 							gameSql.GetUserMoneyMaster(winResult[count].bet005,function(res){
 								if(res>=0 && res !=null)
 								callback(null,res,1);
 							});
-						}else{
-							if(winResult[count].bet005==winResult[count+1].bet005){
-								winResult[count+1].bet032 =winResult[count].bet032;
-								callback(null,0,-1);
-							}else{
-								gameSql.GetUserMoneyMaster(winResult[count].bet005,function(res){
-									if(res>=0 && res !=null)
-									callback(null,res,1);
-								});
-							}
-						}
-					},
-					//寫入amount_log
-					function(memmoney, award, callback){
-						if(award==-1){
-							callback(null,-1);
-						}else{
-							gameSql.InsertBetsAmountLog(4,gamesID,winResult[count].betkey +'0000',winResult[count].bet005,winResult[count].bet032,memmoney,function(res){
-								if(res){
-									callback(null,award);
-								}else{
-									callback(502,'insert amount_log_ fail');
-								}
-							});
-						}
-					},
-					//最後再更新帳號餘額
-					function(award, callback){
-						if(award==-1){
-							callback(null,0);
-						}else{
-							gameSql.UpdateUserMoneyMaster(winResult[count].bet005,winResult[count].bet032,function(){
-								console.log('52UPDATE mem success');
-				   		 		callback(null,0);
-							});
 						}
 					}
-					//錯誤則顯示沒有則返回
-				],	function (err, result) {
-					if(err){
-						callback_Win(1,err);
+				},
+				//寫入amount_log
+				function(memmoney, award, callback){
+					if(award==-1){
+						callback(null,-1);
 					}else{
-						count++;
-						callback(null,count);
+						gameSql.InsertBetsAmountLog(4,gamesID,winResult[count].betkey +'0000',winResult[count].bet005,winResult[count].bet032,memmoney,function(res){
+							if(res){
+								callback(null,award);
+							}else{
+								callback(502,'insert amount_log_ fail');
+							}
+						});
 					}
-					
-				});
-			},
-			function (err, n){
-				if(!err)
-				{
-					callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':200});
+				},
+				//最後再更新帳號餘額
+				function(award, callback){
+					if(award==-1){
+						callback(null,0);
+					}else{
+						gameSql.UpdateUserMoneyMaster(winResult[count].bet005,winResult[count].bet032,function(){
+							console.log('52UPDATE mem success');
+			   		 		callback(null,0);
+						});
+					}
 				}
+				//錯誤則顯示沒有則返回
+			],	function (err, result) {
+				if(err){
+					callback_Win(1,err);
+				}else{
+					count++;
+					callback(null,count);
+				}
+				
+			});
+		},
+		function (err, n){
+			if(!err)
+			{
+				callback_Win( {'ErrorCode': 0,'ErrorMessage': '','result':200});
 			}
-		);
-	}
+		}
+	);
+}
 var multipleDecide_Sum = function(numSum){
 		if(numSum==4 || numSum==17)
 			return 62;

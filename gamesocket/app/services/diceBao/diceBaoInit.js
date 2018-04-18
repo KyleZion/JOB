@@ -8,7 +8,7 @@ exp.init = function (gameZone) {
 	const dbslave =pomelo.app.get('dbslave');
 	const dbmaster =pomelo.app.get('dbmaster');
 	const redis =pomelo.app.get('redis');
-	const DBGO = new (require(pomelo.app.getBase()+'/app/services/diceBao/diceBaoGameOpen.js'))(redis,dbslave,dbmaster,messageService,gameZone);
+	const DBGC = new (require(pomelo.app.getBase()+'/app/services/diceBao/diceBaoGameCalc.js'))(redis,dbslave,dbmaster,messageService,gameZone);
 	const gameSql = new(require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,gameZone);
 	//先開盤
 	const lib_TI = require(pomelo.app.getBase()+'/app/lib/lib_TableInit.js');
@@ -24,15 +24,16 @@ exp.init = function (gameZone) {
 			});
 		}else{
 			const reCalc = new Promise((resolve , reject) =>{
-				gameID.forEach(item => {
-					DBGO.GameOpen(item.id,1,function(res){
+				for(item of gameID){
+					console.log(item);
+					DBGC.GameCalc(item.id,1,function(res){
 						if(!res){
 							//console.log('OK');
 						}else{
 							//console.log('aa');
 						}
 					});
-				});
+				}
 				return resolve('OKOK');
 			});
 			const gameOpen = async() =>{

@@ -24,6 +24,7 @@ const lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))();
 const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 const tableHandler = new(require(pomelo.app.getBase()+'/app/lib/lib_TableHandler.js'))(pomelo,async,redis,dbslave,dbmaster,messageService,GameName,CasinoId);
 const code = require(pomelo.app.getBase()+'/app/consts/code.js');
+const logger = require('pomelo-logger').getLogger('handler-log',__filename);
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
