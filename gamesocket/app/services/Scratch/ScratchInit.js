@@ -15,33 +15,7 @@ exp.init = function (gameZone) {
 	var redis =pomelo.app.get('redis');
 	//先開盤
 	gameMade(dbmaster,dbslave,redis,gameZone);
-	//觸發局數流程控制 Control
-	/*var lib_GM = require(pomelo.app.getBase()+'/app/lib/lib_GameMade.js');
-	var GM = new lib_GM(pomelo,pomelo.app,async,redis,dbslave,dbmaster,messageService,'diceBao','骰寶',52,gameZone);
-	dbslave.query('SELECT id from games_52 where gas004 = ? and (gas009 = ? or gas012 = ?)',[gameZone,0,0],function(data){
-		if(data.ErrorCode==0){
-			if(data.rows.length==0){
-				GM.Made(15,function(insertID,endTime){
-					console.log(insertID);
-					console.log(endTime);
-					messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
-					maindiceBao.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
-				});
-			}else
-			{
-				//補開獎
 
-				//開盤
-				console.log(data.rows);
-				GM.Made(15,function(insertID,10,20,endTime){
-					//console.log(insertID);
-					//console.log(endTime);
-					messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
-					maindiceBao.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
-				});
-			}
-		}
-	});*/
 }
 
 var gameMade = function(dbmaster,dbslave,redis,gameZone){

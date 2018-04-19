@@ -70,6 +70,29 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 
 	// ------ betg -------------------------------------------------------------
 	// 	設定betg 注單 狀態 為已經 開獎
+	this.InsertBetg= function(betkey,bet2,uid,PeriodID,gameZone,callback){
+		var struct_betgInsert = GetStruct_SQL();
+		var struct_bet = GetLibSQL_betg(struct_betgInsert);
+		var md5str = uid+PeriodID;
+		struct_betgInsert.params.betkey = betkey;
+		struct_betgInsert.params.betstate = 0;
+		struct_betgInsert.params.betwin = 0;
+		struct_betgInsert.params.bet002 = bet2;
+		struct_betgInsert.params.bet003 = 0;
+		struct_betgInsert.params.bet005 = uid;
+		struct_betgInsert.params.bet009 = PeriodID;
+		struct_betgInsert.params.bet011 = 1151;
+		struct_betgInsert.params.bet012 = channelID;
+		struct_betgInsert.params.bet014 = betPlay[0].replace(/\"/g, "");
+		struct_betgInsert.params.bet015 = 1;
+		struct_betgInsert.params.bet016 = 1;
+		struct_betgInsert.params.bet017 = betPlay[1];
+		struct_betgInsert.params.bet018 = 0;
+		struct_betgInsert.params.bet034 =md5(md5str);
+		struct_betgInsert.params.bydate =PUB.formatDate();
+		struct_betgInsert.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
+		struct_betgInsert.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
+	}
 	this.UpdateBetStatusToOpened= function(PeriodID,GameZone,callback){
 		dbmaster.update('UPDATE bet_g'+GameID+' SET betstate = 1 where bet009 = ? and bet003 = ? and bet012= ? ',[PeriodID,0,GameZone],function(data){
 			if(data.ErrorCode==0){

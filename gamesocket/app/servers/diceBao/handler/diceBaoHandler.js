@@ -255,9 +255,6 @@ handler.bet = function(msg,session,next){
 			}
 		);
 	});
-	
-	
-
 }
 
 handler.GetGameID =function(msg,session,next){
