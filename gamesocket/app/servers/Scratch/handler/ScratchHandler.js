@@ -39,8 +39,9 @@ handler.bet = function(msg,session,next){
 	var afterBetMoney = 0;
 	var reward = getAward(channelID,1);
 	var collect = getAward(channelID,0);
+	var Period = 
 	const gameMade = new Promise ((resolve , reject) => {
-
+		gameSql.InsertPeriod(Pero)
 	});
 
 	const betSqlInsert = new Promise((resolve, reject) => {

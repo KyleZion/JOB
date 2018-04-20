@@ -20,7 +20,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 		});
 	}
 	// 新增期數
-	this.InsertPeriod= function(callback,Period,start,stop){
+	this.InsertPeriod= function(Period,start,stop,callback){
 		var struct_games = GetStruct_SQL();
 		struct_games.params.gas002 = GameID;
 		struct_games.params.gas003 = Period;

@@ -18,8 +18,8 @@ exp.init = function (gameZone) {
 	gameSql.GetUnOpenGames(function(res){
 		gameID = res;
 		if(res==0){
-			TI.Made(15,10,20,function(insertID,endTime){
-				messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
+			TI.Made(35,20,10,function(insertID,endTime){
+				messageService.broadcast('connector','diceBaoStatus'+gameZone,{'status':'T'});
 				maindiceBao.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
 			});
 		}else{
@@ -42,10 +42,10 @@ exp.init = function (gameZone) {
 			}
 			gameOpen()
 				.then(result =>{
-					TI.Made(15,10,20,function(insertID,endTime){
+					TI.Made(35,20,10,function(insertID,endTime){
 						//console.log(insertID);
 						//console.log(endTime);
-						messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
+						messageService.broadcast('connector','diceBaoStatus'+gameZone,{'status':'T'});
 						maindiceBao.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
 					});
 				})
