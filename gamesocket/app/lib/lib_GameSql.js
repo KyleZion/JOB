@@ -92,6 +92,13 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 		struct_betgInsert.params.bydate =PUB.formatDate();
 		struct_betgInsert.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
 		struct_betgInsert.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
+		struct_bet.Insert(function(res){
+			if(!res){
+				callback(true);
+			}else{
+				callback(false);
+			}
+		});
 	}
 	this.UpdateBetStatusToOpened= function(PeriodID,GameZone,callback){
 		dbmaster.update('UPDATE bet_g'+GameID+' SET betstate = 1 where bet009 = ? and bet003 = ? and bet012= ? ',[PeriodID,0,GameZone],function(data){

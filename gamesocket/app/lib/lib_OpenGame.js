@@ -31,7 +31,6 @@ module.exports = function lib_OpenGame(pomelo,app,async,redis,dbslave,dbmaster,m
 			else{
 				callback(0);
 			}
-			
 		});
 	}
 	// 取得歷史開獎號碼--水果盤

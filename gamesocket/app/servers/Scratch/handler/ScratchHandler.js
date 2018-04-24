@@ -26,27 +26,57 @@ const gameSql = new lib_gameSql(pomelo,pomelo.app,async,redis,dbslave,dbmaster,5
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
+	var TimeNow= new Date();//009 開關盤 010強制關 011停押 012已計算結果
+	var yyyy = TimeNow.getFullYear();
+	var MM = (TimeNow.getMonth()+1<10 ? '0' : '')+(TimeNow.getMonth()+1);
+	var dd = (TimeNow.getDate()<10 ? '0' : '')+TimeNow.getDate();
+	var h = (TimeNow.getHours()<10 ? '0' : '')+TimeNow.getHours();
+	var m = (TimeNow.getMinutes()<10 ? '0' : '')+TimeNow.getMinutes();
+	var s = (TimeNow.getSeconds()<10 ? '0' : '')+TimeNow.getSeconds();
+	var o_Day = yyyy+'-'+MM+'-'+dd;//o_Day開盤日期 //o_Day歸屬日期
+	var o_Time = h+':'+m+':'+s;//o_Time開盤時間
+	var start = o_Day+' '+o_Time;
+	var stop = start;
+	var PeriodID = 0;
+	var UserMoney = 0;
 	//var betData = (JSON.stringify(JSON.parse(msg.bet).bets).slice(1,-1)).split(','); //將C2傳來的下注內容string轉JSON
 	var channelID = JSON.parse(msg.bet).channelID
 	//var amount = 0 //下注金額
-	var betkey=gid+session.uid+new Date().getTime(); 
-	var bet2='';
+	var betkey=casinoId+session.uid+new Date().getTime(); 
 	var b015 = 0;
-	var trans_no=betkey+'0000';
+	var trans_no=betkey+'0001';
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	var logId = 0;
 	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
 	var afterBetMoney = 0;
 	var reward = getAward(channelID,1);
 	var collect = getAward(channelID,0);
-	var Period = 
-	const gameMade = new Promise ((resolve , reject) => {
-		gameSql.InsertPeriod(Pero)
+	var Period = yyyy+MM+dd+h+m+s+session.uid;
+
+	const gameMade = new Promise ((resolve , reject) => { //寫入期數
+		gameSql.InsertPeriod(Period,start,stop,function(res){
+			PeriodID = res;
+			return resolve (res);
+		});
 	});
 
-	const betSqlInsert = new Promise((resolve, reject) => {
-		gameSql.InsertBetg(betkey,bet2,session.uid,)
+	const betSqlInsert = new Promise((resolve, reject) => { //寫入注單
+		gameSql.InsertBetg(betkey,bet2,session.uid,PeriodID,ChannelID,function(res){ 
+			return resolve (res);
+		});
 	});
+	const getUserMoney = new Promise((resolve, reject) => {
+		gameSql.GetUserMoneyMaster(session.uid,function(res){
+			UserMoney = res;
+			return resolve (res);
+		});
+	});
+	const AmountSqlInsert =new Promise((resolve, reject) => {//寫入Amountlog
+		gameSql.InsertBetsAmountLog(3,PeriodID,transfer_no,session.uid,amount,UserMoney,function(res){
+			return resolve (res);
+		});
+	});
+		
 	next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'collect':collect});
 }
 
@@ -74,7 +104,6 @@ handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID, true);
 	channelService.add(session.uid,session.frontendId);//加入channel,房間
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0}); //觸發該玩家監聽訊息function
-	var limit = getBetRestrict(msg.ChannelID);
 	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'limit':limit});//回傳區號,下注上下限
 }
 

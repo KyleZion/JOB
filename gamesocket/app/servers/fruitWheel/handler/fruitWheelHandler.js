@@ -17,7 +17,7 @@ var async=require('async');
 var md5 = require('md5');
 var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
 var sessionService = pomelo.app.get('sessionService');
-var gid='051';
+var casinoId='051';
 var gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
 var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
 var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
@@ -112,7 +112,7 @@ handler.bet = function(msg,session,next){
 		},
 		B: function(callback_B){
 			betValue=betValue.join(',');
-			betkey=gid+session.uid+new Date().getTime();
+			betkey=casinoId+session.uid+new Date().getTime();
 			bet2=betkey+'0001';
 			trans_no=bet2;
 			var md5str = session.uid+gameID;
