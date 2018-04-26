@@ -13,7 +13,8 @@ var bypass = {
   "fw":"fruitWheel.fruitWheelHandler.",
   "tt":"transfer.transferHandler.",
   "dd":"diceBao.diceBaoHandler.",
-  "mm":"manager.managerHandler."
+  "mm":"manager.managerHandler.",
+  "sg":"Scratch.ScratchHandler."
 }
 
 

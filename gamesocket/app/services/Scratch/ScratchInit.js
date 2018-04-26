@@ -2,7 +2,7 @@ var pomelo = require('pomelo');
 var async = require('async');
 var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
 var exp = module.exports;
-var maindiceBao = require('./maindiceBao.js');
+//var maindiceBao = require('./maindiceBao.js');
 
 Date.prototype.addSeconds = function(s){
 	this.setSeconds(this.getSeconds()+s);
@@ -13,8 +13,13 @@ exp.init = function (gameZone) {
 	var dbslave =pomelo.app.get('dbslave');
 	var dbmaster =pomelo.app.get('dbmaster');
 	var redis =pomelo.app.get('redis');
+	//redis.hset('GS:GAMESERVER:Scratch', "GameID"+gameZone, gameID);
+	//redis.hset('GS:GAMESERVER:Scratch', "endTime"+gameZone, endtime);
+	//redis.hset('GS:GAMESERVER:Scratch', "gameHistory"+gameZone, gameHistory);
+	//redis.hset('GS:GAMESERVER:Scratch', "lobbyHistory"+gameZone, lobbyHistory);
+	//redis.hset('GS:GAMESERVER:Scratch', "Status"+gameZone, 'T');
 	//先開盤
-	gameMade(dbmaster,dbslave,redis,gameZone);
+	//gameMade(dbmaster,dbslave,redis,gameZone);
 
 }
 

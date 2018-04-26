@@ -18,15 +18,12 @@ var bypass = {
     "H":"GetHistory",
     "S":"GetStatus",
     "A":"AddtoChannel",
-    "L":"LeaveChannel",
-    "G":"GetGameSet",
-    "R":"GameResult",
-    "E":"GameRestrict"
+    "L":"LeaveChannel"
 }
 
 Filter.prototype.before = function (msg, session, next) {
   var lockAccount = 0;
-  if(msg.route == "Scratch.ScratchHandler.B")
+  if(msg.route == "Scratch.ScratchHandler.X")
   {
     var cost = 0;
     async.series({
@@ -112,7 +109,7 @@ Filter.prototype.before = function (msg, session, next) {
       }else
       {
         //console.log(res); //OK
-        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); //放在最後一行
+        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"ScratchFilter"); //放在最後一行
       }
     });//async.series END
   }
@@ -120,7 +117,7 @@ Filter.prototype.before = function (msg, session, next) {
   {
     redis.sismember("GS:lockAccount:Scratch",session.uid,function(err,res){
       if(res==0){ 
-        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); 
+        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"ScratchFilter"); 
       }
       else{
         next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
@@ -128,7 +125,7 @@ Filter.prototype.before = function (msg, session, next) {
     });
   }
   else{ //非下注route
-   var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); //放在最後一行
+   var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"ScratchFilter"); //放在最後一行
   }
 };
 

@@ -562,5 +562,8 @@ function GameTypeToGameCode(type){
 		case "diceBao":
 			return 52;
 			break;
+		case "Scratch":
+			return 53;
+			break;
 	}
 }

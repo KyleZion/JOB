@@ -1,5 +1,6 @@
 module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,GameID,GameZone){
 	const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+	const md5 = require('md5');
 	//console.log("lib_OpenGame:"+GameZone);
 	// ------ games -------------------------------------------------------------
 	// 設定Games 狀態 為已經結算
@@ -82,11 +83,11 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 		struct_betgInsert.params.bet005 = uid;
 		struct_betgInsert.params.bet009 = PeriodID;
 		struct_betgInsert.params.bet011 = 1151;
-		struct_betgInsert.params.bet012 = channelID;
-		struct_betgInsert.params.bet014 = betPlay[0].replace(/\"/g, "");
+		struct_betgInsert.params.bet012 = GameZone;
+		struct_betgInsert.params.bet014 = 0;
 		struct_betgInsert.params.bet015 = 1;
 		struct_betgInsert.params.bet016 = 1;
-		struct_betgInsert.params.bet017 = betPlay[1];
+		struct_betgInsert.params.bet017 = 20; //下注金額 20180425
 		struct_betgInsert.params.bet018 = 0;
 		struct_betgInsert.params.bet034 =md5(md5str);
 		struct_betgInsert.params.bydate =PUB.formatDate();
@@ -157,14 +158,26 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 			}
 		});
 	}
-	this.UpdateUserMoneyMaster = function(mid,shiftMoney,callback){
-		dbmaster.update('UPDATE users SET mem100 = mem100 + ? where mid = ?',[shiftMoney,mid],function(data){  //egame
-	 		if(data.ErrorCode==0){
-	 			callback(true);
-	 		}else{
-	 			callback(false);
-	 		}
-	 	});
+	this.UpdateUserMoneyMaster = function(mid,shiftMoney,type,callback){
+		if(type == 0){
+			dbmaster.update('UPDATE users SET mem100 = mem100 + ? where mid = ?',[shiftMoney,mid],function(data){
+		 		if(data.ErrorCode==0){
+		 			callback(true);
+		 		}else{
+		 			callback(false);
+		 		}
+		 	});
+		}else if(type == 1){
+			dbmaster.update('UPDATE users SET mem100 = mem100 - ? where mid = ?',[shiftMoney,mid],function(data){
+		 		if(data.ErrorCode==0){
+		 			callback(true);
+		 		}else{
+		 			callback(false);
+		 		}
+		 	});
+		}else{
+			callback(false);
+		}
 	}
 	this.InsertBetsAmountLog = function(type,PeriodID,transfer_no,mid,shiftMoney,balance,callback){
 		var struct_amount = GetStruct_SQL(); //amount_log SQL

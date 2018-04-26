@@ -21,11 +21,12 @@ const casinoId='053';
 const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
 const lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入amount_log,回傳amount_log Index ID
 const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
-const HAN = new(require(pomelo.app.getBase()+'/app/lib/lib_Handler.js'))();
-const gameSql = new lib_gameSql(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,gameZone);
+const code = require(pomelo.app.getBase()+'/app/consts/code.js');
+//const HAN = new(require(pomelo.app.getBase()+'/app/lib/lib_Handler.js'))();
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
+	const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,null,dbslave,dbmaster,53,(msg.bet).channelID);
 	var TimeNow= new Date();//009 開關盤 010強制關 011停押 012已計算結果
 	var yyyy = TimeNow.getFullYear();
 	var MM = (TimeNow.getMonth()+1<10 ? '0' : '')+(TimeNow.getMonth()+1);
@@ -41,16 +42,16 @@ handler.bet = function(msg,session,next){
 	var UserMoney = 0;
 	//var betData = (JSON.stringify(JSON.parse(msg.bet).bets).slice(1,-1)).split(','); //將C2傳來的下注內容string轉JSON
 	var channelID = JSON.parse(msg.bet).channelID
-	//var amount = 0 //下注金額
+	var amount = JSON.parse(msg.bet).total //下注金額
 	var betkey=casinoId+session.uid+new Date().getTime(); 
 	var b015 = 0;
-	var trans_no=betkey+'0001';
+	var transfer_no=betkey+'0001';
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	var logId = 0;
 	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
 	var afterBetMoney = 0;
-	var reward = getAward(channelID,1);
-	var collect = getAward(channelID,0);
+	var reward = 0;
+	var collect = 0;
 	var Period = yyyy+MM+dd+h+m+s+session.uid;
 
 	const gameMade = new Promise ((resolve , reject) => { //寫入期數
@@ -60,8 +61,8 @@ handler.bet = function(msg,session,next){
 		});
 	});
 
-	const betSqlInsert = new Promise((resolve, reject) => { //寫入注單
-		gameSql.InsertBetg(betkey,bet2,session.uid,PeriodID,ChannelID,function(res){ 
+	const betSqlInsert = new Promise((resolve, reject) => { //寫入注單 20180425
+		gameSql.InsertBetg(betkey,transfer_no,session.uid,PeriodID,(msg.bet).channelID,function(res){ 
 			return resolve (res);
 		});
 	});
@@ -71,13 +72,37 @@ handler.bet = function(msg,session,next){
 			return resolve (res);
 		});
 	});
-	const AmountSqlInsert =new Promise((resolve, reject) => {//寫入Amountlog
+	const amountSqlInsert =new Promise((resolve, reject) => {//寫入Amountlog
 		gameSql.InsertBetsAmountLog(3,PeriodID,transfer_no,session.uid,amount,UserMoney,function(res){
 			return resolve (res);
 		});
 	});
-		
-	next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'collect':collect});
+
+	const lessUserMoney new Promise((resolve, reject) =>{
+		gameSql.UpdateUserMoneyMaster(session.uid,amount,1,function(res){
+			return resolve (res);
+		})
+	});
+
+	const betProcess = async() =>{
+		const res1 = await gameMade;
+		const res2 = await betSqlInsert;
+		const res3 = await getUserMoney;
+		const res4 = await amountSqlInsert;
+		const res5 = await lessUserMoney;
+		reward = await getAward(channelID,1);
+		collect = await getAward(channelID,0);
+		return [res1,res2,res3,res4,reward,collect];
+	}
+	betProcess()
+		.then(result =>{
+			console.log(result);
+			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'collect':collect});
+		})
+		.catch(err =>{
+			console.error(err);
+		});
+		//next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'collect':collect});
 }
 
 handler.GetMoney =function(msg,session,next){
@@ -115,15 +140,6 @@ handler.LeaveChannel = function(msg,session,next){
 	channelService.leave(session.uid,session.frontendId);
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
 	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','limit':["100-50000","50-10000","10-1000"]});
-}
-
-handler.GameResult = function(msg,session,next){
-	redis.hget('GS:GAMESERVER:diceBao',"lastGameComb"+msg.ChannelID,function(err1,res1){
-		redis.hget('GS:GAMESERVER:diceBao',"lastGameNum"+msg.ChannelID,function(err2,res2){
-			next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':res2,'gameNumComb':res1.split(',')});
-		});
-	});
-	//next(null,{'ErrorCode':0,'ErrorMessage':'','gameNum':gameNum,'gameNumComb':gameNumComb});
 }
 
 async function getAward(channelID,type){
