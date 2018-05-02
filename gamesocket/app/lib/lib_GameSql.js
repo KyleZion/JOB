@@ -70,8 +70,8 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 	}
 
 	// ------ betg -------------------------------------------------------------
-	// 	設定betg 注單 狀態 為已經 開獎
-	this.InsertBetg= function(betkey,bet2,uid,PeriodID,gameZone,callback){
+	//寫入注單
+	this.InsertBetg= function(betkey,bet2,uid,PeriodID,gameZone,amount,casinoId,callback){
 		var struct_betgInsert = GetStruct_SQL();
 		var struct_bet = GetLibSQL_betg(struct_betgInsert);
 		var md5str = uid+PeriodID;
@@ -82,13 +82,13 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 		struct_betgInsert.params.bet003 = 0;
 		struct_betgInsert.params.bet005 = uid;
 		struct_betgInsert.params.bet009 = PeriodID;
-		struct_betgInsert.params.bet011 = 1151;
+		struct_betgInsert.params.bet011 = casinoId;
 		struct_betgInsert.params.bet012 = GameZone;
 		struct_betgInsert.params.bet014 = 0;
 		struct_betgInsert.params.bet015 = 1;
 		struct_betgInsert.params.bet016 = 1;
-		struct_betgInsert.params.bet017 = 20; //下注金額 20180425
-		struct_betgInsert.params.bet018 = 0;
+		struct_betgInsert.params.bet017 = amount; 
+		struct_betgInsert.params.bet018 = 1;
 		struct_betgInsert.params.bet034 =md5(md5str);
 		struct_betgInsert.params.bydate =PUB.formatDate();
 		struct_betgInsert.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
@@ -101,6 +101,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 			}
 		});
 	}
+	// 	設定betg 注單 狀態 為已經 開獎
 	this.UpdateBetStatusToOpened= function(PeriodID,GameZone,callback){
 		dbmaster.update('UPDATE bet_g'+GameID+' SET betstate = 1 where bet009 = ? and bet003 = ? and bet012= ? ',[PeriodID,0,GameZone],function(data){
 			if(data.ErrorCode==0){
@@ -158,7 +159,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 			}
 		});
 	}
-	this.UpdateUserMoneyMaster = function(mid,shiftMoney,type,callback){
+	this.UpdateUserMoneyMaster = function(mid,shiftMoney,type,callback){//type 0 加錢 type1 扣錢
 		if(type == 0){
 			dbmaster.update('UPDATE users SET mem100 = mem100 + ? where mid = ?',[shiftMoney,mid],function(data){
 		 		if(data.ErrorCode==0){
@@ -200,7 +201,6 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 	    	
 	    });
 	}
-
 
 	// ------ -------------------------------------------------------------
 	function GetStruct_SQL(){

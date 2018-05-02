@@ -262,9 +262,13 @@ function idWinMoneysResult(dbmaster,dbslave,gameSql,winResult,gamesID,callback_W
 					if(award==-1){
 						callback(null,0);
 					}else{
-						gameSql.UpdateUserMoneyMaster(winResult[count].bet005,winResult[count].bet032,function(){
-							console.log('52UPDATE mem success');
-			   		 		callback(null,0);
+						gameSql.UpdateUserMoneyMaster(winResult[count].bet005,winResult[count].bet032,0,function(res){
+							if(res){
+								console.log('52UPDATE mem success');
+			   		 			callback(null,0);
+							}else{
+								
+							}
 						});
 					}
 				}

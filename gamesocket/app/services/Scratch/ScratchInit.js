@@ -143,5 +143,3 @@ var gameMade = function(dbmaster,dbslave,redis,gameZone){
 			}
 		});
 }
-
-

@@ -15,16 +15,13 @@ var bypass = {
     "B":"bet",
     "I":"GetGameID", 
     "M":"GetMoney",
-    "H":"GetHistory",
-    "S":"GetStatus",
     "A":"AddtoChannel",
     "L":"LeaveChannel"
 }
 
 Filter.prototype.before = function (msg, session, next) {
   var lockAccount = 0;
-  if(msg.route == "Scratch.ScratchHandler.X")
-  {
+  if(msg.route == "Scratch.ScratchHandler.X"){
     var cost = 0;
     async.series({
       lockAccount: function(callback){ //redis修正

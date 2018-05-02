@@ -17,15 +17,18 @@ const md5 = require('md5');
 const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
 const sessionService = pomelo.app.get('sessionService');
 const casinoId='053';
+const GameName = 'Scratch'
 //var channel = pomelo.app.get('channelService').getChannel('connect',false);
 const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
 const lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入amount_log,回傳amount_log Index ID
 const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 const code = require(pomelo.app.getBase()+'/app/consts/code.js');
+const tableHandler = new(require(pomelo.app.getBase()+'/app/lib/lib_TableHandler.js'))(pomelo,async,redis,dbslave,dbmaster,messageService,GameName,casinoId);
 //const HAN = new(require(pomelo.app.getBase()+'/app/lib/lib_Handler.js'))();
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
+
 	const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,null,dbslave,dbmaster,53,(msg.bet).channelID);
 	var TimeNow= new Date();//009 開關盤 010強制關 011停押 012已計算結果
 	var yyyy = TimeNow.getFullYear();
@@ -62,7 +65,7 @@ handler.bet = function(msg,session,next){
 	});
 
 	const betSqlInsert = new Promise((resolve, reject) => { //寫入注單 20180425
-		gameSql.InsertBetg(betkey,transfer_no,session.uid,PeriodID,(msg.bet).channelID,function(res){ 
+		gameSql.InsertBetg(betkey,transfer_no,session.uid,PeriodID,(msg.bet).channelID,amount,casinoId,function(res){ 
 			return resolve (res);
 		});
 	});
@@ -72,13 +75,13 @@ handler.bet = function(msg,session,next){
 			return resolve (res);
 		});
 	});
-	const amountSqlInsert =new Promise((resolve, reject) => {//寫入Amountlog
+	const amountSqlInsert = new Promise((resolve, reject) => {//寫入Amountlog
 		gameSql.InsertBetsAmountLog(3,PeriodID,transfer_no,session.uid,amount,UserMoney,function(res){
 			return resolve (res);
 		});
 	});
 
-	const lessUserMoney new Promise((resolve, reject) =>{
+	const lessUserMoney = new Promise((resolve, reject) =>{
 		gameSql.UpdateUserMoneyMaster(session.uid,amount,1,function(res){
 			return resolve (res);
 		})
@@ -91,22 +94,23 @@ handler.bet = function(msg,session,next){
 		const res4 = await amountSqlInsert;
 		const res5 = await lessUserMoney;
 		reward = await getAward(channelID,1);
-		collect = await getAward(channelID,0);
-		return [res1,res2,res3,res4,reward,collect];
+		//collect = await getAward(channelID,0);
+		return [res1,res2,res3,res4,res5,reward,collect,afterBetMoney];
 	}
 	betProcess()
 		.then(result =>{
 			console.log(result);
-			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'collect':collect});
+			gameSql.GetUserMoneyMaster(session.uid,function(res){
+				next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'bet':res});
+			});
 		})
 		.catch(err =>{
 			console.error(err);
 		});
-		//next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'collect':collect});
 }
 
 handler.GetMoney =function(msg,session,next){
-	tableHandler.GetUserMoneyMaster(session.uid,function (data) {
+	tableHandler.GetUserMoneyMaster(session.uid,function (data){
 		if(data.ErrorCode==code.OK){
 			next(null,{'ErrorCode':code.OK,'ErrorMessage':'','res':data.Money});
 		}else{
@@ -129,7 +133,7 @@ handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID, true);
 	channelService.add(session.uid,session.frontendId);//加入channel,房間
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0}); //觸發該玩家監聽訊息function
-	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID,'limit':limit});//回傳區號,下注上下限
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':msg.ChannelID});//回傳區號,下注上下限
 }
 
 handler.LeaveChannel = function(msg,session,next){
@@ -139,7 +143,7 @@ handler.LeaveChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  false);
 	channelService.leave(session.uid,session.frontendId);
 	messageService.pushMessageToPlayer({uid:session.uid, sid:'connector-server-1'},'ChannelChange',{'cid':0});
-	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':'','limit':["100-50000","50-10000","10-1000"]});
+	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':''});
 }
 
 async function getAward(channelID,type){
