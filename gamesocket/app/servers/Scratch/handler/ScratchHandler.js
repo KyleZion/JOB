@@ -52,7 +52,7 @@ handler.bet = function(msg,session,next){
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	var logId = 0;
 	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
-	var afterBetMoney = 0;
+	//var afterBetMoney = 0;
 	var reward = 0;
 	var collect = 0;
 	var Period = yyyy+MM+dd+h+m+s+session.uid;
@@ -95,7 +95,7 @@ handler.bet = function(msg,session,next){
 		const res5 = await lessUserMoney;
 		reward = await getAward(channelID,1);
 		//collect = await getAward(channelID,0);
-		return [res1,res2,res3,res4,res5,reward,collect,afterBetMoney];
+		return [res1,res2,res3,res4,res5,reward,collect];
 	}
 	betProcess()
 		.then(result =>{
