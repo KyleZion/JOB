@@ -1,6 +1,4 @@
 //'use strict';
-
-//var GameName="";
 var co = require('co');
 var thunkify = require('thunkify');
 var pomelo = require('pomelo');
@@ -278,6 +276,8 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 				console.log('getClient!!!');*/
 				if(gameCode==52){
 					next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata,'param':{'limit':["100-50000","50-10000","10-1000"],'channel':[111,222,333]}});
+				}else if(gameCode==53){
+					next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata,'channel':[111,222,333,444]});
 				}else{
 					next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata});
 				}
