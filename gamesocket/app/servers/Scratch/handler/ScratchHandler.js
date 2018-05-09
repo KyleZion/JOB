@@ -41,8 +41,8 @@ handler.bet = function(msg,session,next){
 	var o_Time = h+':'+m+':'+s;//o_Time開盤時間
 	var start = o_Day+' '+o_Time;
 	var stop = start;
-	var PeriodID = 0;
-	var UserMoney = 0;
+	//var PeriodID = 0;
+	//var UserMoney = 0;
 	//var betData = (JSON.stringify(JSON.parse(msg.bet).bets).slice(1,-1)).split(','); //將C2傳來的下注內容string轉JSON
 	var channelID = Number(JSON.parse(msg.bet).channelID);
 	var amount = (JSON.parse(msg.bet).total); //下注金額
@@ -56,47 +56,63 @@ handler.bet = function(msg,session,next){
 	var collect = 0;
 	var Period = yyyy+MM+dd+h+m+s+session.uid;
 
+	async function gameMade(){
+		var GM = await new Promise ((resolve , reject) => { //寫入期數
+			gameSql.InsertPeriod(Period,start,stop,function(res){
+				//PeriodID = res;
+				//return resolve (res);
+				resolve (res);
+			});
+		});
+		return GM;
+	}
+	async function betSqlInsert(PeriodID){
+		const BSI = await new Promise((resolve, reject) => { //寫入注單 20180425
+			gameSql.InsertBetg(betkey,transfer_no,session.uid,PeriodID,channelID,amount,casinoId,function(res){ 
+				resolve (res);
+			});
+		});
+		return BSI;
+	}
 
-	const gameMade = new Promise ((resolve , reject) => { //寫入期數
-		gameSql.InsertPeriod(Period,start,stop,function(res){
-			PeriodID = res;
-			return resolve (res);
+	async function getUserMoney(){
+		const GUM = await new Promise((resolve, reject) => {
+			gameSql.GetUserMoneyMaster(session.uid,function(res){
+				//UserMoney = res;
+				resolve (res);
+			});
 		});
-	});
-
-	const betSqlInsert = new Promise((resolve, reject) => { //寫入注單 20180425
-		gameSql.InsertBetg(betkey,transfer_no,session.uid,PeriodID,channelID,amount,casinoId,function(res){ 
-			return resolve (res);
+		return GUM
+	}
+	
+	async function amountSqlInsert(PeriodID,UserMoney){
+		const ASI =await new Promise((resolve, reject) => {//寫入Amountlog
+			gameSql.InsertBetsAmountLog(3,PeriodID,transfer_no,session.uid,amount,UserMoney,function(res){
+				resolve (res);
+			});
 		});
-	});
-	const getUserMoney = new Promise((resolve, reject) => {
-		gameSql.GetUserMoneyMaster(session.uid,function(res){
-			UserMoney = res;
-			return resolve (res);
+		return ASI
+	}
+	async function lessUserMoney(){
+		const LUM = await new Promise((resolve, reject) =>{
+			gameSql.UpdateUserMoneyMaster(session.uid,amount,1,function(res){
+				resolve (res);
+			});
 		});
-	});
-	const amountSqlInsert = new Promise((resolve, reject) => {//寫入Amountlog
-		gameSql.InsertBetsAmountLog(3,PeriodID,transfer_no,session.uid,amount,UserMoney,function(res){
-			return resolve (res);
-		});
-	});
-
-	const lessUserMoney = new Promise((resolve, reject) =>{
-		gameSql.UpdateUserMoneyMaster(session.uid,amount,1,function(res){
-			return resolve (res);
-		});
-	});
+		return LUM
+	}
 	const addUserMoney = new Promise((resolve, reject) =>{
 		gameSql.UpdateUserMoneyMaster(session.uid,reward,0,function(res){
 			return resolve (res);
 		});
 	});
-	const betProcess = async() =>{
-		const res1 = await gameMade;
-		const res2 = await betSqlInsert;
-		const res3 = await getUserMoney;
-		const res4 = await amountSqlInsert;
-		const res5 = await lessUserMoney;
+
+	async function betProcess() {
+		const res1 = await gameMade(); //回傳期數ID
+		const res2 = await betSqlInsert(res1);
+		const res3 = await getUserMoney();
+		const res4 = await amountSqlInsert(res1,res3);
+		const res5 = await lessUserMoney();
 		reward = await getAward(channelID,1);
 		//collect = await getAward(channelID,0);
 		return [res1,res2,res3,res4,res5,reward,collect];
@@ -108,7 +124,7 @@ handler.bet = function(msg,session,next){
 				next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'bet':res});
 			});
 			gameSql.UpdateUserMoneyMaster(session.uid,reward,0,function(res){
-				console.warn(res);
+				
 			});
 		})
 		.catch(err =>{

@@ -94,7 +94,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 		struct_betgInsert.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
 		struct_betgInsert.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
 		struct_bet.Insert(function(res){
-			if(!res){
+			if(res){
 				callback(true);
 			}else{
 				callback(false);
@@ -182,7 +182,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 	}
 	this.InsertBetsAmountLog = function(type,PeriodID,transfer_no,mid,shiftMoney,balance,callback){
 		var struct_amount = GetStruct_SQL(); //amount_log SQL
-		struct_amount.params.type = type;//4;
+		struct_amount.params.type = type;//3下注4派彩;
 		struct_amount.params.game_id = GameID;
 		struct_amount.params.game_name = PeriodID;
 		struct_amount.params.transfer_no = transfer_no;
