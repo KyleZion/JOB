@@ -28,8 +28,6 @@ const tableHandler = new(require(pomelo.app.getBase()+'/app/lib/lib_TableHandler
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
-	console.log(msg);
-	const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,null,dbslave,dbmaster,53,(msg.bet).channelID);
 	var TimeNow= new Date();//009 開關盤 010強制關 011停押 012已計算結果
 	var yyyy = TimeNow.getFullYear();
 	var MM = (TimeNow.getMonth()+1<10 ? '0' : '')+(TimeNow.getMonth()+1);
@@ -48,13 +46,13 @@ handler.bet = function(msg,session,next){
 	var amount = (JSON.parse(msg.bet).total); //下注金額
 	var betkey=casinoId+session.uid+new Date().getTime(); 
 	var transfer_no=betkey+'0001';
-	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
 	var logId = 0;
 	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
 	//var afterBetMoney = 0;
 	var reward = 0;
 	var collect = 0;
 	var Period = yyyy+MM+dd+h+m+s+session.uid;
+	const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,null,dbslave,dbmaster,53,channelID);
 
 	async function gameMade(){
 		var GM = await new Promise ((resolve , reject) => { //寫入期數
@@ -101,11 +99,62 @@ handler.bet = function(msg,session,next){
 		});
 		return LUM
 	}
-	const addUserMoney = new Promise((resolve, reject) =>{
-		gameSql.UpdateUserMoneyMaster(session.uid,reward,0,function(res){
-			return resolve (res);
+	async function lessUserMoney(){
+		const LUM = await new Promise((resolve, reject) =>{
+			gameSql.UpdateUserMoneyMaster(session.uid,amount,1,function(res){
+				resolve (res);
+			});
 		});
-	});
+		return LUM
+	}
+	async function closeGame(PeriodID,reward){
+		const CG = await new Promise((resolve, reject) =>{
+			if(reward>0){
+				gameSql.UpdateGamesStatusToCalculated(PeriodID,function(res){
+					resolve(res);
+				});
+				gameSql.InsertNumber(PeriodID,reward,function(res2){
+					
+				});
+			}else{
+				gameSql.UpdateGamesStatusToCalculated(PeriodID,function(res){
+					resolve(res);
+				});	
+			}
+
+		});
+		return CG
+	}
+	async function updateBetg(betID,reward){
+		const UB = await new Promise((resolve, reject) =>{
+			if(reward>0){
+				gameSql.SetBetsToWin(betID,1,reward,1,function(res){
+					resolve(res);
+				});	
+			}else{
+				gameSql.SetBetsToWin(PeriodID,function(res){
+					resolve(res);
+				});	
+			}
+
+		});
+		return UB
+	}
+	async function rewarAmountLog(PeriodID,reward,afterBetMoney){
+		const RAL = await new Promise((resolve, reject) =>{
+			if(reward>0){
+				gameSql.InsertBetsAmountLog(4,PeriodID,transfer_no,session.uid,reward,afterBetMoney,function(res){
+					resolve(res);
+				});	
+			}else{
+				gameSql.SetBetsToWin(PeriodID,function(res){
+					resolve(res);
+				});	
+			}
+
+		});
+		return RAL
+	}
 
 	async function betProcess() {
 		const res1 = await gameMade(); //回傳期數ID
@@ -114,8 +163,12 @@ handler.bet = function(msg,session,next){
 		const res4 = await amountSqlInsert(res1,res3);
 		const res5 = await lessUserMoney();
 		reward = await getAward(channelID,1);
+		const res6 = await closeGame(res1,reward);
+		const res7 = await updateBetg(res2,reward);
+		const res8 = await getUserMoney();
+		const res9 = await rewarAmountLog(res1,reward,res8);
 		//collect = await getAward(channelID,0);
-		return [res1,res2,res3,res4,res5,reward,collect];
+		return [res1,res2,res3,res4,res5,reward,res6,res7];
 	}
 	betProcess()
 		.then(result =>{
@@ -124,7 +177,6 @@ handler.bet = function(msg,session,next){
 				next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'bet':res});
 			});
 			gameSql.UpdateUserMoneyMaster(session.uid,reward,0,function(res){
-				
 			});
 		})
 		.catch(err =>{
@@ -172,7 +224,7 @@ handler.LeaveChannel = function(msg,session,next){
 async function getAward(channelID,type){
 	switch(channelID){
 		case 111:
-			var reward = [40000,20000,10000,2000,1000,400,200,120,100,60,40,20,0];
+			var reward = [40000,20000,10000,2000,1000,400,200,120,100,60,40,20];
 			var collect = 600;
 			if(type){
 				return reward[Math.floor(Math.random()*reward.length)];
@@ -181,7 +233,7 @@ async function getAward(channelID,type){
 			}
 			break;
 		case 222:
-			var reward = [100000,60000,20000,10000,2000,1000,400,300,200,160,120,100,80,60,40,20,0];
+			var reward = [100000,60000,20000,10000,2000,1000,400,300,200,160,120,100,80,60,40,20];
 			var collect = 1000;
 			if(type){
 				return reward[Math.floor(Math.random()*reward.length)];
@@ -190,7 +242,7 @@ async function getAward(channelID,type){
 			}
 			break;
 		case 333:
-			var reward = [160000,80000,30000,20000,10000,4000,2000,1400,1000,400,200,160,100,60,40,20,0];
+			var reward = [160000,80000,30000,20000,10000,4000,2000,1400,1000,400,200,160,100,60,40,20];
 			var collect = 1400;
 			if(type){
 				return reward[Math.floor(Math.random()*reward.length)];
@@ -199,7 +251,7 @@ async function getAward(channelID,type){
 			}
 			break;
 		case 444:
-			var reward = [200000,100000,60000,20000,10000,6000,4000,2000,1600,1000,600,200,120,100,60,40,0];
+			var reward = [200000,100000,60000,20000,10000,6000,4000,2000,1600,1000,600,200,120,100,60,40];
 			var collect = 2000;
 			if(type){
 				return reward[Math.floor(Math.random()*reward.length)];

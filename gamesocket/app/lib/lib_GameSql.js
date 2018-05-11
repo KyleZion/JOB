@@ -13,7 +13,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 		});
 	}
 	this.UpdateGamesStatusToCalculated= function(AutoIndex,callback){
-		dbmaster.update('UPDATE games_'+GameID+' SET gas012 = ? where id = ? and gas004 = ?',[1,AutoIndex,GameZone],function(data){	
+		dbmaster.update('UPDATE games_'+GameID+' SET gas009 = ? , gas012 = ? where id = ? and gas004 = ?',[1,1,AutoIndex,GameZone],function(data){	
 			if(data.ErrorCode==0)
 				callback(true);
 			else
@@ -94,8 +94,9 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 		struct_betgInsert.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
 		struct_betgInsert.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
 		struct_bet.Insert(function(res){
+			console.warn(res);
 			if(res){
-				callback(true);
+				callback(res);
 			}else{
 				callback(false);
 			}
