@@ -28,12 +28,11 @@ AddAction(3, 0, "登出", "遊戲動作", "登出", "登出遊戲.","MemberLogou
 AddStringParam("下注","請填下注內容","\"\"");
 AddAction(4, 0, "下注","遊戲動作","下注 <b>{0}</b>","下注號碼","bet");
 AddAction(5, 0, "取得餘額","遊戲動作","取得帳戶餘額,成功回傳參數1,失敗-1","帳戶餘額","GetMoney");
-AddNumberParam("筆數","取得歷史紀錄的筆數","\"\"");
-AddAction(6, 0, "取得歷史紀錄","遊戲動作","取得歷史紀錄<i>{0}</i>筆","歷史開盤紀錄","GetHistory");
 AddNumberParam("遊戲區號","輸入加入的區號","\"\"");
-AddAction(7, 0, "加入遊戲區","遊戲動作","加入遊戲區賠率<i>{0}</i>","加入遊戲區","AddToChannel");
+AddAction(6, 0, "加入遊戲區","遊戲動作","加入遊戲區賠率<i>{0}</i>","加入遊戲區","AddToChannel");
 AddNumberParam("遊戲區號","輸入離開的區號","\"\"");
-AddAction(8, 0, "離開遊戲區","遊戲動作","離開遊戲區","離開遊戲區","LeaveChannel");
+AddAction(7, 0, "離開遊戲區","遊戲動作","離開遊戲區","離開遊戲區","LeaveChannel");
+AddAction(8,0, "取得期數ID","遊戲動作","取得期數ID","取得期數ID","GetGameID");
 //======================================================================================================================================
 
 //cf_trigger cf_fake_trigger****
@@ -52,7 +51,7 @@ AddCondition(11, cf_trigger, "離開遊戲區","遊戲事件","離開遊戲區",
 //======================================================================================================================================
 AddExpression(0,ef_return_any,"玩家帳號","遊戲參數","UserAccount","玩家帳號.");
 //AddExpression(1,ef_return_any,"系統時間","遊戲參數","ServerDate","系統時間.");
-AddExpression(1,ef_return_any,"開獎號碼","遊戲參數","OpData","開獎號碼.");
+AddExpression(1,ef_return_any,"刮刮樂開獎金額","遊戲參數","OpData","刮刮樂開獎金額.");
 AddExpression(2,ef_return_any,"遊戲額度","遊戲參數","UserMoney","遊戲額度.");
 AddExpression(3,ef_return_any,"回傳狀態碼","遊戲參數","isSuccess","狀態碼");
 AddExpression(4,ef_return_any,"錯誤訊息","遊戲參數","ErrorMessage","錯誤訊息");

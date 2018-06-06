@@ -8,14 +8,14 @@ document.write("<script src='pomeloclient.js'><\/script>");
 assert2(cr,"cr namespace not created");
 assert2(cr.plugins_,"cr.plugins not created");
 
-cr.plugins_.pomelo_dice = function(runtime)
+cr.plugins_.eGameScratch = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.pomelo_dice.prototype;
+	var pluginProto = cr.plugins_.eGameScratch.prototype;
 
 	pluginProto.Type = function(plugin)
 	{
@@ -37,24 +37,12 @@ cr.plugins_.pomelo_dice = function(runtime)
 		this.UserMoney=0;
 		this.ServerDate = null;
 		this.OpData = null;
-		//this.OnTimer = null;
-		this.OnStatus = '';
-		this.HistoryRecord = '';
 		this.GameID='0';
-		this.BetTotal='';
-		this.TimeZone='';
-		this.LobbyHistory1;
-		this.LobbyHistory2 = '';
-		this.LobbyHistory3 = '';
-		this.LobbyStatus1 = '' ;
-		this.LobbyStatus2 = '' ;
-		this.LobbyStatus3 = '' ;
 		this.ChannelID = 0;
-		this.GameSet = '';
 		this.isSuccess;
 		this.ErrorMessage = '';
 		this.param = 0;
-		this.GameNumComb = null;
+		this.reward = 0;
 	};
 	
 	var instanceProto = pluginProto.Instance.prototype;
@@ -112,22 +100,10 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		var runtime = this.runtime;
 		var instance = this;
-        pomelo.request("c.e.M", {'Token':Token,'GameType':'diceBao'}, function(data) {
+        pomelo.request("c.e.M", {'Token':Token,'GameType':'Scratch'}, function(data) {
         	if(data['ErrorCode']==0){
         	    instance.UserAccount = data['userdata']['name'];
         		instance.isSuccess = 1;
-        		instance.param = JSON.stringify(data['param']);
-        		LOBBYLISTEN =function(data){
-			    	instance.LobbyStatus1 = JSON.stringify(data['Status'][0]);
-			    	instance.LobbyStatus2 = JSON.stringify(data['Status'][1]);
-			    	instance.LobbyStatus3 = JSON.stringify(data['Status'][2]);
-			    	instance.LobbyHistory1 = JSON.stringify(data['History'][0]);
-			    	instance.LobbyHistory2 = JSON.stringify(data['History'][1]);
-			    	instance.LobbyHistory3 = JSON.stringify(data['History'][2]);
-					runtime.trigger(pluginProto.cnds.OnLobbyStatus,instance);
-					runtime.trigger(pluginProto.cnds.OnLobbyHistory,instance);
-				}
-				pomelo.on('lobbyDiceBao',LOBBYLISTEN);
 				runtime.trigger(pluginProto.cnds.OnMemberLogin,instance);
         	}else{
         		instance.UserAccount = '000' ;
@@ -149,10 +125,11 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		var runtime = this.runtime;
 		var instance = this;
-		//pomelo.request("dice.diceHandler.bet", {'bet':Betdata}, function(data) {
-		pomelo.request("d.d.B", {'bet':Betdata}, function(resp) {
+		//pomelo.request("s.g.B", {'bet':Betdata}, function(resp) {
+		pomelo.request("s.g.B", {'bet':'{"channelID":"444","total":100}'}, function(resp) {
 			if(resp['ErrorCode']==0){
 				instance.UserMoney = resp['bet'];
+				instance.OpData = resp['reward'];
 				instance.isSuccess = 1;
 				runtime.trigger(pluginProto.cnds.OnBetSuccess,instance);
 			}else{
@@ -162,46 +139,13 @@ cr.plugins_.pomelo_dice = function(runtime)
 			}
 		});
 	};
-	instanceProto.GetHistory = function(count)
-	{
-		var runtime = this.runtime;
-		var instance = this;
-		pomelo.request("d.d.H",{'count':count,'cid':instance.ChannelID},function(HistoryRec){
-			if(HistoryRec['ErrorCode']==0){
-				instance.HistoryRecord = JSON.stringify(HistoryRec['History']);
-				instance.isSuccess = 1;
-				runtime.trigger(pluginProto.cnds.OnHistoryRecord,instance);
-			}else{
-				instance.isSuccess = -1;
-				instance.ErrorMessage = HistoryRec['ErrorMessage'];
-				runtime.trigger(pluginProto.cnds.OnError,instance);
-			}
-		});
-	};
-	instanceProto.GetTimeZone = function()
-	{
-		var runtime = this.runtime;
-		var instance = this;
-		pomelo.request("d.d.T",{'cid':instance.ChannelID},function(GetTimeZone){
-			if(GetTimeZone['ErrorCode']==0){
-				instance.TimeZone = GetTimeZone['TimeZone'];
-				instance.isSuccess = 1;
-				runtime.trigger(pluginProto.cnds.OnGetTimeZone,instance);
-			}else{
-				//instance.TimeZone = GetTimeZone['TimeZone'];
-				instance.isSuccess = -1;
-				instance.ErrorMessage = GetTimeZone['ErrorMessage'];
-				runtime.trigger(pluginProto.cnds.OnError,instance);
-			}
-		});
-	};
 	instanceProto.GetMoney = function()
 	{
 		var runtime = this.runtime;
 		var instance = this;
-		pomelo.request("d.d.M",'',function(money){
+		pomelo.request("s.g.M",'',function(money){
 			if(money['ErrorCode']==0){
-				instance.UserMoney = money['Money'];
+				instance.UserMoney = money['res'];
 				instance.isSuccess = 1;
 				runtime.trigger(pluginProto.cnds.OnGetMoney,instance);
 			}else{
@@ -216,7 +160,7 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		var runtime = this.runtime;
 		var instance = this;
-		pomelo.request("d.d.I",{'cid':instance.ChannelID},function(gid){
+		pomelo.request("s.g.I",{'cid':instance.ChannelID},function(gid){
 			if(gid['ErrorCode']==0){
 				instance.GameID = gid['ID'];
 				instance.isSuccess = 1;
@@ -229,62 +173,12 @@ cr.plugins_.pomelo_dice = function(runtime)
 			}
 		});
 	};
-	instanceProto.GetStatus = function()
-	{
-		var runtime = this.runtime;
-		var instance = this;
-		pomelo.request("d.d.S",{'cid':instance.ChannelID},function(ServerStatus){
-			if(ServerStatus['ErrorCode']==0){
-				instance.OnStatus = ServerStatus['GetStatus'];
-				instance.isSuccess = 1;
-				runtime.trigger(pluginProto.cnds.OnGameStatus,instance);
-			}else{
-				instance.OnStatus = '0';
-				instance.isSuccess = -1;
-				instance.ErrorMessage = ServerStatus['ErrorMessage'];
-				runtime.trigger(pluginProto.cnds.OnError,instance);
-			}
-		});
-	};
-	instanceProto.GetBetTotal = function(game_id)
-	{
-		var runtime = this.runtime;
-		var instance = this;
-		pomelo.request("d.d.O",{'cid':instance.ChannelID},function(NowBetTotal){
-			if(NowBetTotal['ErrorCode']==0){
-				instance.BetTotal = NowBetTotal['GetBetTotal'];
-				instance.isSuccess = 1;
-				runtime.trigger(pluginProto.cnds.OnBetTotal,instance);
-			}else{
-				//instance.BetTotal = NowBetTotal['GetBetTotal'];
-				instance.isSuccess = -1;
-				instance.ErrorMessage = NowBetTotal['ErrorMessage'];
-				runtime.trigger(pluginProto.cnds.OnError,instance);
-			}
-		});
-	};
 	instanceProto.AddToChannel = function(joinID){
 		var runtime = this.runtime;
 		var instance = this;
-		pomelo.request("d.d.A",{'ChannelID':joinID},function(res){
+		pomelo.request("s.g.A",{'ChannelID':joinID},function(res){
 			if(res['ErrorCode']==0){
 				instance.ChannelID = res['cid'];
-				instance.param = res['limit'];
-				GAMEOPLISTEN =function(data){
-					instance.OpData = data['gameNum'];
-					instance.GameNumComb = JSON.stringify(data['gameNumComb']);
-					runtime.trigger(pluginProto.cnds.OnGameNumComb,instance)
-					runtime.trigger(pluginProto.cnds.OnOpData,instance);
-				}
-				STATUSLISTEN = function(data){
-					instance.OnStatus = data['status'];
-					//console.log(data);
-					runtime.trigger(pluginProto.cnds.OnGameStatus,instance);
-				}
-				pomelo.on('diceBaogameop'+res['cid'],GAMEOPLISTEN);
-			    pomelo.on('diceBaoStatus'+res['cid'],STATUSLISTEN);
-			    //gameOP COMBO
-			    pomelo.removeListener('lobbyDiceBao',LOBBYLISTEN);
 				instance.isSuccess = 1;
 				runtime.trigger(pluginProto.cnds.OnChannel,instance);
 			}else{
@@ -297,23 +191,9 @@ cr.plugins_.pomelo_dice = function(runtime)
 	instanceProto.LeaveChannel = function(leaveID){
 		var runtime = this.runtime;
 		var instance = this;
-		pomelo.request("d.d.L",{'ChannelID':leaveID},function(res){
+		pomelo.request("s.g.L",{'ChannelID':leaveID},function(res){
 			if(res['ErrorCode']==0){
 				instance.ChannelID = res['cid'];
-				instance.param = JSON.stringify(res['param']);
-				pomelo.removeListener('diceBaogameop'+leaveID,GAMEOPLISTEN);
-				pomelo.removeListener('diceBaoStatus'+leaveID,STATUSLISTEN);
-				LOBBYLISTEN =function(data){
-			    	instance.LobbyStatus1 = JSON.stringify(data['Status'][0]);
-			    	instance.LobbyStatus2 = JSON.stringify(data['Status'][1]);
-			    	instance.LobbyStatus3 = JSON.stringify(data['Status'][2]);
-			    	instance.LobbyHistory1 = JSON.stringify(data['History'][0]);
-			    	instance.LobbyHistory2 = JSON.stringify(data['History'][1]);
-			    	instance.LobbyHistory3 = JSON.stringify(data['History'][2]);
-					runtime.trigger(pluginProto.cnds.OnLobbyStatus,instance);
-					runtime.trigger(pluginProto.cnds.OnLobbyHistory,instance);
-				}
-				pomelo.on('lobbyDiceBao',LOBBYLISTEN);
 				instance.isSuccess = 1;
 				runtime.trigger(pluginProto.cnds.OnChannelLeave,instance);
 			}else{
@@ -324,42 +204,6 @@ cr.plugins_.pomelo_dice = function(runtime)
 			}
 		});
 	}
-	instanceProto.GetGameResult = function()
-	{
-		var runtime = this.runtime;
-		var instance = this;
-		pomelo.request("d.d.R",{'ChannelID':instance.ChannelID},function(gr){
-			if(gr['ErrorCode']==0){
-				instance.OpData = gr['gameNum'];
-				instance.GameNumComb = JSON.stringify(gr['gameNumComb']);
-				instance.isSuccess = 1;
-				runtime.trigger(pluginProto.cnds.OnGameNumComb,instance)
-				runtime.trigger(pluginProto.cnds.OnOpData,instance);
-			}else{
-				instance.GameSet = 0 ;
-				instance.isSuccess = -1;
-				instance.ErrorMessage = gr['ErrorMessage'];
-				runtime.trigger(pluginProto.cnds.OnError,instance);
-			}
-		});
-	};
-	instanceProto.GetGameSet = function()
-	{
-		var runtime = this.runtime;
-		var instance = this;
-		pomelo.request("d.d.G",{'ChannelID':instance.ChannelID},function(gs){
-			if(gs['ErrorCode']==0){
-				instance.GameSet = gs['GameSet'];
-				instance.isSuccess = 1;
-				runtime.trigger(pluginProto.cnds.OnGameSet,instance);
-			}else{
-				instance.GameSet = 0 ;
-				instance.isSuccess = -1;
-				instance.ErrorMessage = gs['ErrorMessage'];
-				runtime.trigger(pluginProto.cnds.OnError,instance);
-			}
-		});
-	};
 	//=======================================================Action
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
@@ -397,15 +241,6 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		this.bet(Betdata);
 	};
-
-	acts.GetHistory =function(count)
-	{
-		this.GetHistory(count);
-	};
-	acts.GetTimeZone = function(data)
-	{
-		this.GetTimeZone();
-	};
 	acts.GetMoney = function()
 	{
 		this.GetMoney();
@@ -414,14 +249,6 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		this.GetGameID();
 	};
-	acts.GetStatus = function()
-	{
-		this.GetStatus();
-	};
-	acts.GetBetTotal = function()
-	{
-		this.GetBetTotal();
-	};
 	acts.AddToChannel = function(joinID)
 	{
 		this.AddToChannel(joinID);
@@ -429,14 +256,6 @@ cr.plugins_.pomelo_dice = function(runtime)
 	acts.LeaveChannel = function(joinID)
 	{
 		this.LeaveChannel(joinID);
-	};
-	acts.GetGameSet = function()
-	{
-		this.GetGameSet();
-	};
-	acts.GetGameResult = function()
-	{
-		this.GetGameResult();
 	};
 	//=======================================================
 	//=======================================================Condition
@@ -454,7 +273,6 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		return true;
 	};
-
 	cnds.OnMemberLogin = function()
 	{
 		return true;
@@ -471,27 +289,11 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		return true;
 	};
-	cnds.OnGameStatus = function()
-	{
-		return true;
-	};
-	cnds.OnHistoryRecord =function()
-	{
-		return true;
-	};
 	cnds.OnGetMoney=function()
 	{
 		return true;
 	};
 	cnds.OnGameID=function()
-	{
-		return true;
-	};
-	cnds.OnBetTotal=function()
-	{
-		return true;
-	};
-	cnds.OnGetTimeZone=function()
 	{
 		return true;
 	};
@@ -504,22 +306,6 @@ cr.plugins_.pomelo_dice = function(runtime)
 		return true;
 	};
 	cnds.OnChannelLeave=function()
-	{
-		return true;
-	};
-	cnds.OnLobbyHistory=function()
-	{
-		return true;
-	};
-	cnds.OnLobbyStatus=function()
-	{
-		return true;
-	};
-	cnds.OnGameSet=function()
-	{
-		return true;
-	};
-	cnds.OnGameNumComb=function()
 	{
 		return true;
 	};
@@ -547,10 +333,6 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		result.set_string(String(this.OpData));
 	};
-	exps.OnStatus =function(result) //Server開盤狀態
-	{
-		result.set_string(String(this.OnStatus));
-	};
 	exps.HistoryRecord=function(result) //歷史紀錄
 	{
 		result.set_any(this.HistoryRecord);
@@ -559,57 +341,13 @@ cr.plugins_.pomelo_dice = function(runtime)
 	{
 		result.set_any(this.GameID);
 	};
-	exps.BetTotal=function(result)
-	{
-		result.set_string(this.BetTotal);
-	};
-	exps.TimeZone=function(result)
-	{
-		result.set_any(this.TimeZone);
-	};
 	exps.ChannelID=function(result)
 	{
 		result.set_any(this.ChannelID);
 	}
-	exps.LobbyHistory1 = function(result) //1區紀錄
-	{
-		result.set_any(this.LobbyHistory1);
-	};
-	exps.LobbyHistory2 = function(result) //2區紀錄
-	{
-		result.set_any(this.LobbyHistory2);
-	};
-	exps.LobbyHistory3 = function(result) //3區紀錄
-	{
-		result.set_any(this.LobbyHistory3);
-	};
-	exps.LobbyHistory4 = function(result) //4區紀錄
-	{
-		result.set_any(this.LobbyHistory4);
-	};
-	exps.LobbyStatus1 = function(result) //1區狀態
-	{
-		result.set_any(this.LobbyStatus1);
-	};
-	exps.LobbyStatus2 = function(result) //2區狀態
-	{
-		result.set_any(this.LobbyStatus2);
-	};
-	exps.LobbyStatus3 = function(result) //3區狀態
-	{
-		result.set_any(this.LobbyStatus3);
-	};
-	exps.LobbyStatus4 = function(result) //4區狀態
-	{
-		result.set_any(this.LobbyStatus4);
-	};
 	exps.param = function (result) 
 	{
 		result.set_any(this.param);
-	}
-	exps.GameSet = function (result) 
-	{
-		result.set_any(this.GameSet);
 	}
 	exps.GameNumComb = function(result)
 	{
