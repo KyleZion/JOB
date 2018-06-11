@@ -1,9 +1,10 @@
 {
-    "name":"pomelo_test",
-    "version":"0.0.1",
-    "private":false,
-    "dependencies":{
-        "pomelo":"2.2.5"
-    }
+  "name": "pomelo_test",
+  "version": "0.0.1",
+  "private": false,
+  "dependencies": {
+    "async-redis": "^1.0.0",
+    "bearcat": "^0.4.29",
+    "pomelo": "2.2.5"
+  }
 }
-

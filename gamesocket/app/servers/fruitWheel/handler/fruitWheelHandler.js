@@ -1,5 +1,5 @@
 var pomelo=require('pomelo');
-var logger = require('pomelo-logger').getLogger(__filename);
+var logger = require('pomelo-logger').getLogger('fruitlog',__filename);
 
 module.exports = function(app) {
   return new Handler(app);
@@ -9,18 +9,18 @@ var Handler = function(app) {
   this.app = app;
 };
 //===固定==============================================================
-var handler = Handler.prototype;
-var redis=pomelo.app.get('redis');
-var dbmaster=pomelo.app.get('dbmaster');
-var dbslave=pomelo.app.get('dbslave');
-var async=require('async');
-var md5 = require('md5');
-var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
-var sessionService = pomelo.app.get('sessionService');
-var casinoId='051';
-var gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
-var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
-var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+const handler = Handler.prototype;
+const redis=pomelo.app.get('redis');
+const dbmaster=pomelo.app.get('dbmaster');
+const dbslave=pomelo.app.get('dbslave');
+const async=require('async');
+const md5 = require('md5');
+const messageService = pomelo.app.get('messageService');
+const sessionService = pomelo.app.get('sessionService');
+const casinoId='051';
+const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
+const lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
+const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
@@ -40,6 +40,76 @@ handler.bet = function(msg,session,next){
 	var b015 = 0;
 	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
+
+	async function rewardAmountLog(PeriodID,reward,afterBetMoney){
+		const RAL = await new Promise((resolve, reject) =>{
+			if(reward>0){
+				gameSql.InsertBetsAmountLog(4,PeriodID,transfer_no,session.uid,reward,afterBetMoney,function(res){
+					resolve(res);
+				});	
+			}else{
+				gameSql.SetBetsToWin(PeriodID,function(res){
+					resolve(res);
+				});	
+			}
+
+		});
+		return RAL
+	}
+
+	async function betData(){
+		const BD = await new Promise((resolve,reject) =>{
+			for(var i=0;i<=6;i++){
+				if(betData[i]!=0){
+					amount= amount+betData[i]; //計算下注總金額
+					betValue[i]=betData[i];
+					periodBetTotal[i]=betData[i];
+				}
+			}
+		});
+	}
+
+	async function channelOdds(){
+		b015 = amount;
+		switch(channelID){
+			case 101:
+				callback_Z(null,0);
+				break;
+			case 102:
+				amount = amount * 2 ; 
+				odds = 2;
+				callback_Z(null,0);
+				break;
+			case 105:
+				amount = amount * 5;
+				odds = 5;
+				callback_Z(null,0);
+				break;
+			case 110:
+				amount = amount * 10;
+				odds = 10;
+				callback_Z(null,0);
+				break;
+		}
+	}
+
+	async function betProcess() {
+		const res1 = await gameMade(); //回傳期數ID
+		//collect = await getAward(channelID,0);
+		return [res1];
+	}
+	betProcess()
+		.then(result =>{
+			console.log(result);
+			gameSql.GetUserMoneyMaster(session.uid,function(res){
+				next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'bet':res});
+			});
+			gameSql.UpdateUserMoneyMaster(session.uid,reward,0,function(res){
+			});
+		})
+		.catch(err =>{
+			console.error(err);
+		});
 	async.series({
 		Y: function(callback_Y){
 			for(var i=0;i<=6;i++){

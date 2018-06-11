@@ -1,11 +1,11 @@
 module.exports = function SetGame(pomelo,app)
 {
 	var async = require('async');
-	var diceBaoInit = require(app.getBase()+'/app/services/diceBaoInit.js');
+	var diceBaoInit = require(app.getBase()+'/app/services/diceBao/diceBaoInit.js');
 
 	var filterPath = app.getBase()+'/app/servers/diceBao/filter/diceBaoFilter';
 	var GameProc_Base = require(app.getBase()+'/app/lib/GameProc_Base.js');
-	var GPB = new GameProc_Base(3011,"diceBao","骰寶");
+	var GPB = new GameProc_Base(6052,"diceBao","骰宝");
 	var Name = "diceBao";
 
 
@@ -26,20 +26,16 @@ module.exports = function SetGame(pomelo,app)
 		      callback_A(null,0);
 		    },
 		    B:function(callback_B){
-		      diceBaoInit.init(101);
+		      diceBaoInit.init(111);
 		      callback_B(null,0);
 		    },
 		    C:function(callback_C){
-		      diceBaoInit.init(102);
+		      diceBaoInit.init(222);
 		      callback_C(null,0);
 		    },
 		    D:function(callback_D){
-		      diceBaoInit.init(105);
+		      diceBaoInit.init(333);
 		      callback_D(null,0);
-		    },
-		    E:function(callback_E){
-		      diceBaoInit.init(110);
-		      callback_E(null,0);
 		    }
 		  },function(err, results) {
 		    console.log("初始化完成");

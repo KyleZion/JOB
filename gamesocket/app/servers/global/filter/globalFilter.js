@@ -14,7 +14,8 @@ var bypass = {
   "tt":"transfer.transferHandler.",
   "dd":"diceBao.diceBaoHandler.",
   "mm":"manager.managerHandler.",
-  "sg":"Scratch.ScratchHandler."
+  "sg":"Scratch.ScratchHandler.",
+  "fs":"fruitSlot.fruitSlotHandler."
 }
 
 

@@ -1,11 +1,11 @@
 module.exports = function SetGame(pomelo,app)
 {
 	var async = require('async');
-	var fruitWheelInit = require(app.getBase()+'/app/services/fruitWheelInit.js');
+	var fruitWheelInit = require(app.getBase()+'/app/services/fruitWheel/fruitWheelInit.js');
 
 	var filterPath = app.getBase()+'/app/servers/fruitWheel/filter/fruitWheelFilter';
 	var GameProc_Base = require(app.getBase()+'/app/lib/GameProc_Base.js');
-	var GPB = new GameProc_Base(3010,"fruitWheel","水果盤");
+	var GPB = new GameProc_Base(6051,"fruitWheel","水果转盘");
 	var Name = "fruitWheel";
 
 

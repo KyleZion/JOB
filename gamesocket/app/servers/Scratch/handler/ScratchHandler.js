@@ -14,7 +14,7 @@ const dbmaster=pomelo.app.get('dbmaster');
 const dbslave=pomelo.app.get('dbslave');
 const async=require('async');
 const md5 = require('md5');
-const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
+const messageService = pomelo.app.get('messageService');
 const sessionService = pomelo.app.get('sessionService');
 const casinoId='053';
 const GameName = 'Scratch'
@@ -99,14 +99,6 @@ handler.bet = function(msg,session,next){
 		});
 		return LUM
 	}
-	async function lessUserMoney(){
-		const LUM = await new Promise((resolve, reject) =>{
-			gameSql.UpdateUserMoneyMaster(session.uid,amount,1,function(res){
-				resolve (res);
-			});
-		});
-		return LUM
-	}
 	async function closeGame(PeriodID,reward){
 		const CG = await new Promise((resolve, reject) =>{
 			if(reward>0){
@@ -116,6 +108,7 @@ handler.bet = function(msg,session,next){
 				gameSql.InsertNumber(PeriodID,reward,function(res2){
 					
 				});
+
 			}else{
 				gameSql.UpdateGamesStatusToCalculated(PeriodID,function(res){
 					resolve(res);
@@ -140,7 +133,7 @@ handler.bet = function(msg,session,next){
 		});
 		return UB
 	}
-	async function rewarAmountLog(PeriodID,reward,afterBetMoney){
+	async function rewardAmountLog(PeriodID,reward,afterBetMoney){
 		const RAL = await new Promise((resolve, reject) =>{
 			if(reward>0){
 				gameSql.InsertBetsAmountLog(4,PeriodID,transfer_no,session.uid,reward,afterBetMoney,function(res){
@@ -166,7 +159,7 @@ handler.bet = function(msg,session,next){
 		const res6 = await closeGame(res1,reward);
 		const res7 = await updateBetg(res2,reward);
 		const res8 = await getUserMoney();
-		const res9 = await rewarAmountLog(res1,reward,res8);
+		const res9 = await rewardAmountLog(res1,reward,res8);
 		//collect = await getAward(channelID,0);
 		return [res1,res2,res3,res4,res5,reward,res6,res7];
 	}

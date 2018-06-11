@@ -333,18 +333,17 @@ handler.Add =function(msg,session,next){
 	});
 }
 
-handler.ServerStatus =function(msg,session,next){
-	var serverList =['fruitWheel','diceBao'];
-	var code = {'fruitWheel':'51','diceBao':'52'};
-	var trans = {'fruitWheel':'FW','diceBao':'DG'};;
+handler.ServerStatus = async function(msg,session,next){
 	var status = {};
+	const serverConfig = await getServerConfig();
 	async.series({
 		A: function(callback){
-			for(var i in serverList){
-				if(pomelo.app.getServersByType(serverList[i]).length!=0){
-					status[code[serverList[i]]]=[200,serverList[i],trans[serverList[i]]];
+			for(var i in serverConfig){
+				console.log(serverConfig[i]);
+				if(pomelo.app.getServersByType(serverConfig[i]['gc002']).length!=0){
+					status[serverConfig[i]['gc001']]=[200,serverConfig[i]['gc002']];
 				}else{
-					status[code[serverList[i]]]=[500,serverList[i],trans[serverList[i]]];;
+					status[serverConfig[i]['gc001']]=[500,serverConfig[i]['gc002']];
 				}
 			}
 			callback(null,0);
@@ -363,4 +362,17 @@ var Close = function(session){
     backendSessionService.kickByUid(connectors[0].id,session.uid,function(res){
    		console.log(session.uid+'已從轉帳入口踢出!');
     });
+}
+
+async function getServerConfig(){
+	const GSC = await new Promise((resolve, reject) =>{
+		dbmaster.query('SELECT gc001,gc002,gc007 FROM game_config','',function(data){ 
+			if(data.ErrorCode==0){
+				resolve(data['rows']); 
+			}else{
+				reject(null);
+			}
+		});
+	});
+	return GSC
 }

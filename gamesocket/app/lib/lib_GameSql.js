@@ -60,7 +60,7 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 	// 取得所有沒有開獎的期數
 	this.GetUnOpenGames = function(callback){
 		var Sql = 'SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ';
-		console.log("GetUnOpenGames"+Sql);
+		//console.log("GetUnOpenGames"+Sql);
 		dbslave.query('SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[GameZone],function(data){
 			if(data.ErrorCode==0)
 				callback(data.rows);
@@ -94,7 +94,6 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 		struct_betgInsert.params.created_at = PUB.formatDate()+" "+PUB.formatDateTime();
 		struct_betgInsert.params.updated_at = PUB.formatDate()+" "+PUB.formatDateTime();
 		struct_bet.Insert(function(res){
-			console.warn(res);
 			if(res){
 				callback(res);
 			}else{
@@ -105,6 +104,15 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 	// 	設定betg 注單 狀態 為已經 開獎
 	this.UpdateBetStatusToOpened= function(PeriodID,GameZone,callback){
 		dbmaster.update('UPDATE bet_g'+GameID+' SET betstate = 1 where bet009 = ? and bet003 = ? and bet012= ? ',[PeriodID,0,GameZone],function(data){
+			if(data.ErrorCode==0){
+				callback(true);
+			}else{
+				callback(false);
+			}
+		});
+	}
+	this.UpdateBetStatusToOpenedById= function(PeriodID,GameZone,AutoIndexID,callback){
+		dbmaster.update('UPDATE bet_g'+GameID+' SET betstate = 1 where bet009 = ? and bet003 = ? and bet012= ? and id= ?',[PeriodID,0,GameZone,AutoIndexID],function(data){
 			if(data.ErrorCode==0){
 				callback(true);
 			}else{

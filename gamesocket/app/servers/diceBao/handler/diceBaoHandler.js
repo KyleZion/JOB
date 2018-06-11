@@ -14,9 +14,9 @@ const dbmaster=pomelo.app.get('dbmaster');
 const dbslave=pomelo.app.get('dbslave');
 const async=require('async');
 const md5 = require('md5');
-const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
+const messageService = pomelo.app.get('messageService');
 const sessionService = pomelo.app.get('sessionService');
-const GameName = 'diceBao'
+const GameName = 'diceBao';
 const CasinoId = 52;
 const gid='052';
 const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
@@ -49,7 +49,6 @@ handler.bet = function(msg,session,next){
 					async.series({
 					//=============================================================
 						AA: function(callback_AA){
-							//betkey=gid+session.uid+new Date().getTime();
 							betPlay=betData[count].split(':');
 							betTotal += Number(betPlay[1]);
 							if(count>=10){

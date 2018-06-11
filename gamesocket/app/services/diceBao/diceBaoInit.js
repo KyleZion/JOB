@@ -25,7 +25,7 @@ exp.init = function (gameZone) {
 		}else{
 			const reCalc = new Promise((resolve , reject) =>{
 				for(item of gameID){
-					console.log(item);
+					//console.log(item);
 					DBGC.GameCalc(item.id,1,function(res){
 						if(!res){
 							//console.log('OK');

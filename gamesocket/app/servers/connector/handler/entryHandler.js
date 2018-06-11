@@ -565,5 +565,8 @@ function GameTypeToGameCode(type){
 		case "Scratch":
 			return 53;
 			break;
+		case "fruitSlot":
+			return 54;
+			break;
 	}
 }
