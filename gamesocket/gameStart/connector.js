@@ -1,14 +1,15 @@
-module.exports = function SetGame(pomelo,app)
+module.exports = function SetGame(pomelo,app,gameName)
 {
-	var filterPath = app.getBase()+'/app/servers/connector/filter/filter';
+	var filterPath = app.getBase()+'/app/servers/'+gameName+'/filter/filter';
 
 
-	app.configure('production|development', 'connector', function(){
-
+	app.configure('production|development', gameName, function(){
 
 		var iFilter = require(filterPath);
 		app.filter(iFilter());
-
+		app.set('sessionConfig', {
+		    singleSession: true
+		});
 	  	app.set('connectorConfig',
 	    {
 	      	connector : pomelo.connectors.sioconnector, //sioconnector -> socketio 通訊

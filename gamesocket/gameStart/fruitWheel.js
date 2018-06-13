@@ -1,48 +1,43 @@
-module.exports = function SetGame(pomelo,app)
+module.exports = function SetGame(pomelo,app,gameName)
 {
-	var async = require('async');
-	var fruitWheelInit = require(app.getBase()+'/app/services/fruitWheel/fruitWheelInit.js');
+	const async = app.get('async');
+	const gameInit = require(app.getBase()+'/app/services/'+gameName+'/'+gameName+'Init.js');
+	const GameProc_Base = require(app.getBase()+'/app/lib/GameProc_Base.js');
+	const GPB = new GameProc_Base(6051,gameName,"水果转盘");
 
-	var filterPath = app.getBase()+'/app/servers/fruitWheel/filter/fruitWheelFilter';
-	var GameProc_Base = require(app.getBase()+'/app/lib/GameProc_Base.js');
-	var GPB = new GameProc_Base(6051,"fruitWheel","水果转盘");
-	var Name = "fruitWheel";
+	const ErrorHandler_Base = require(app.getBase()+'/app/lib/ErrorHandler_Base.js');
+	const EHB = new ErrorHandler_Base();
 
-
-	var ErrorHandler_Base = require(app.getBase()+'/app/lib/ErrorHandler_Base.js');
-	var EHB = new ErrorHandler_Base();
-
-	var fruitFilter = require(filterPath);
-	app.configure('production|development', 'fruitWheel', function() {
-	    	
-	console.warn(' fruitWheel fruitWheelfruitWheelfruitWheelfruitWheelfruitWheelfruitWheelfruitWheelfruitWheelfruitWheelfruitWheel: ');
+	const gameFilter = require(app.getBase()+'/app/servers/'+gameName+'/filter/'+gameName+'Filter');
+	app.configure('production|development', gameName, function() {
 
 	    app.set("errorHandler",EHB.errorHandler);//errorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
 	  
-		  app.filter(fruitFilter());
+		  app.filter(gameFilter());
+
 		  async.series({
 		    A:function(callback_A){
 		      GPB.Run();
 		      callback_A(null,0);
 		    },
 		    B:function(callback_B){
-		      fruitWheelInit.init(101);
+		      gameInit.init(101,gameName);
 		      callback_B(null,0);
 		    },
 		    C:function(callback_C){
-		      fruitWheelInit.init(102);
+		      gameInit.init(102,gameName);
 		      callback_C(null,0);
 		    },
 		    D:function(callback_D){
-		      fruitWheelInit.init(105);
+		      gameInit.init(105,gameName);
 		      callback_D(null,0);
 		    },
 		    E:function(callback_E){
-		      fruitWheelInit.init(110);
+		      gameInit.init(110,gameName);
 		      callback_E(null,0);
 		    }
 		  },function(err, results) {
-		    console.log("初始化完成");
+		    console.log(gameName+"初始化完成");
 		    });
 	});
 

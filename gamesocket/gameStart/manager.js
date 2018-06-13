@@ -1,35 +1,22 @@
-module.exports = function SetGame(pomelo,app)
+module.exports = function SetGame(pomelo,app,gameName)
 {
-	var async = require('async');
-	var redis = app.get('redis');
-	var filterPath = app.getBase()+'/app/servers/manager/filter/managerFilter';
-	var GameProc_Base = require(app.getBase()+'/app/lib/GameProc_Base.js');
-	var GPB = new GameProc_Base(3252,"manager","後臺管理");
-	var Name = "manager";
+	const redis = app.get('redis');
+	const GameProc_Base = require(app.getBase()+'/app/lib/GameProc_Base.js');
+	const GPB = new GameProc_Base(3252,gameName,"後臺管理");
+	
+	const ErrorHandler_Base = require(app.getBase()+'/app/lib/ErrorHandler_Base.js');
+	const EHB = new ErrorHandler_Base();
 
-	var ErrorHandler_Base = require(app.getBase()+'/app/lib/ErrorHandler_Base.js');
-	var EHB = new ErrorHandler_Base();
-
-	var managerFilter = require(filterPath);
-	app.configure('production|development', 'manager', function() {
-		var errorHandler = function(err, msg, resp , session, next){
+	const gameFilter = require(app.getBase()+'/app/servers/'+gameName+'/filter/'+gameName+'Filter');
+	app.configure('production|development', gameName, function() {
+		const errorHandler = function(err, msg, resp , session, next){
 	      	console.log('>>>>>>>>>>>>>manager errorHandler : ' + err );
 	      	console.log(msg);
 	 	}
-	    app.set("errorHandler",EHB.errorHandler);//errorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
-	  
-		  app.filter(managerFilter());
-
-/*		  async.series({
-		    A:function(callback_A){
-		      
-		      callback_A(null,0);
-		    }
-		  },function(err, results) {
-		    console.log("初始化完成");
-		    });*/
-		    GPB.Run();
-		    redis.hset('GS:GAMESERVER:manager', 'USERID', '000');
+	    app.set("errorHandler",EHB.errorHandler);//errorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js  
+		app.filter(gameFilter());
+	    GPB.Run();
+	    redis.hset('GS:GAMESERVER:'+gameName, 'USERID', '000');
 	});
 
 }
