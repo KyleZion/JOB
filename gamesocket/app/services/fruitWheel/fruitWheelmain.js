@@ -1,10 +1,10 @@
-var pomelo = require('pomelo');
+const pomelo = require('pomelo');
 
 module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZone)
 {
-	var gameService = require('./gameService.js');
-	var messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
-	var fruitWheelInit = require('./fruitWheelInit.js');
+	const gameService = require('./gameService.js');
+	const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
+	const fruitWheelInit = require('./fruitWheelInit.js');
 	var gameNumop = new(require('./fruitWheelopvn1.js'))();
 	var async =require('async');
 	var status='';
@@ -72,13 +72,13 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 					messageService.broadcast('connector','GetStatus'+gameZone,{'status':status});
 					//console.log("Timeout");
 					//clearTimeout(gameopx);
-					async.waterfall([
+					/*async.waterfall([
 						function(callback) {
 							dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
 								if(data.ErrorCode==0){
-									/*console.log(data.rows);
+									console.log(data.rows);
 									var gameNum = gameNumop.gameopvn1(data.rows);
-									callback(null,gameNum);*/
+									callback(null,gameNum);
 									gameNumop.gameopvn1(dbmaster,dbslave,redis,gameID,data.rows,gameZone,function(data){
 										if(data.ErrorCode==0){
 											callback(null,data.gameNum,data.bonusRate);
@@ -148,7 +148,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 							//console.log('結算完20秒後送獎號到前台:'+results);
 							//setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':results});}, 20000);
 						}
-					});
+					});*/
 					setTimeout(function(){ fruitWheelInit.init(gameZone); }, 20000);
 				}, 5000);
 			}

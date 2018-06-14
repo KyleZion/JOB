@@ -30,7 +30,6 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 					}
 				});
 			},3000);
-			
 		}
 		if(Timeout){
 			clearTimeout(check);

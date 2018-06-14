@@ -59,8 +59,6 @@ module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,Ga
 	}
 	// 取得所有沒有開獎的期數
 	this.GetUnOpenGames = function(callback){
-		var Sql = 'SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ';
-		//console.log("GetUnOpenGames"+Sql);
 		dbslave.query('SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[GameZone],function(data){
 			if(data.ErrorCode==0)
 				callback(data.rows);
