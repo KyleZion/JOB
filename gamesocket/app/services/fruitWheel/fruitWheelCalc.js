@@ -1,20 +1,18 @@
 module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,gameZone,CasinoId){
 	const pomelo = require('pomelo');
+	const app = pomelo.app;
 	const async =require('async');
-	const code = require(pomelo.app.getBase()+'/app/consts/code.js');
-	const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
-	const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
-	const gameSql = new(require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,gameZone);
-	const diceBaoService = require('./diceBaoService.js');
+	const code = require(app.getBase()+'/app/consts/code.js');
+	const PUB = new(require(app.getBase()+'/app/lib/public_fun.js'))();
+	const gameSql = new(require(app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,app,async,redis,dbslave,dbmaster,52,gameZone);
+	const gameService = require('./gameService.js');
+	const gameNumop = new(require('./fruitWheelopvn1.js'))();
 	// ------ games -------------------------------------------------------------
 	this.GameCalc = function(gameID,reCalc,callback_gameOpen){
 		async.waterfall([
 			function(callback) {
 				dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
 					if(data.ErrorCode==0){
-						/*console.log(data.rows);
-						var gameNum = gameNumop.gameopvn1(data.rows);
-						callback(null,gameNum);*/
 						gameNumop.gameopvn1(dbmaster,dbslave,redis,gameID,data.rows,gameZone,function(data){
 							if(data.ErrorCode==0){
 								callback(null,data.gameNum,data.bonusRate);
@@ -29,8 +27,8 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 				//callback(null,gameNum);//將gameNum傳到第二層
 			},
 			function(gameNum,bonusRate,callback){
-				var struct_gameop = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
-				var lib_gameop = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_gameop);
+				var struct_gameop = new (require(app.getBase()+'/app/lib/struct_sql.js'))();
+				var lib_gameop = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_gameop);
 				struct_gameop.params.gas008 = gameNum;
 				struct_gameop.where.gas004 = gameZone;
 				struct_gameop.where.id = gameID;
@@ -39,7 +37,9 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 						//console.log('寫獎號完成:'+gameNum);
 						//VIC: push message to frontend refactory
 						//修改messageService方法
-						setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum,'BonusRate':bonusRate});}, 5000);
+						if(!reCalc){
+							setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum,'BonusRate':bonusRate});}, 5000);
+						}
 						callback(null,gameNum,bonusRate);
 					}
 				});
@@ -59,9 +59,6 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 								callback(data.ErrorCode,data.ErrorMessage);
 							}
 						});
-					//DB amountlog
-					//UPDATE 所有bet_g
-					//CalculateBet-->idWinMoneysResult
 					}
 					});
 			},
@@ -79,10 +76,9 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 			}
 		],function(err, results) {
 			if(err){
-				//console.log('結算失敗20秒後送獎號到前台:'+results);
+				callback_gameOpen(results);
 			}else{
-				//console.log('結算完20秒後送獎號到前台:'+results);
-				//setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':results});}, 20000);
+				callback_gameOpen(code.OK);
 			}
 		});
 	}

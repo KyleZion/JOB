@@ -1,12 +1,13 @@
 const pomelo = require('pomelo');
-
+const app = pomelo.app;
 module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZone)
 {
 	const gameService = require('./gameService.js');
-	const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
+	const messageService = require(app.getBase()+'/app/services/messageService.js');
 	const fruitWheelInit = require('./fruitWheelInit.js');
-	var gameNumop = new(require('./fruitWheelopvn1.js'))();
-	var async =require('async');
+	const FWC = new (require(app.getBase()+'/app/services/fruitWheel/fruitWheelCalc.js'))(redis,dbslave,dbmaster,messageService,gameZone);
+	const gameNumop = new(require('./fruitWheelopvn1.js'))();
+	const async =require('async');
 	var status='';
 		//進入流程控制 
 		var EndTime = Date.parse(endtime);//Date.parse(data.rows[0].endtime);
@@ -47,8 +48,8 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 				status = 'F';
 				redis.hset('GS:GAMESERVER:fruitWheel', "Status"+gameZone, 'F');
 				//關盤DB
-				var struct_games = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
-				var lib_gameClose = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_games);
+				var struct_games = new (require(app.getBase()+'/app/lib/struct_sql.js'))();
+				var lib_gameClose = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("games_51",struct_games);
 				struct_games.params.gas009 = 1;
 				struct_games.where.gas004 = gameZone;
 				struct_games.where.id = gameID;
@@ -70,6 +71,13 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 					status='O';
 					redis.hset('GS:GAMESERVER:fruitWheel', "Status"+gameZone, 'O');
 					messageService.broadcast('connector','GetStatus'+gameZone,{'status':status});
+					FWC.GameCalc(gameID,0,function(res){
+					if(!res){
+						setTimeout(function(){ fruitWheelInit.init(gameZone); }, 20000); //總計20秒後
+					}else{ //開獎失敗
+						setTimeout(function(){ fruitWheelInit.init(gameZone); }, 20000); //總計20秒後
+					}
+				});
 					//console.log("Timeout");
 					//clearTimeout(gameopx);
 					/*async.waterfall([
@@ -149,7 +157,6 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 							//setTimeout(function(){ messageService.broadcast('connector','gameop',{'gameNum':results});}, 20000);
 						}
 					});*/
-					setTimeout(function(){ fruitWheelInit.init(gameZone); }, 20000);
 				}, 5000);
 			}
 		}

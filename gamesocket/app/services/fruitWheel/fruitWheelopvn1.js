@@ -26,7 +26,7 @@ module.exports = function gameop()
 
         var CommissionPercentage = 0.15; //佣金百分比 [0.1 ~ 1]
         var takePercentage = 0.01; //獎池抽成百分比 (強制收入) [0 ~ 0.2]
-        var OpenPoolPercentage = 050; //開獎池機率 越高越難中獎 [10 ~ 90]
+        var OpenPoolPercentage = 50; //開獎池機率 越高越難中獎 [10 ~ 90]
         var OpenPoolBase = 3000; //獎池如果大於這個數字 一定開獎 [500 ~ ]
         var PoolThresholdMaxPercentage = 0.7; //送出金額要小於彩池金額的百分比[0 ~ 1]
 
