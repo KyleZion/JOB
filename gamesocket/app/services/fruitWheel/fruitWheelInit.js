@@ -22,7 +22,7 @@ module.exports.init = function (gameZone,gameName) {
 				messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
 				fruitWheelmain.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
 			});
-		}else{
+		}else{ //補開獎
 			const reCalc = new Promise((resolve , reject) =>{
 				for(item of gameID){
 					//console.log(item);

@@ -9,17 +9,16 @@ var Handler = function (app) {
     this.app = app;
 };
 //===固定==============================================================
-var handler = Handler.prototype;
-var GPB = new(require(pomelo.app.getBase()+'/app/consts/Base_Param.js'))();
-var redis=pomelo.app.get('redis');
-var async=require('async');
-var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
-var dbmaster=pomelo.app.get('dbmaster');
+const handler = Handler.prototype;
+const GPB = new(require(pomelo.app.getBase()+'/app/consts/Base_Param.js'))();
+const redis=pomelo.app.get('redis');
+const async=require('async');
+const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+const dbmaster=pomelo.app.get('dbmaster');
 //===固定==============================================================
 
 
 handler.Transfer = function(msg,session,next){
-	var async = require('async');
 	var logId=0;
 	var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
 	async.series({

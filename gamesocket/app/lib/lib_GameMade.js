@@ -25,6 +25,10 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 						GameSet = "0001";
 						redis.hset('GS:GAMESERVER:'+GameName, "GameSet"+GameZone,GameSet);
 						callback_0(null);
+					}else if(res.length > 4){
+						GameSet = "0001";
+						redis.hset('GS:GAMESERVER:'+GameName, "GameSet"+GameZone,GameSet);
+						callback_0(null);
 					}else{
 						GameSet = (Number(res)+1).toString();
 						GameSet=GameSet.length >= 4 ? GameSet : new Array(4-GameSet.length+1).join("0") + GameSet;
@@ -67,7 +71,6 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 					else
 						callback_1(0);
 				},Period,start,stop);
-
 
 			},
 			function(callback_4){

@@ -149,11 +149,12 @@ handler.bet = function(msg,session,next){
 
 	async function betProcess() {
 		const res1 = await gameMade(); //回傳期數ID
-		const res2 = await betSqlInsert(res1);
-		const res3 = await getUserMoney();
-		const res4 = await amountSqlInsert(res1,res3);
-		const res5 = await lessUserMoney();
-		//reward = await getAward(channelID,1);
+		const res2 = await betSqlInsert(res1); //res2= betg insertID
+		const res3 = await getUserMoney();//取餘額
+		const res4 = await amountSqlInsert(res1,res3); //res4 = amountlog insertID
+		const res5 = await lessUserMoney();//扣款
+		const gameNum = await getGameNum(channelID);//開獎
+		const trans = await transGameNum(gameNum);
 		const res6 = await closeGame(res1,reward);
 		const res7 = await updateBetg(res2,reward,res1,channelID);
 		const res8 = await getUserMoney();
@@ -212,43 +213,171 @@ handler.LeaveChannel = function(msg,session,next){
 	next(null,{'ErrorCode':0,'ErrorMessage':'','cid':''});
 }
 
-async function getAward(channelID,type){
-	switch(channelID){
-		case 111:
-			var reward = [40000,20000,10000,2000,1000,400,200,120,100,60,40,20];
-			var collect = 600;
-			if(type){
-				return reward[Math.floor(Math.random()*reward.length)];
-			}else{
-				return collect;
-			}
-			break;
-		case 222:
-			var reward = [100000,60000,20000,10000,2000,1000,400,300,200,160,120,100,80,60,40,20];
-			var collect = 1000;
-			if(type){
-				return reward[Math.floor(Math.random()*reward.length)];
-			}else{
-				return collect;
-			}
-			break;
-		case 333:
-			var reward = [160000,80000,30000,20000,10000,4000,2000,1400,1000,400,200,160,100,60,40,20];
-			var collect = 1400;
-			if(type){
-				return reward[Math.floor(Math.random()*reward.length)];
-			}else{
-				return collect;
-			}
-			break;
-		case 444:
-			var reward = [200000,100000,60000,20000,10000,6000,4000,2000,1600,1000,600,200,120,100,60,40];
-			var collect = 2000;
-			if(type){
-				return reward[Math.floor(Math.random()*reward.length)];
-			}else{
-				return collect;
-			}
-			break;
+async function getGameNum(channelID){
+	var num=[];
+    //先開獎
+    for(let i=0;i<3;i++){
+    	num[i]=[Math.floor(Math.random() * 10),Math.floor(Math.random() * 10),Math.floor(Math.random() * 10)];
+    }
+    return num;
+}
+
+98644640006710112647
+async function transGameNum(gameNum)
+{
+	var gameNumCombo = new Array();
+	var c=0;
+	if((gameNum[0][0]==gameNum[0][1])&&(gameNum[0][1]==gameNum[0][2])&&(gameNum[0][2]==gameNum[0][0])&&(gameNum[0][0]==0)){
+	    gameNumCombo[c]='8001';
+	    c++;
+  	}
+	if((gameNum[0][0]==gameNum[0][1])&&(gameNum[0][1]==gameNum[0][2])&&(gameNum[0][2]==gameNum[0][0])&&(gameNum[0][0]==1)){
+	    gameNumCombo[c]='8001';
+	    c++;
+  	}
+	if((gameNum[0][0]==gameNum[0][1])&&(gameNum[0][1]==gameNum[0][2])&&(gameNum[0][2]==gameNum[0][0])&&(gameNum[0][0]==2)){
+	    gameNumCombo[c]='8001';
+	    c++;
+  	}
+	if((gameNum[0][0]==gameNum[0][1])&&(gameNum[0][1]==gameNum[0][2])&&(gameNum[0][2]==gameNum[0][0])&&(gameNum[0][0]==3)){
+	    gameNumCombo[c]='8001';
+	    c++;
+  	}
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==5)){
+	    gameNumCombo[c]='8005';
+	    c++;
 	}
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==6)){
+	    gameNumCombo[c]='8006';
+	    c++;
+	}
+	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])){
+	    gameNumCombo[c]='8007';
+	    c++;
+	}
+	if((gameNum[0]==1 && gameNum[1]==1) || (gameNum[1]==1 && gameNum[2]==1)){
+	    gameNumCombo[c]='8008';
+	    c++;
+	}
+	if((gameNum[0]==2 && gameNum[1]==2) || (gameNum[1]==2 && gameNum[2]==2)){
+	    gameNumCombo[c]='8009';
+	    c++;
+	}
+	if((gameNum[0]==3 && gameNum[1]==3) || (gameNum[1]==3 && gameNum[2]==3)){
+	    gameNumCombo[c]='8010';
+	    c++;
+	}
+	if((gameNum[0]==4 && gameNum[1]==4) || (gameNum[1]==4 && gameNum[2]==4)){
+	    gameNumCombo[c]='8011';
+	    c++;
+	}
+	if((gameNum[0]==5 && gameNum[1]==5) || (gameNum[1]==5 && gameNum[2]==5)){
+	    gameNumCombo[c]='8012';
+	    c++;
+	}
+	if((gameNum[0]==6 && gameNum[1]==6) || (gameNum[1]==6 && gameNum[2]==6)){
+	    gameNumCombo[c]='8013';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==2)||(gameNum[1]==1&&gameNum[2]==2)||(gameNum[0]==1&&gameNum[2]==2)){
+	    gameNumCombo[c]='8028';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==3)||(gameNum[1]==1&&gameNum[2]==3)||(gameNum[0]==1&&gameNum[2]==3)){
+	    gameNumCombo[c]='8029';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==4)||(gameNum[1]==1&&gameNum[2]==4)||(gameNum[0]==1&&gameNum[2]==4)){
+	    gameNumCombo[c]='8030';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==5)||(gameNum[1]==1&&gameNum[2]==5)||(gameNum[0]==1&&gameNum[2]==5)){
+	    gameNumCombo[c]='8031';
+	    c++;
+	}
+	if((gameNum[0]==1&&gameNum[1]==6)||(gameNum[1]==1&&gameNum[2]==6)||(gameNum[0]==1&&gameNum[2]==6)){
+	    gameNumCombo[c]='8032';
+	    c++;
+	}
+	if((gameNum[0]==2&&gameNum[1]==3)||(gameNum[1]==2&&gameNum[2]==3)||(gameNum[0]==2&&gameNum[2]==3)){
+	    gameNumCombo[c]='8033';
+	    c++;
+	}
+	if((gameNum[0]==2&&gameNum[1]==4)||(gameNum[1]==2&&gameNum[2]==4)||(gameNum[0]==2&&gameNum[2]==4)){
+	    gameNumCombo[c]='8034';
+	    c++;
+	}
+	if((gameNum[0]==2&&gameNum[1]==5)||(gameNum[1]==2&&gameNum[2]==5)||(gameNum[0]==2&&gameNum[2]==5)){
+	    gameNumCombo[c]='8035';
+	    c++;
+	}
+	if((gameNum[0]==2&&gameNum[1]==6)||(gameNum[1]==2&&gameNum[2]==6)||(gameNum[0]==2&&gameNum[2]==6)){
+	    gameNumCombo[c]='8036';
+	    c++;
+	}
+	if((gameNum[0]==3&&gameNum[1]==4)||(gameNum[1]==3&&gameNum[2]==4)||(gameNum[0]==3&&gameNum[2]==4)){
+	    gameNumCombo[c]='8037';
+	    c++;
+	}
+	if((gameNum[0]==3&&gameNum[1]==5)||(gameNum[1]==3&&gameNum[2]==5)||(gameNum[0]==3&&gameNum[2]==5)){
+	    gameNumCombo[c]='8038';
+	    c++;
+	}
+	if((gameNum[0]==3&&gameNum[1]==6)||(gameNum[1]==3&&gameNum[2]==6)||(gameNum[0]==3&&gameNum[2]==6)){
+	    gameNumCombo[c]='8039';
+	    c++;
+	}
+	if((gameNum[0]==4&&gameNum[1]==5)||(gameNum[1]==4&&gameNum[2]==5)||(gameNum[0]==4&&gameNum[2]==5)){
+	    gameNumCombo[c]='8040';
+	    c++;
+	}
+	if((gameNum[0]==4&&gameNum[1]==6)||(gameNum[1]==4&&gameNum[2]==6)||(gameNum[0]==4&&gameNum[2]==6)){
+	    gameNumCombo[c]='8041';
+	    c++;
+	}
+	if((gameNum[0]==5&&gameNum[1]==6)||(gameNum[1]==5&&gameNum[2]==6)||(gameNum[0]==5&&gameNum[2]==6)){
+	    gameNumCombo[c]='8042';
+	    c++;
+	}
+	if(gameNum[0]==1 || gameNum[1]==1 || gameNum[2]==1){
+	    gameNumCombo[c]='8043';
+	    c++;
+	}
+	if(gameNum[0]==2 || gameNum[1]==2 || gameNum[2]==2){
+	    gameNumCombo[c]='8044';
+	    c++;
+	}
+	if(gameNum[0]==3 || gameNum[1]==3 || gameNum[2]==3){
+	    gameNumCombo[c]='8045';
+	    c++;
+	}
+	if(gameNum[0]==4 || gameNum[1]==4 || gameNum[2]==4){
+	    gameNumCombo[c]='8046';
+	    c++;
+	}
+	if(gameNum[0]==5 || gameNum[1]==5 || gameNum[2]==5){
+	    gameNumCombo[c]='8047';
+	    c++;
+	}
+	if(gameNum[0]==6 || gameNum[1]==6 || gameNum[2]==6){
+	    gameNumCombo[c]='8048';
+	    c++;
+	}
+	if(gameNum[3]==2){
+	    gameNumCombo[c]='8049';
+	    c++;
+	}
+	if(gameNum[3]==1){
+	    gameNumCombo[c]='8050';
+	    c++;
+	}
+	if(gameNum[4]==1 && gameNum[3]!=0){
+	    gameNumCombo[c]='8051';
+	    c++;
+	}
+	if(gameNum[4]==0 && gameNum[3]!=0){
+	    gameNumCombo[c]='8052';
+	    c++;
+	}
+	return [gameNumCombo];
 }

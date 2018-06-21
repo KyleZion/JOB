@@ -36,7 +36,7 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 			if(err==null)
 			{
 				//insert成功
-				console.log('insert  success:'+resDao);
+				//console.log('insert  success:'+resDao);
 				callback(resDao);
 			}
 			else
@@ -80,7 +80,7 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 			if(err==null)
 			{
 				//insert成功
-				console.log('Update success:'+resDao);
+				//console.log('Update success:'+resDao);
 				callback(resDao);
 			}
 			else
@@ -124,7 +124,7 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 			if(err==null)
 			{
 				//insert成功
-				console.log('Update success:'+resDao);
+				//console.log('Update success:'+resDao);
 				callback(resDao);
 			}
 			else
@@ -163,7 +163,7 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 			if(err==null)
 			{
 				//insert成功
-				console.log('Select success:'+resDao);
+				//console.log('Select success:'+resDao);
 				callback(resDao);
 			}
 			else

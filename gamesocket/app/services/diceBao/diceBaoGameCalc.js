@@ -241,10 +241,6 @@ async function transGameNum(gameNum,numSum)
 	    gameNumCombo[c]='8027';
 	    c++;
 	}
-	if(numSum==17){
-	    gameNumCombo[c]='8027';
-	    c++;
-	}
 	if((gameNum[0]==1&&gameNum[1]==2)||(gameNum[1]==1&&gameNum[2]==2)||(gameNum[0]==1&&gameNum[2]==2)){
 	    gameNumCombo[c]='8028';
 	    c++;
