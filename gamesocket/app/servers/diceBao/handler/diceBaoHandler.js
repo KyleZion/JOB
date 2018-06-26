@@ -315,26 +315,6 @@ handler.GetStatus = function(msg,session,next){  //Redis
 		}
 	});
 }
-/*handler.GetBetTotal = function(msg,session,next){ //Redis
-	var NowBetTotal=[0,0,0,0,0,0,0];
-
-	async.waterfall([
-		function(cb) {
-			for(var i in NowBetTotal){
-				NowBetTotal[i]=Math.floor(Math.random() *21+5)
-			}
-			cb(null,NowBetTotal.join())
-		}
-	], 
-		function(err,res) {
-			if(err) {
-				next(new Error('random error'),500);
-			}else{
-				next(null,{'ErrorCode':0,'ErrorMessage':'','GetBetTotal':res});
-			}
-		}
-	);
-}*/
 
 handler.AddtoChannel = function(msg,session,next){
 	var channelService = pomelo.app.get('channelService').getChannel(msg.ChannelID,  true);

@@ -10,9 +10,9 @@ module.exports = function GameProc_Base(weport,GameName,GameShowName)
 	this.rKey_USER_List = this.rKey_TITLE + "USERLIST:";
 	this.rKey_CMD_ALERT =  this.rKey_TITLE + "CMD:ALERT:";
 	this.rKey_CMD_KILL =  this.rKey_TITLE + "CMD:KILL:";
-	
-	var iasync = require('async');
-	var clc = require('cli-color');
+	const redis = require('redis');
+	const iasync = require('async');
+	const clc = require('cli-color');
 	this.ShowLog = function (itype,Message)
 	{
 		switch(itype)
@@ -33,8 +33,7 @@ module.exports = function GameProc_Base(weport,GameName,GameShowName)
 		}
 	}
 	this.ShowLog(-1,'GameProc_Base'+GameName);
-	var redis = require('redis');
-		
+	
 	this.ievents = require('events');
 	class MyEmitter extends this.ievents {}
 	this.EventEmitter = new MyEmitter();
@@ -45,10 +44,8 @@ module.exports = function GameProc_Base(weport,GameName,GameShowName)
 	this.GS_Redis;
 	this.Web_Redis;
 	
-	
 	function Async_Run(GPB,AsyncCallback)
 	{
-		var iasync = require('async');
 		iasync.series({
 			/*Init_DB: function(callback){
 				Task0_Init_DB(callback,GPB);

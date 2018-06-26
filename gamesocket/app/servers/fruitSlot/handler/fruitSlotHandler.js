@@ -222,11 +222,14 @@ async function getGameNum(channelID){
     return num;
 }
 
-98644640006710112647
+
 async function transGameNum(gameNum)
 {
 	var gameNumCombo = new Array();
 	var c=0;
+	for(let i=0;i<10;i++){
+		if(gameNum[0].every(checkLine))
+	}
 	if((gameNum[0][0]==gameNum[0][1])&&(gameNum[0][1]==gameNum[0][2])&&(gameNum[0][2]==gameNum[0][0])&&(gameNum[0][0]==0)){
 	    gameNumCombo[c]='8001';
 	    c++;
@@ -243,141 +246,9 @@ async function transGameNum(gameNum)
 	    gameNumCombo[c]='8001';
 	    c++;
   	}
-	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==5)){
-	    gameNumCombo[c]='8005';
-	    c++;
-	}
-	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])&&(gameNum[0]==6)){
-	    gameNumCombo[c]='8006';
-	    c++;
-	}
-	if((gameNum[0]==gameNum[1])&&(gameNum[1]==gameNum[2])&&(gameNum[2]==gameNum[0])){
-	    gameNumCombo[c]='8007';
-	    c++;
-	}
-	if((gameNum[0]==1 && gameNum[1]==1) || (gameNum[1]==1 && gameNum[2]==1)){
-	    gameNumCombo[c]='8008';
-	    c++;
-	}
-	if((gameNum[0]==2 && gameNum[1]==2) || (gameNum[1]==2 && gameNum[2]==2)){
-	    gameNumCombo[c]='8009';
-	    c++;
-	}
-	if((gameNum[0]==3 && gameNum[1]==3) || (gameNum[1]==3 && gameNum[2]==3)){
-	    gameNumCombo[c]='8010';
-	    c++;
-	}
-	if((gameNum[0]==4 && gameNum[1]==4) || (gameNum[1]==4 && gameNum[2]==4)){
-	    gameNumCombo[c]='8011';
-	    c++;
-	}
-	if((gameNum[0]==5 && gameNum[1]==5) || (gameNum[1]==5 && gameNum[2]==5)){
-	    gameNumCombo[c]='8012';
-	    c++;
-	}
-	if((gameNum[0]==6 && gameNum[1]==6) || (gameNum[1]==6 && gameNum[2]==6)){
-	    gameNumCombo[c]='8013';
-	    c++;
-	}
-	if((gameNum[0]==1&&gameNum[1]==2)||(gameNum[1]==1&&gameNum[2]==2)||(gameNum[0]==1&&gameNum[2]==2)){
-	    gameNumCombo[c]='8028';
-	    c++;
-	}
-	if((gameNum[0]==1&&gameNum[1]==3)||(gameNum[1]==1&&gameNum[2]==3)||(gameNum[0]==1&&gameNum[2]==3)){
-	    gameNumCombo[c]='8029';
-	    c++;
-	}
-	if((gameNum[0]==1&&gameNum[1]==4)||(gameNum[1]==1&&gameNum[2]==4)||(gameNum[0]==1&&gameNum[2]==4)){
-	    gameNumCombo[c]='8030';
-	    c++;
-	}
-	if((gameNum[0]==1&&gameNum[1]==5)||(gameNum[1]==1&&gameNum[2]==5)||(gameNum[0]==1&&gameNum[2]==5)){
-	    gameNumCombo[c]='8031';
-	    c++;
-	}
-	if((gameNum[0]==1&&gameNum[1]==6)||(gameNum[1]==1&&gameNum[2]==6)||(gameNum[0]==1&&gameNum[2]==6)){
-	    gameNumCombo[c]='8032';
-	    c++;
-	}
-	if((gameNum[0]==2&&gameNum[1]==3)||(gameNum[1]==2&&gameNum[2]==3)||(gameNum[0]==2&&gameNum[2]==3)){
-	    gameNumCombo[c]='8033';
-	    c++;
-	}
-	if((gameNum[0]==2&&gameNum[1]==4)||(gameNum[1]==2&&gameNum[2]==4)||(gameNum[0]==2&&gameNum[2]==4)){
-	    gameNumCombo[c]='8034';
-	    c++;
-	}
-	if((gameNum[0]==2&&gameNum[1]==5)||(gameNum[1]==2&&gameNum[2]==5)||(gameNum[0]==2&&gameNum[2]==5)){
-	    gameNumCombo[c]='8035';
-	    c++;
-	}
-	if((gameNum[0]==2&&gameNum[1]==6)||(gameNum[1]==2&&gameNum[2]==6)||(gameNum[0]==2&&gameNum[2]==6)){
-	    gameNumCombo[c]='8036';
-	    c++;
-	}
-	if((gameNum[0]==3&&gameNum[1]==4)||(gameNum[1]==3&&gameNum[2]==4)||(gameNum[0]==3&&gameNum[2]==4)){
-	    gameNumCombo[c]='8037';
-	    c++;
-	}
-	if((gameNum[0]==3&&gameNum[1]==5)||(gameNum[1]==3&&gameNum[2]==5)||(gameNum[0]==3&&gameNum[2]==5)){
-	    gameNumCombo[c]='8038';
-	    c++;
-	}
-	if((gameNum[0]==3&&gameNum[1]==6)||(gameNum[1]==3&&gameNum[2]==6)||(gameNum[0]==3&&gameNum[2]==6)){
-	    gameNumCombo[c]='8039';
-	    c++;
-	}
-	if((gameNum[0]==4&&gameNum[1]==5)||(gameNum[1]==4&&gameNum[2]==5)||(gameNum[0]==4&&gameNum[2]==5)){
-	    gameNumCombo[c]='8040';
-	    c++;
-	}
-	if((gameNum[0]==4&&gameNum[1]==6)||(gameNum[1]==4&&gameNum[2]==6)||(gameNum[0]==4&&gameNum[2]==6)){
-	    gameNumCombo[c]='8041';
-	    c++;
-	}
-	if((gameNum[0]==5&&gameNum[1]==6)||(gameNum[1]==5&&gameNum[2]==6)||(gameNum[0]==5&&gameNum[2]==6)){
-	    gameNumCombo[c]='8042';
-	    c++;
-	}
-	if(gameNum[0]==1 || gameNum[1]==1 || gameNum[2]==1){
-	    gameNumCombo[c]='8043';
-	    c++;
-	}
-	if(gameNum[0]==2 || gameNum[1]==2 || gameNum[2]==2){
-	    gameNumCombo[c]='8044';
-	    c++;
-	}
-	if(gameNum[0]==3 || gameNum[1]==3 || gameNum[2]==3){
-	    gameNumCombo[c]='8045';
-	    c++;
-	}
-	if(gameNum[0]==4 || gameNum[1]==4 || gameNum[2]==4){
-	    gameNumCombo[c]='8046';
-	    c++;
-	}
-	if(gameNum[0]==5 || gameNum[1]==5 || gameNum[2]==5){
-	    gameNumCombo[c]='8047';
-	    c++;
-	}
-	if(gameNum[0]==6 || gameNum[1]==6 || gameNum[2]==6){
-	    gameNumCombo[c]='8048';
-	    c++;
-	}
-	if(gameNum[3]==2){
-	    gameNumCombo[c]='8049';
-	    c++;
-	}
-	if(gameNum[3]==1){
-	    gameNumCombo[c]='8050';
-	    c++;
-	}
-	if(gameNum[4]==1 && gameNum[3]!=0){
-	    gameNumCombo[c]='8051';
-	    c++;
-	}
-	if(gameNum[4]==0 && gameNum[3]!=0){
-	    gameNumCombo[c]='8052';
-	    c++;
-	}
 	return [gameNumCombo];
+}
+
+async function checkLine(num) {
+    return (num == 0) ? true : false;
 }
