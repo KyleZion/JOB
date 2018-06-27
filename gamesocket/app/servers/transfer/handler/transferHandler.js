@@ -24,7 +24,7 @@ handler.Transfer = function(msg,session,next){
 	async.series({
 		A: function(callback_A){
 			console.log('callbackA');
-			var sql ="CALL spModifyAmount(?,?,?,?,?,?,@id); SELECT @id;";
+			/*var sql ="CALL spModifyAmount(?,?,?,?,?,?,@id); SELECT @id;";
 			dbmaster.spquery(sql,[51,0,0,'',session.uid,msg.amount,0],(data) =>{
 			    var logId = data.rows[3][0]['@id'];
 			    //console.log(logId);
@@ -33,8 +33,8 @@ handler.Transfer = function(msg,session,next){
 			      callback_A(-1,logId);
 			    }
 			    //console.log(fields);
-			});
-			/*var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
+			});*/
+			var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
 			struct_amount.params.type = 51;
 			struct_amount.params.game_id = 0;
 			struct_amount.params.game_name = 0;
@@ -66,7 +66,7 @@ handler.Transfer = function(msg,session,next){
 			      callback_A(0,result);
 			      break;
 			  }
-			});*/
+			});
 		},
 		B: function(callback_B){
 			console.log('callbackB');

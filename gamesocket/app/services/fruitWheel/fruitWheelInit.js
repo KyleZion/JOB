@@ -17,15 +17,12 @@ module.exports.init = function (gameZone,gameName) {
 		gameID = res;
 		if(res==0){
 			GM.Made(25,function(insertID,endTime){
-				//console.log(insertID);
-				//console.log(endTime);
 				messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
-				fruitWheelmain.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
+				fruitWheelmain.mainGame(gameName,insertID,endTime,dbmaster,dbslave,redis,gameZone);
 			});
 		}else{ //補開獎
 			const reCalc = new Promise((resolve , reject) =>{
-				for(item of gameID){
-					//console.log(item);
+				gameID.forEach(function(item, index, array) {
 					FWC.GameCalc(item.id,1,function(res){ //0615
 						if(!res){
 							console.log('OK');
@@ -33,9 +30,10 @@ module.exports.init = function (gameZone,gameName) {
 							console.log('aa');
 						}
 					});
-				}
+				});
 				return resolve('OKOK');
 			});
+			
 			const gameOpen = async() =>{
 				const result = await reCalc;
 				return result;
@@ -43,10 +41,8 @@ module.exports.init = function (gameZone,gameName) {
 			gameOpen()
 				.then(result =>{
 					GM.Made(25,function(insertID,endTime){
-						//console.log(insertID);
-						//console.log(endTime);
 						messageService.broadcast('connector','GetStatus'+gameZone,{'status':'T'});
-						fruitWheelmain.mainGame(insertID,endTime,dbmaster,dbslave,redis,gameZone);
+						fruitWheelmain.mainGame(gameName,insertID,endTime,dbmaster,dbslave,redis,gameZone);
 					});
 				})
 				.catch(err =>{

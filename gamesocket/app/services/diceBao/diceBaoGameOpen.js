@@ -59,7 +59,6 @@ module.exports = function diceBaoGameOpen()
 
 		//======================================================================================
 		
-		
 // 		CommissionPercentage = 0.15;   //佣金百分比
 // 		takePercentage = 0.01; //獎池抽成百分比 (收入)
 // 		OpenPoolPercentage = 50; //開獎池機率 (0~100) 越高越難中獎
@@ -82,7 +81,7 @@ module.exports = function diceBaoGameOpen()
 		                		}
 		                	});
 		                }else{
-		                    CommissionPercentage = Number(res);
+		                    resolve (Number(res));
 		                }
 		            }
 		        });
@@ -94,7 +93,7 @@ module.exports = function diceBaoGameOpen()
 				redis.hget('GS:GAMESERVER:GAMECONTROL:052', "takePercentage"+gameZone, function (err, res) {
 		            if(err){
 		                //DU_VIC:錯誤處理
-		                takePercentage = 0.01;
+		                resolve (0.01);
 		            }else{
 		                if(res==null){ //redis 無資料
 		                	GameOpenSql.SelectGameControlConfig("takePercentage","52",gameZone,function(data){
@@ -102,11 +101,11 @@ module.exports = function diceBaoGameOpen()
 		                			resolve (data);
 		                			redis.hset('GS:GAMESERVER:GAMECONTROL:052', "takePercentage"+gameZone,data);
 		                		}else{
-		                			 takePercentage = 0.01;
+		                			resolve (0.01);
 		                		}
 		                	});
 		                }else{
-		                    takePercentage = Number(res);
+		                    resolve (Number(res));
 		                }
 		            }
 		        });
@@ -117,7 +116,7 @@ module.exports = function diceBaoGameOpen()
 				redis.hget('GS:GAMESERVER:GAMECONTROL:052', "OpenPoolPercentage"+gameZone, function (err, res) {
 		            if(err){
 		                //DU_VIC:錯誤處理
-		                OpenPoolPercentage = 50;
+		                resolve (50);
 		            }else{
 		                if(res==null){ //redis 無資料
 		                	GameOpenSql.SelectGameControlConfig("OpenPoolPercentage","52",gameZone,function(data){
@@ -125,22 +124,22 @@ module.exports = function diceBaoGameOpen()
 		                			resolve (data);
 		                			redis.hset('GS:GAMESERVER:GAMECONTROL:052', "OpenPoolPercentage"+gameZone,data);
 		                		}else{
-		                			 OpenPoolPercentage = 50;
+		                			resolve (50);
 		                		}
 		                	});
 		                }else{
-		                    OpenPoolPercentage = Number(res);
+		                    resolve (Number(res));
 		                }
 		            }
 		        });
 			});
 		}
 		async function getOpenPoolBase(){
-			const GOPB = await new Promise((resolve, reject) =>{
+			return GOPB = await new Promise((resolve, reject) =>{
 				redis.hget('GS:GAMESERVER:GAMECONTROL:052', "OpenPoolBase"+gameZone, function (err, res) {
 		            if(err){
 		                //DU_VIC:錯誤處理
-		                OpenPoolBase = 3000;
+		                resolve (3000);
 		            }else{
 		                if(res==null){ //redis 無資料
 		                	GameOpenSql.SelectGameControlConfig("OpenPoolBase","52",gameZone,function(data){
@@ -148,23 +147,22 @@ module.exports = function diceBaoGameOpen()
 		                			resolve (data);
 		                			redis.hset('GS:GAMESERVER:GAMECONTROL:052', "OpenPoolBase"+gameZone,data);
 		                		}else{
-		                			 OpenPoolBase = 3000;
+		                			resolve (3000);
 		                		}
 		                	});
 		                }else{
-		                    OpenPoolBase = Number(res);
+		                    resolve (Number(res));
 		                }
 		            }
 		        });
 			});
-			return GOPB
 		}
 		async function getPoolThresholdMaxPercentage(){
-			const GPTMP = await new Promise((resolve, reject) =>{
+			return GPTMP = await new Promise((resolve, reject) =>{
 				redis.hget('GS:GAMESERVER:GAMECONTROL:052', "PoolThresholdMaxPercentage"+gameZone, function (err, res) {
 		            if(err){
 		                //DU_VIC:錯誤處理
-		                PoolThresholdMaxPercentage =0.7;
+		                resolve (0.7);
 		            }else{
 		                if(res==null){ //redis 無資料
 		                	GameOpenSql.SelectGameControlConfig("PoolThresholdMaxPercentage","52",gameZone,function(data){
@@ -172,107 +170,89 @@ module.exports = function diceBaoGameOpen()
 		                			resolve (data);
 		                			redis.hset('GS:GAMESERVER:GAMECONTROL:052', "PoolThresholdMaxPercentage"+gameZone,data);
 		                		}else{
-		                			 PoolThresholdMaxPercentage = 0.7;
+		                			resolve (0.7);
 		                		}
 		                	});
 		                }else{
-		                    PoolThresholdMaxPercentage = Number(res);
+		                    resolve (Number(res));
 		                }
 		            }
 		        });
 			});
-			return GPTMP
+		}
+		async function getRedisBonus(){
+			return GRB = await new Promise((resolve, reject) =>{
+				redis.hgetall('GS:Bonus:052', function (err, res) {
+	                if(err){
+	                    bonus111 = 0;
+	                    bonus222 = 0;
+	                    bonus333 = 0;
+	                    resolve (true);
+	                }else{
+	                    if(res!=null){
+	                        bonus111 = Number(res.RedisBonus101);
+	                        bonus222 = Number(res.RedisBonus102);
+	                        bonus333 = Number(res.RedisBonus105);
+	                        resolve (true);
+	                    }
+	                }
+	            });
+			});
+		}
+		async function getRedisCommission(){
+			return GRC = await new Promise((resolve, reject) =>{
+				redis.hgetall('GS:Commission:052', function (err, res) {
+	                if(err){
+	                    RedisCommission111 = 0;
+	                    RedisCommission222 = 0;
+	                    RedisCommission333 = 0;
+	                    resolve (true);
+	                }else{
+	                    if(res!=null){
+	                        RedisCommission111 = Number(res.RedisCommission111);
+	                        RedisCommission222 = Number(res.RedisCommission222);
+	                        RedisCommission333 = Number(res.RedisCommission333);
+	                        resolve (true);
+	                    }
+	                }
+	            });
+			});
 		}
 		async function getParmProcess() {
-			CommissionPercentage = await gameMade(); 
-			takePercentage = await gameMade(); 
-			OpenPoolPercentage = await gameMade(); 
-			OpenPoolBase = await gameMade(); 
-			PoolThresholdMaxPercentage = awit getPoolThresholdMaxPercentage();
-			return [res1,res2,res3,res4,res5,reward,res6,res7];
+			CommissionPercentage = await getCommissionPercentage(); 
+			takePercentage = await getTakePercentage(); 
+			OpenPoolPercentage = await getOpenPoolPercentage(); 
+			OpenPoolBase = await getOpenPoolBase(); 
+			PoolThresholdMaxPercentage = await getPoolThresholdMaxPercentage();
+			return [CommissionPercentage,takePercentage,OpenPoolPercentage,OpenPoolBase,PoolThresholdMaxPercentage];
 		}
-	betProcess()
-		.then(result =>{
-			console.error(result);
-		})
-		.catch(err =>{
-			console.error(err);
-		});
+		getParmProcess()
+			.then(result =>{
+				console.error(result);
+			})
+			.catch(err =>{
+				console.error(err);
+			});
 		
-		if(!isset(CommissionPercentage)||!isset(takePercentage)||!isset(OpenPoolPercentage)||!isset(OpenPoolBase)||!isset(PoolThresholdMaxPercentage)){
+		if(!(CommissionPercentage)||!(takePercentage)||!(OpenPoolPercentage)||!(OpenPoolBase)||!(PoolThresholdMaxPercentage)){
 			CommissionPercentage = 0.15;
 			takePercentage = 0.01;
 			OpenPoolPercentage = 50;
 			OpenPoolBase = 3000;
 			PoolThresholdMaxPercentage = 0.7;
 		}
-		
-		
-		openURL = getSystemValue('MINUTESLOTTO_GAMEOPX');
-		echo "<br>openURL : ".openURL;
-		//======================================================================================
-		result =array();
-		casino=getCasinoByKey();
-		//======================================================================================
-	
-	
-		
-	
-		//==================================================================================
-		//撈所有期數
-		isTest = false;
-		SQL = '';
-		if(isTest == true)
-			SQL = 'SELECT gas001, gas002, gas003 FROM games WHERE gas002 =13 and gas001 = 7658';
-		else{
-			lastruntime = redis->get('MinutesLotto:lastruntime');
-			if(!isset(lastruntime)||  (runtype!=null&&runtype==1)  )
-				SQL = 'select gas001,gas002,gas003 from games where  TIMESTAMP(gas006,gas007)+0 < now() and gas012=0 and gas009 =0 and gas002 in(13,14,15) order by TIMESTAMP(gas006,gas007),gas002 limit 3 ';
-			else
-				SQL = 'select gas001,gas002,gas003 from games where  TIMESTAMP(gas006,gas007)+0 < now() and TIMESTAMP(gas006,gas007)+0 > "'.lastruntime.'" and gas012=0 and gas009 =0 and gas002 in(13,14,15) order by TIMESTAMP(gas006,gas007),gas002 limit 3 ';
-		}
 			
-		gamedata = dbp_queryAll(SQL,array(),true);	
-		
-		redis->set('MinutesLotto:lastruntime',date("Y-m-d H:i:s"));
-			
-		echo "<br>".SQL;
-		echo "<br>count(gamedata) : ".count(gamedata);
-		//======================================================================================
+		//==========================================================================================
+		ordercoins = myArr.reduce(function(prev, element) {
+		   return prev + element;
+		}, 0);
+
+		// 6
+		console.log(result);
+
 		for(i=0;i<count(gamedata);i++)
 		{
-	
 			//======================================================================================
-			casinoType=casino[gamedata[i][1]][2];
-			require_once(GLOBALS['fgame_path'].casinoType.'/ExResult.class.php');
-			className='\\'.casinoType.'\\ExResult';
-			resultClz = new className();
-			//======================================================================================
-			//撈住單
-			//bet002 0	唯一單號
-			//bet011 1	玩法代號
-			//bet012 2	玩法項目
-			//bet014 3	下注內容
-			//bet015 4	下注注數
-			//bet016 5	下注倍數
-			//bet017 6	下注金額   下多少錢
-			//bet018 7	基本賠率
-			//bet019 8	公司調賠
-			//bet020 9	會員賠偏
-			//bet021 10	下注賠偏
-			//bet118 11	副基本賠率
-			//bet119 12	副公司調賠
-			//bet120 13	副會員賠偏
-			//bet013 14	下注模式 = 1:元 /2:分/3.角
-			//bet005 15	會員編號
-			
-			SQL = 'select bet002,bet011,bet012,bet014,bet015,bet016,bet017,bet018,bet019,bet020,bet021,bet118,bet119,bet120,bet121,bet013,bet005,betgroup from bet_g'.gamedata[i][1].' where bet009='.gamedata[i][0].' and bet003=0 order by bet008';
-			echo "<br>".SQL;
-			data = db_queryAll(SQL,true);
-			echo "<br>count(data) : ".count(data);
-			//======================================================================================
-		
-			
 			ThisTimeBonus = 0; //這次的獎池累計
 			CanOpenPool = false; //是否開獎池
 			Commission = 0;//佣金
@@ -288,9 +268,6 @@ module.exports = function diceBaoGameOpen()
 				num =this->getOpenNum();
 				resultClz->setNums(num);
 				if(isTest == false){
-					
-				
-					
 					echo '<br>真的結算1'.'http://'.openURL.'/v/game-gameopx?g='.casino[gamedata[i][1]][1].'&i='.gamedata[i][2].'&n='.num;
 					ch = curl_init('http://'.openURL.'/v/game-gameopx?g='.casino[gamedata[i][1]][1].'&i='.gamedata[i][2].'&n='.num);
 					curl_setopt(ch, CURLOPT_RETURNTRANSFER, 1);
@@ -302,7 +279,6 @@ module.exports = function diceBaoGameOpen()
 					gamename = gamedata[i][2];
 					gamenum = num;
 					this->InsertNumber(gametype,gameid,gamename,gamenum);
-						
 				}
 				else 
 					echo "<br>測試模是 不真的結算";

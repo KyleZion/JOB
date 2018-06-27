@@ -1,5 +1,5 @@
-var pomelo=require('pomelo');
-var logger = require('pomelo-logger').getLogger('fruitlog',__filename);
+const pomelo=require('pomelo');
+const logger = require('pomelo-logger').getLogger('fruitlog',__filename);
 
 module.exports = function(app) {
   return new Handler(app);
@@ -40,24 +40,7 @@ handler.bet = function(msg,session,next){
 	var b015 = 0;
 	var struct_bet = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //bet_g SQL
 	//計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
-
-	async function rewardAmountLog(PeriodID,reward,afterBetMoney){
-		const RAL = await new Promise((resolve, reject) =>{
-			if(reward>0){
-				gameSql.InsertBetsAmountLog(4,PeriodID,transfer_no,session.uid,reward,afterBetMoney,function(res){
-					resolve(res);
-				});	
-			}else{
-				gameSql.SetBetsToWin(PeriodID,function(res){
-					resolve(res);
-				});	
-			}
-
-		});
-		return RAL
-	}
-
-	async function betData(){
+	/*async function betData(){
 		const BD = await new Promise((resolve,reject) =>{
 			for(var i=0;i<=6;i++){
 				if(betData[i]!=0){
@@ -91,25 +74,7 @@ handler.bet = function(msg,session,next){
 				callback_Z(null,0);
 				break;
 		}
-	}
-
-	async function betProcess() {
-		const res1 = await gameMade(); //回傳期數ID
-		//collect = await getAward(channelID,0);
-		return [res1];
-	}
-	betProcess()
-		.then(result =>{
-			console.log(result);
-			gameSql.GetUserMoneyMaster(session.uid,function(res){
-				next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'bet':res});
-			});
-			gameSql.UpdateUserMoneyMaster(session.uid,reward,0,function(res){
-			});
-		})
-		.catch(err =>{
-			console.error(err);
-		});
+	}*/
 	async.series({
 		Y: function(callback_Y){
 			for(var i=0;i<=6;i++){

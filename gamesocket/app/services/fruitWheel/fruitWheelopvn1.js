@@ -205,8 +205,7 @@ module.exports = function gameop()
                                         callback_FF(null,0);
                                     }
                                 }
-                                });
-                            
+                            });
                         },
                         GG: function(callback_GG){
                             redis.hgetall('GS:Commission:051', function (err, res) {

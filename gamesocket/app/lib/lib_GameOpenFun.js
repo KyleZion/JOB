@@ -8,7 +8,7 @@ module.exports = function lib_GameOpenFun(pomelo,app,async,redis,dbslave,dbmaste
 		var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
         var args = [paramName,gameType,gameZone];
         dbslave.query(sql,args,function(data){
-            if(data.ErrorCode==0){
+            if(data.ErrorCode==0 && data.rows.length){
                 callback(data.rows[0].value);
             }else{
                 callback(null);

@@ -1,6 +1,6 @@
 const pomelo = require('pomelo');
 const app = pomelo.app;
-module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZone)
+module.exports.mainGame = function(gameName,gameID,endtime,dbmaster,dbslave,redis,gameZone)
 {
 	const gameService = require('./gameService.js');
 	const messageService = require(app.getBase()+'/app/services/messageService.js');
@@ -19,27 +19,27 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 			var NowBetTotal = [0,0,0,0,0,0,0];
 			status ='T';
 			async.waterfall([ //此為寫入該期數下注額用於前端顯示遊戲中有其他人下注之實際情況，目前是在此做假資料代替
-					function(cb) {
-						for(var i in NowBetTotal){
-							NowBetTotal[i]=Math.floor(Math.random() *12+5);
-						}
-						cb(null,NowBetTotal)
+				function(cb) {
+					for(var i in NowBetTotal){
+						NowBetTotal[i]=Math.floor(Math.random() *12+5);
 					}
-				], 
-					function(err,periodBetTotal) {
-						redis.hget('GS:GAMESERVER:fruitWheel', "NowbetTotal"+gameZone,function(err,res){
-							if(err){
+					cb(null,NowBetTotal)
+				}
+			], 
+				function(err,periodBetTotal) {
+					redis.hget('GS:GAMESERVER:fruitWheel', "NowbetTotal"+gameZone,function(err,res){
+						if(err){
 
-							}else{
-								var tmp= res.split(",");
-								var redisTotal =periodBetTotal.map(function(element,index,periodBetTotal){
-									return Number(tmp[index])+Number(element);
-								});
-								redis.hset('GS:GAMESERVER:fruitWheel', "NowbetTotal"+gameZone,redisTotal.join(","));
-								//cb(null);
-							}
-						});
-					}
+						}else{
+							var tmp= res.split(",");
+							var redisTotal =periodBetTotal.map(function(element,index,periodBetTotal){
+								return Number(tmp[index])+Number(element);
+							});
+							redis.hset('GS:GAMESERVER:fruitWheel', "NowbetTotal"+gameZone,redisTotal.join(","));
+							//cb(null);
+						}
+					});
+				}
 			);
 			check=setTimeout(CheckTime,2000);
 			if( NowTime>= EndTime)
@@ -55,7 +55,6 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 				struct_games.where.id = gameID;
 				lib_gameClose.Update(function(res){
 					if(!res){
-						//console.log('關盤'+gameID);
 						messageService.broadcast('connector','GetStatus'+gameZone,{'status':status});
 					}else{
 						console.log('DB關盤失敗'+gameID);
@@ -73,9 +72,9 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 					messageService.broadcast('connector','GetStatus'+gameZone,{'status':status});
 					FWC.GameCalc(gameID,0,function(res){
 					if(!res){
-						setTimeout(function(){ fruitWheelInit.init(gameZone); }, 20000); //總計20秒後
+						setTimeout(function(){ fruitWheelInit.init(gameZone,gameName); }, 20000); //總計20秒後
 					}else{ //開獎失敗
-						setTimeout(function(){ fruitWheelInit.init(gameZone); }, 20000); //總計20秒後
+						setTimeout(function(){ fruitWheelInit.init(gameZone,gameName); }, 20000); //總計20秒後
 					}
 				});
 					//console.log("Timeout");
