@@ -12,7 +12,6 @@ var dbslave;
  */
 var app = pomelo.createApp();
 app.set('name', 'pomelo_test');
-
 // app configuration
 app.configure('production|development', function(){
   //redis config
@@ -435,7 +434,7 @@ const b2 = new Promise((resolve,reject) =>{
     setTimeout(function(){
     console.log('b2');
     console.log(a);
-    return resolve('b2');
+     resolve('b2');
   },3000);
 });
 
@@ -518,9 +517,9 @@ async function main() {
 
 main();*/
 
-const arr = [1,2,3,4,5]
+/*const arr = [1,2,3,4,5]
 const asyncFn = data => {
-  console.warn(data);
+  console.log(data);
 }
 const p = arr.map(async num => {
   await asyncFn(num)
@@ -529,7 +528,21 @@ const p = arr.map(async num => {
 
 Promise.all(p).then(results => {
   console.log(results)
-})
+})*/
+var gameZone = 101;
+var redis = app.get('redis');
+var dbmaster = app.get('dbmaster');
+var dbslave = app.get('dbslave');
+const GameOpenSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameOpenFun.js'))(pomelo,app,async,redis,dbslave,dbmaster,52,111);
+
+dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g51 where bet003 = ? and bet012 = ? order by id',[0,gameZone],function(data){
+  if(data.ErrorCode==0){
+    console.log(data.rows);
+    var a = data.rows.reduce(function(prev,element){
+      return prev+element['bet017'];
+    },0);
+  }
+});
 
 //app.start();
 

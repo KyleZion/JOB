@@ -1,19 +1,23 @@
-var pomelo = require('pomelo');
-var redis = require('redis');
-var async = require('async');
-var configUtil = require('./app/util/configUtil.js');
-//var fruitWheelInit = require('./app/services/fruitWheelInit.js');
+const pomelo = require('pomelo');
+const redis = require('redis');
+const async = require('async');
+const configUtil = require('./app/util/configUtil.js');
 
 /**
  * Init app for client.
  */
 var app = pomelo.createApp();
-app.set('name', 'pomelo_test');
+app.set('name', 'DUegame');
 
 // app configuration
 app.configure('production|development', function(){
+  if(0){
+    console.log = ()=>{};
+    console.warn = ()=>{};
+  }
   app.set('proxyConfig', {
-    timeout: 1000 * 20
+    timeout: 1000 * 10,
+    heartbeat : 300
   });
   
   //redis config
@@ -39,12 +43,17 @@ app.configure('production|development', function(){
   app.set("dbslave", dbslave); // dbslave 为外部数据库接口，app.get("dbslave") 来使用
 
   app.loadConfig("mysql", app.getBase() + "/config/mysql_master.json"); 
-  const dbmaster = require("./app/dao/mysql/mysql_M.js").init(app); 
+  const dbmaster = require("./app/dao/mysql/mysql_M.js").init(app); //dbmaster
   app.set("dbmaster", dbmaster);
-  
-  const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
+  //===========================================================================================
+  //lib config
+  const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');//訊息推播
   app.set("messageService", messageService);
-
+/*  const lib_GM = require(pomelo.app.getBase()+'/app/lib/lib_GameMade.js');
+  app.set("lib_GM", lib_GM);*/
+  app.set("async", async);
+  //===========================================================================================
+  //filter config
   //app.filter(pomelo.filters.serial()); DU_VIC:造成錯誤?
   //app.enable("systemMonitor"); DU_VIC:造成錯誤?
   var globalFilter = require('./app/servers/global/filter/globalFilter');
@@ -67,74 +76,15 @@ app.configure('production|development', function(){
 //=====================================connector configure=====================================
 //
 var games = ['connector','fruitWheel','diceBao','Scratch','fruitSlot','transfer','manager'];
-//var games = ['connector','fruitSlot','transfer','manager'];
-//var games = ['ts'];
-//var games = ['connector','transfer','manager'];
-//var games = ['connector','transfer'];
+//var games = ['connector','fruitWheel','transfer','manager'];
 for (var i = 0; i < games.length ; i++) {
 
   var path = app.getBase() + "/gameStart/"+ games[i]+".js";
 
-
   var game = require(path);
-  var iSetGame = new game(pomelo,app);
+  var iSetGame = new game(pomelo,app,games[i]);
 
 }
-/*app.configure('production|development', 'connector', function(){
-  //  app.set('sessionConfig', {
-  //    singleSession: true
-  //});
-  app.set('connectorConfig',
-    {
-      connector : pomelo.connectors.sioconnector, //sioconnector -> socketio 通訊
-      // 'websocket', 'polling-xhr', 'polling-jsonp', 'polling'
-      transports : ['websocket', 'polling-xhr', 'polling-jsonp', 'polling'],
-      heartbeats : true,
-      closeTimeout : 60*1000 ,
-      heartbeatTimeout : 60*1000 ,
-      heartbeatInterval : 25*1000
-    });
-
-});
-var fruitFilter = require('./app/servers/fruitWheel/filter/fruitWheelFilter');
-app.configure('production|development', 'fruitWheel', function() {
-  var errorHandler = function(err, msg, resp , session, next){
-    if(resp==500){
-      next(null,{'ErrorCode':1,'ErrorMessage':'網路連線異常'})
-    }
-    else if(session.get('Stop')==1){
-        next(null,{'ErrorCode':1,'ErrorMessage':resp});
-    }
-    else{
-      session.set("Stop",1);
-      session.set('Stoptime',new Date());
-      session.pushAll();
-      next(null,{'ErrorCode':1,'ErrorMessage':resp});
-    }
-  }
-  app.set("errorHandler",errorHandler);//errorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
-  
-  app.filter(fruitFilter());
-  async.series({
-    A:function(callback_A){
-      GPB.Run();
-      callback_A(null,0);
-    },
-    B:function(callback_B){
-      fruitWheelInit.init();
-      callback_B(null,0);
-    }
-  },function(err, results) {
-    console.log("初始化完成");
-    });
-});*/
-
-/*var env = app.get('env'); 正式環境去掉輸出
-if(env != 'development'){
-   console.log = function(){};
-   console.info = function(){};
-   console.warn = function(){};
-}*/
 
 // start app
 
