@@ -224,7 +224,9 @@ module.exports = function diceBaoGameOpen()
 			OpenPoolPercentage = await getOpenPoolPercentage(); 
 			OpenPoolBase = await getOpenPoolBase(); 
 			PoolThresholdMaxPercentage = await getPoolThresholdMaxPercentage();
-			return [CommissionPercentage,takePercentage,OpenPoolPercentage,OpenPoolBase,PoolThresholdMaxPercentage];
+			res1 = await getRedisCommission();
+			res2 = await getRedisBonus();
+			return [CommissionPercentage,takePercentage,OpenPoolPercentage,OpenPoolBase,PoolThresholdMaxPercentage,res1,res2];
 		}
 		getParmProcess()
 			.then(result =>{
@@ -243,24 +245,45 @@ module.exports = function diceBaoGameOpen()
 		}
 			
 		//==========================================================================================
-		ordercoins = myArr.reduce(function(prev, element) {
-		   return prev + element;
+		ordercoins = gamebetdata.reduce(function(prev, element){
+		   return prev + element['bet017'];
 		}, 0);
+		ThisTimeBonus = (ordercoins*takePercentage);
+        Commission = (ordercoins * CommissionPercentage);
 
-		// 6
-		console.log(result);
+        if(gameZone == 101){
+            RedisCommission101 += Commission;
+            redis.hset('GS:Commission:051', "RedisCommission101", RedisCommission101);
+        }
+        else if(gameZone==102){
+            RedisCommission102 += Commission;
+            redis.hset('GS:Commission:051', "RedisCommission102", RedisCommission102);
+        }
+        else if(gameZone==105){
+            RedisCommission105 += Commission;
+            redis.hset('GS:Commission:051', "RedisCommission105", RedisCommission105);
+        }
+        else if(gameZone==110){
+            RedisCommission110 += Commission;
+            redis.hset('GS:Commission:051', "RedisCommission110", RedisCommission110);
+        }
 
-		for(i=0;i<count(gamedata);i++)
+        if(gameZone == 101)
+            RedisBonus = bonus101;
+        else if(gameZone==102)
+            RedisBonus = bonus102;
+        else if(gameZone==105)
+            RedisBonus = bonus105;
+        else if(gameZone==110)
+            RedisBonus = bonus110;
+        //20180628
+		for(i=0;i<gamebetdata.length;i++)
 		{
 			//======================================================================================
 			ThisTimeBonus = 0; //這次的獎池累計
 			CanOpenPool = false; //是否開獎池
 			Commission = 0;//佣金
 			ordercoins =0; //總押分
-			if(PoolThresholdMaxPercentage > 1 || PoolThresholdMaxPercentage > 1){
-				echo "設定錯誤 送出百分比不能大於1";
-				return ;
-			}
 			
 			//======================================================================================
 			if(count(data)==0){
