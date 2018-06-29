@@ -23,7 +23,7 @@ handler.Transfer = function(msg,session,next){
 	var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
 	async.series({
 		A: function(callback_A){
-			console.log('callbackA');
+			console.error('callbackA');
 			/*var sql ="CALL spModifyAmount(?,?,?,?,?,?,@id); SELECT @id;";
 			dbmaster.spquery(sql,[51,0,0,'',session.uid,msg.amount,0],(data) =>{
 			    var logId = data.rows[3][0]['@id'];
@@ -41,7 +41,7 @@ handler.Transfer = function(msg,session,next){
 		    //mid,金額,amountlogSQL
 			lib_games.DeductMoney(session.uid,msg.amount,struct_amount,function(result)
 			{
-			  console.log('callbackA DB');
+			  console.error('callbackA DB');
 			  switch(result)
 			  {
 			    case -1:
@@ -69,7 +69,7 @@ handler.Transfer = function(msg,session,next){
 			});
 		},
 		B: function(callback_B){
-			console.log('callbackB');
+			console.error('callbackB');
 			//GET/POST 到API
 			var http = require('http'); 
 			var qs = require('querystring'); 
@@ -92,7 +92,7 @@ handler.Transfer = function(msg,session,next){
 			    //console.log('HEADERS: ' + JSON.stringify(res.headers)); 
 			    res.setEncoding('utf8'); 
 			    res.on('data', function (chunk) {
-			    	console.log('callbackB data chunk');
+			    	console.error('callbackB data chunk');
 			        console.log('BODY: ' + chunk);
 			        var data = JSON.parse(chunk)
 			        if(data.ErrorCode==0){
@@ -108,7 +108,7 @@ handler.Transfer = function(msg,session,next){
 			req.end();
 		},
 		C: function(callback_C){
-			console.log('callbackC');
+			console.error('callbackC');
 			let sql ="CALL spSelectMemberMem100(?);";
 			dbmaster.spquery(sql,[session.uid],(data) =>{
 			    //res = data.rows[3][0]['@a'];

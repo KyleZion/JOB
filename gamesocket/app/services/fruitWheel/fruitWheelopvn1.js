@@ -36,7 +36,7 @@ module.exports = function gameop()
         var CanOpenPool = false;  //開獎池與否
         var OpenPoolR_L = 0; 
         var RedisBonus = 0;
-        var winbet = new Array(); 
+        //var winbet = new Array(); 
         var flag = 0;
 
         var OpenPoolNumber = 0; //開獎池號碼
