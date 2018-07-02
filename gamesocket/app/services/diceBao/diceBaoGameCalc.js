@@ -6,6 +6,7 @@ module.exports = function diceBaoGameCalc(redis,dbslave,dbmaster,messageService,
 	//const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
 	const gameSql = new(require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,gameZone);
 	const diceBaoService = require('./diceBaoService.js');
+	const gameNumop = new(require('./diceBaoGameOpen.js'))();
 	// ------ games -------------------------------------------------------------
 	this.GameCalc = function(gameID,reCalc,callback_gameOpen){
 		var sum = 0;
@@ -15,10 +16,7 @@ module.exports = function diceBaoGameCalc(redis,dbslave,dbmaster,messageService,
 
 		async.waterfall([
 			function(callback) {
-				var gameNum = [];
-				/*gameNum[0] = 1;
-				gameNum[1] = 3;
-				gameNum[2] = 5;*/
+				/*var gameNum = [];
 				gameNum[0] = Math.floor((Math.random() * 6) + 1);
 				gameNum[1] = Math.floor((Math.random() * 6) + 1);
 				gameNum[2] = Math.floor((Math.random() * 6) + 1);
@@ -34,6 +32,19 @@ module.exports = function diceBaoGameCalc(redis,dbslave,dbmaster,messageService,
 				}
 				//console.log("52開獎號:"+gameNum);
 				callback(null,gameNum);//將gameNum傳到第二層
+				*/
+				dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g52 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
+					if(data.ErrorCode==0){
+						gameNumop.gameopvn1(dbmaster,dbslave,redis,gameID,data.rows,gameZone,function(data){
+							if(data.ErrorCode==0){
+								callback(null,data.gameNum);
+							}else{
+								console.log('結算錯誤1');
+								callback(data.ErrorCode,data.ErrorMessage);
+							}
+						});
+					}
+				});
 			},
 			function(gameNum,callback){
 				sum = gameNum[0]+gameNum[1]+gameNum[2];

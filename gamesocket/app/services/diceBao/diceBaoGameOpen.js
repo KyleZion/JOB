@@ -4,7 +4,7 @@ const pomelo = require('pomelo');
 module.exports = function diceBaoGameOpen()
 {	
 	this.gameopvn1 =function (dbmaster,dbslave,redis,gameID,gamebetdata,gameZone,callback) {
-		const GameOpenSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameOpenFun.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,channelID);
+		const GameOpenSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameOpenFun.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,gameZone);
         const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
         var bonus111 = 0;
         var bonus222 = 0;
@@ -39,14 +39,14 @@ module.exports = function diceBaoGameOpen()
         var OpenPool_np = 99999999;
         var OpenPool_tmpwin = 0;
         var OpenPool_ordercoins = 0;
-        var Minimum_np_Number = getOpenNum();
-        var Minimum_np = 99999999;
-        var Minimum_np_tmpwin = 0;
-        var Minimum_np_ordercoins = 0;
-        var Maximum_np_Number = getOpenNum();
-        var Maximum_np = -99999999;
-        var Maximum_np_tmpwin = 0;
-        var Maximum_np_ordercoins = 0;
+        var Minimum_n2_Number = getOpenNum();
+        var Minimum_n2 = 99999999;
+        var Minimum_n2_tmpwin = 0;
+        var Minimum_n2_ordercoins = 0;
+        var Maximum_n2_Number = getOpenNum();
+        var Maximum_n2 = -99999999;
+        var Maximum_n2_tmpwin = 0;
+        var Maximum_n2_ordercoins = 0;
         var n2positive = false;
         var bonusRate = 0;
             
@@ -59,13 +59,13 @@ module.exports = function diceBaoGameOpen()
 		//======================================================================================
 		if(gamebetdata.length==0){
             console.log('沒有注單不需要算');
-            callback({'ErrorCode':0,'ErrorMessage':'','gameNum': getOpenNum()}) ;
+            callback({'ErrorCode':0,'ErrorMessage':'','gameNum': getOpenNum()});
         }else{
-	        // 		CommissionPercentage = 0.15;   //佣金百分比
-			// 		takePercentage = 0.01; //獎池抽成百分比 (收入)
-			// 		OpenPoolPercentage = 50; //開獎池機率 (0~100) 越高越難中獎
-			// 		OpenPoolBase = 3000;    //獎池越接近著個數字 就越容易開獎  如果大於這個數字 依定開獎
-			// 		PoolThresholdMaxPercentage = 0.7;   //累積彩池多少後 要開放中獎  但是送出金額要小於 彩池金額的百分比 (最大獎池會吐多少百分比)
+	        // 	CommissionPercentage = 0.15;   //佣金百分比
+			// 	takePercentage = 0.01; //獎池抽成百分比 (收入)
+			// 	OpenPoolPercentage = 50; //開獎池機率 (0~100) 越高越難中獎
+			// 	OpenPoolBase = 3000;    //獎池越接近著個數字 就越容易開獎  如果大於這個數字 依定開獎
+			// 	PoolThresholdMaxPercentage = 0.7;   //累積彩池多少後 要開放中獎  但是送出金額要小於 彩池金額的百分比 (最大獎池會吐多少百分比)
 			async function getCommissionPercentage(){
 				return GCP = await new Promise((resolve, reject) =>{
 					redis.hget('GS:GAMESERVER:GAMECONTROL:052', "CommissionPercentage"+gameZone, function (err, res) {
@@ -248,7 +248,7 @@ module.exports = function diceBaoGameOpen()
 			//==========================================================================================
 			ordercoins = gamebetdata.reduce(function(prev, element){
 			   return prev + element['bet017'];
-			}, 0);
+			}, 0); 
 			ThisTimeBonus = (ordercoins*takePercentage);
 	        Commission = (ordercoins * CommissionPercentage);
 
@@ -279,311 +279,288 @@ module.exports = function diceBaoGameOpen()
 	            RedisBonus = bonus110;
 	        //20180628
 
-			for(i=0;i<gamebetdata.length;i++)
-			{
-				//======================================================================================
-				CanOpenPool = false; //是否開獎池
-				//======================================================================================
-	// 			//檢查如果採池大於 OpenPoolBase 兩倍 表示有異常  採池歸零
-	// 			if (RedisBonus > OpenPoolBase * 2){
-	// 				if(gamedata[i][1]==13)
-	// 					RedisBonus = 0;
-	// 				else if(gamedata[i][1]==14)
-	// 					RedisBonus = 0;
-	// 				else if(gamedata[i][1]==15)
-	// 					RedisBonus = 0;
-	// 			}
-				//======================================================================================
-				
-				if(RedisBonus > 0 ){
-					OpenPoolR_L= (RedisBonus / OpenPoolBase)*100;
-					if( OpenPoolR_L > 100)
-					{
-						CanOpenPool = true;
-					}
-					else{
-						var OpenPoolR = Math.floor(Math.random() * 100);
-	                    //console.log("開獎池機率"+OpenPoolR);
-						CanOpenPool = OpenPoolR > OpenPoolPercentage;
-						//console.log(CanOpenPool?"是":"否");
-					}
-				}
-				//==以下開10個號碼 看有沒有中獎 ==================================================================
-				var Run = 10;
-				var RunStep = 10;
-				var RunMax = 30;
-
-				for(let nn=0;nn<Run;nn++){
-					num = getOpenNum();	
-					combo = getOpenCombo(num,num[3]);
-					var tmpwin = 0;   //總贏分 (玩家贏)
-					var c = 0;
-					var winbet = new Array();
-				    gamebetdata.forEach((e1)=>
-				      combo[0].forEach((e2)=> {
-				        if(e1['bet014'] === e2){
-				        	winbet[c] = e1;
-				        	tmpwin+=gamePlaybet(e1,e2,combo[1],combo[2]);
-				        	c++;
-				        }
-				      }
-				    ));
-					
-					n2 = ordercoins - tmpwin - ThisTimeBonus - Commission; //押分 - 贏分 - 彩池分數 - 佣金  = 可以被中獎的分數(如果都沒有人中 就累積彩池)
-
-					if(tmpwin == 0)
-						console.log (" | Zero". str_pad(nn,3,'0',STR_PAD_LEFT));
-					else 
-						console.log(" | ".n2."A".tmpwin."B".num."C".nn."D");
-					
-					poolflag = false;
-					if( CanOpenPool == true   && RedisBonus > 100){
-						poolflag = true;
-						
-						if(tmpwin == 0){
-							if(flag!=1 && nn == (Run - 1)){
-								Run += RunStep;
-								if(Run > RunMax){
-									Run = RunMax;
-								}
-							}
-							continue;
-						}
-						
-						if(RedisBonus * PoolThresholdMaxPercentage  > (tmpwin)){
-							if( tmpwin > OpenPool_tmpwin ){ //派送最大獎的號碼
-								OpenPool_n2 = n2;
-								OpenPoolNumber = num;
-								OpenPool_tmpwin =tmpwin;
-								OpenPool_ordercoins = ordercoins;
-								flag=1;
-							}
-						}
-					}
-					
-					//if(tmpwin == 0)
-						//continue;
-					
-					if ( CanOpenPool == false   || ( poolflag == true && flag!=1) ){
-						if( n2 >= 0 && tmpwin >= 0 ){ //這個號碼   公司會賺錢
-							flag=2;
-						}	
-					}
-					
-					if( n2 >= 0 &&  n2 <= Minimum_n2 && tmpwin >= 0){ //公司賺最少的號碼
-						Minimum_n2_Number = num;
-						Minimum_n2 = n2;
-						Minimum_n2_tmpwin = tmpwin;
-						Minimum_n2_ordercoins = ordercoins;
-						n2positive = true;
-					}
+			//======================================================================================
+			CanOpenPool = false; //是否開獎池
+			//======================================================================================
+// 			//檢查如果採池大於 OpenPoolBase 兩倍 表示有異常  採池歸零
+// 			if (RedisBonus > OpenPoolBase * 2){
+// 				if(gamedata[i][1]==13)
+// 					RedisBonus = 0;
+// 				else if(gamedata[i][1]==14)
+// 					RedisBonus = 0;
+// 				else if(gamedata[i][1]==15)
+// 					RedisBonus = 0;
+// 			}
+			//======================================================================================
 			
-					//if( n2 <= 0 && n2 >= Maximum_n2 && tmpwin <= 0){  //如果公司輸  取 輸最少的
-					if(n2 >= Maximum_n2 ){  //如果公司輸  取 輸最少的
-						Maximum_n2_Number = num;
-						Maximum_n2 = n2;
-						Maximum_n2_tmpwin = tmpwin;
-						Maximum_n2_ordercoins = ordercoins;	
-					}
-					
-					Last_tmpwin = tmpwin;
-					Last_ordercoins = ordercoins;
-					
+			if(RedisBonus > 0 ){
+				OpenPoolR_L= (RedisBonus / OpenPoolBase)*100;
+				if( OpenPoolR_L > 100)
+				{
+					CanOpenPool = true;
 				}
-				//==以下 累積彩池==========================================================================
-	// 			for(q=0;q<count(data);q++){
-	// 				pvBouns = data[q][6] * takePercentage;
-	// 				if(gamedata[i][1]==13)
-	// 					bonus13 += pvBouns;
-	// 				else if(gamedata[i][1]==14)
-	// 					bonus14 += pvBouns;
-	// 				else if(gamedata[i][1]==15)
-	// 					bonus15 += pvBouns;
-	// 			}
-				
-				if(gamedata[i][1]==13)
-					bonus13 += ThisTimeBonus;
-				else if(gamedata[i][1]==14)
-					bonus14 += ThisTimeBonus;
-				else if(gamedata[i][1]==15)
-					bonus15 += ThisTimeBonus;
-				
-				//======================================================================================
-				
-				DB_ordercoins = 0;
-				DB_DT = date ("Y- m - d / H : i : s");
-				DB_LT = gamedata[i][1];
-				DB_BC = Last_ordercoins;
-				DB_SC = Last_tmpwin;
-				DB_TB = ThisTimeBonus;
-				DB_TC = Commission;
-				DB_WT = 5;
-				if(flag==0){
-					if (n2positive==false){ 
-						echo "<br>50組號碼 每一組都是輸的 找公司輸最少的號碼開";
-						echo "<br>送出 :". Maximum_n2_tmpwin;
-						echo "<br>Maximum_n2:".Maximum_n2;
-						num = Maximum_n2_Number;
-						
-						if(gamedata[i][1]==13)
-							bonus13 += Maximum_n2; 
-						else if(gamedata[i][1]==14)
-							bonus14 += Maximum_n2;
-						else if(gamedata[i][1]==15)
-							bonus15 += Maximum_n2;
-						
-						DB_ordercoins =Maximum_n2_ordercoins;
-						DB_SC = Maximum_n2_tmpwin;
-						DB_WT = 4;
-					}else{
-						//這個彩種有沒有人中獎
-						echo "<br>沒有人中獎  | 累積到彩池 : ".n2;
-	// 					if(gamedata[i][1]==13)
-	// 						bonus13 += n2; 
-	// 					else if(gamedata[i][1]==14)
-	// 						bonus14 += n2;
-	// 					else if(gamedata[i][1]==15)
-	// 						bonus15 += n2;
-	// 					DB_WT = 3;
-	// 					DB_SC = 0;
-						echo "<br>沒有人中獎  | 累積到彩池 : ".Minimum_n2;
-						num = Minimum_n2_Number;
-						if(gamedata[i][1]==13)
-							bonus13 += Minimum_n2;
-						else if(gamedata[i][1]==14)
-							bonus14 += Minimum_n2;
-						else if(gamedata[i][1]==15)
-							bonus15 += Minimum_n2;
-						DB_WT = 3;
-						DB_SC = Minimum_n2_tmpwin;
+				else{
+					var OpenPoolR = Math.floor(Math.random() * 100);
+					//console.log("開獎池機率"+OpenPoolR);
+					CanOpenPool = OpenPoolR > OpenPoolPercentage;
+					//console.log(CanOpenPool?"是":"否");
+				}
+			}
+			//==以下開10個號碼 看有沒有中獎 ==================================================================
+			var Run = 10;
+			var RunStep = 10;
+			var RunMax = 30;
+
+			for(let nn=0;nn<Run;nn++){
+				num = getOpenNum();	
+				combo = getOpenCombo(num,num[3]);
+				var tmpwin = 0;   //總贏分 (玩家贏)
+				var c = 0;
+				var winbet = new Array();
+				gamebetdata.forEach((e1)=>
+				  combo[0].forEach((e2)=> {
+					if(e1['bet014'] === e2){
+						winbet[c] = e1;
+						tmpwin+=gamePlaybet(e1,e2,combo[1],combo[2]);
+						c++;
 					}
-				}else if(flag==1){
-					//如果決定獎池開獎,但是因為獎池金額太少 導致於送出的金額反而比決定不要獎池開獎來的低
-					//所以加入以下程式碼
-					if(Minimum_n2_tmpwin>OpenPool_tmpwin){
-						echo "<br>有人中獎 (自然中獎) 挑選公司賺最少的號碼    扣除被玩家贏走的餘額_累積到彩池 : ".Minimum_n2;
-						echo "<br>送出 :". Minimum_n2_tmpwin;
-						num = Minimum_n2_Number;
-						if(gamedata[i][1]==13)
-							bonus13 += Minimum_n2;
-						else if(gamedata[i][1]==14)
-							bonus14 += Minimum_n2;
-						else if(gamedata[i][1]==15)
-							bonus15 += Minimum_n2;
-						DB_WT = 2;
-						DB_SC = Minimum_n2_tmpwin;
+				  }
+				));
+				
+				n2 = ordercoins - tmpwin - ThisTimeBonus - Commission; //押分 - 贏分 - 彩池分數 - 佣金  = 可以被中獎的分數(如果都沒有人中 就累積彩池)
+
+				if(tmpwin == 0)
+					console.log ("Zero");
+				else 
+					console.log(n2+"A"+tmpwin+"B"+num+"C"+nn+"D");
+				
+				poolflag = false;
+				if( CanOpenPool == true   && RedisBonus > 100){
+					poolflag = true;
+					
+					if(tmpwin == 0){
+						if(flag!=1 && nn == (Run - 1)){
+							Run += RunStep;
+							if(Run > RunMax){
+								Run = RunMax;
+							}
+						}
+						continue;
 					}
-					else{
-						echo "<br>有人中獎 (彩池送出) 挑選公司賺最少的號碼    扣除被玩家贏走的餘額_累積到彩池 :".OpenPool_n2;
-						echo "<br>送出 :".OpenPool_tmpwin;
-						//如果超過閥值 但是送出金額要小於 彩池金額
-						//把送出去的獎池 扣掉   (這邊送出去的 是之前慢慢從玩家押注抽成的 )
-						if(gamedata[i][1]==13)
-							bonus13 += OpenPool_n2;
-						else if(gamedata[i][1]==14)
-							bonus14 += OpenPool_n2;
-						else if(gamedata[i][1]==15)
-							bonus15 += OpenPool_n2;
-						num = OpenPoolNumber;
-						DB_WT = 1;
-						DB_SC = OpenPool_tmpwin;
+					
+					if(RedisBonus * PoolThresholdMaxPercentage  > (tmpwin)){
+						if( tmpwin > OpenPool_tmpwin ){ //派送最大獎的號碼
+							OpenPool_n2 = n2;
+							OpenPoolNumber = num;
+							OpenPool_tmpwin =tmpwin;
+							OpenPool_ordercoins = ordercoins;
+							flag=1;
+						}
 					}
-				}else if(flag==2){
-					echo "<br>有人中獎 (自然中獎) 挑選公司賺最少的號碼    扣除被玩家贏走的餘額_累積到彩池 : ".Minimum_n2;
-					echo "<br>送出 :". Minimum_n2_tmpwin;
+				}
+				
+				//if(tmpwin == 0)
+					//continue;
+				
+				if ( CanOpenPool == false   || ( poolflag == true && flag!=1) ){
+					if( n2 >= 0 && tmpwin >= 0 ){ //這個號碼   公司會賺錢
+						flag=2;
+					}	
+				}
+				
+				if( n2 >= 0 &&  n2 <= Minimum_n2 && tmpwin >= 0){ //公司賺最少的號碼
+					Minimum_n2_Number = num;
+					Minimum_n2 = n2;
+					Minimum_n2_tmpwin = tmpwin;
+					Minimum_n2_ordercoins = ordercoins;
+					n2positive = true;
+				}
+		
+				//if( n2 <= 0 && n2 >= Maximum_n2 && tmpwin <= 0){  //如果公司輸  取 輸最少的
+				if(n2 >= Maximum_n2 ){  //如果公司輸  取 輸最少的
+					Maximum_n2_Number = num;
+					Maximum_n2 = n2;
+					Maximum_n2_tmpwin = tmpwin;
+					Maximum_n2_ordercoins = ordercoins;	
+				}
+				
+				Last_tmpwin = tmpwin;
+				Last_ordercoins = ordercoins;
+				
+			}
+			//==以下 累積彩池==========================================================================
+			if(gameZone == 111)
+                bonus111 += ThisTimeBonus;
+            else if(gameZone==222)
+                bonus222 += ThisTimeBonus;
+            else if(gameZone==333)
+                bonus333 += ThisTimeBonus;
+			
+			//======================================================================================
+			
+			DB_ordercoins = 0;
+			DB_DT = PUB.formatDate()+" "+PUB.formatDateTime();
+			DB_LT = '52'
+			DB_BC = Last_ordercoins;
+			DB_SC = Last_tmpwin;
+			DB_TB = ThisTimeBonus;
+			DB_TC = Commission;
+			DB_WT = 5;
+			if(flag==0){
+				if (n2positive==false){ 
+					console.log( "50組號碼 每一組都是輸的 找公司輸最少的號碼開");
+					console.log( "送出 :"+Maximum_n2_tmpwin);
+					console.log( "Maximum_n2:"+Maximum_n2);
+					num = Maximum_n2_Number;
+					
+					if(gameZone == 111)
+                		bonus111  += Maximum_n2; 
+					else if(gameZone==222)
+                		bonus222 += Maximum_n2;
+					else if(gameZone==333)
+						bonus333 += Maximum_n2;
+					
+					DB_ordercoins =Maximum_n2_ordercoins;
+					DB_SC = Maximum_n2_tmpwin;
+					DB_WT = 4;
+				}else{
+					//這個彩種有沒有人中獎
+					console.log( "沒有人中獎  | 累積到彩池 : "+n2);
+// 					if(gamedata[i][1]==13)
+// 						bonus13 += n2; 
+// 					else if(gamedata[i][1]==14)
+// 						bonus14 += n2;
+// 					else if(gamedata[i][1]==15)
+// 						bonus15 += n2;
+// 					DB_WT = 3;
+// 					DB_SC = 0;
+					console.log( "沒有人中獎  | 累積到彩池 : ".Minimum_n2);
 					num = Minimum_n2_Number;
-					if(gamedata[i][1]==13)
-						bonus13 += Minimum_n2;
-					else if(gamedata[i][1]==14)
-						bonus14 += Minimum_n2;
-					else if(gamedata[i][1]==15)
-						bonus15 += Minimum_n2;
+					if(gameZone == 111)
+                		bonus111  += Minimum_n2;
+					else if(gameZone==222)
+                		bonus222 += Minimum_n2;
+					else if(gameZone==333)
+						bonus333 += Minimum_n2;
+					DB_WT = 3;
+					DB_SC = Minimum_n2_tmpwin;
+				}
+			}else if(flag==1){
+				//如果決定獎池開獎,但是因為獎池金額太少 導致於送出的金額反而比決定不要獎池開獎來的低
+				//所以加入以下程式碼
+				if(Minimum_n2_tmpwin>OpenPool_tmpwin){
+					console.log( "有人中獎 (自然中獎) 挑選公司賺最少的號碼    扣除被玩家贏走的餘額_累積到彩池 : "+Minimum_n2);
+					console.log( "送出 :"+Minimum_n2_tmpwin);
+					num = Minimum_n2_Number;
+					if(gameZone == 111)
+                		bonus111  += Minimum_n2;
+					else if(gameZone==222)
+                		bonus222 += Minimum_n2;
+					else if(gameZone==333)
+						bonus333 += Minimum_n2;
 					DB_WT = 2;
 					DB_SC = Minimum_n2_tmpwin;
 				}
-				
-				end = this->caclutime();
-				DB_B5 = bonus13;
-				DB_B3 = bonus14;
-				DB_B1 = bonus15;
-				
-				DB_C5 = RedisCommission13;
-				DB_C3 = RedisCommission14;
-				DB_C1 = RedisCommission15;
-				DB_num = num;
-				DB_Period =gamedata[i][2];
-				DB_PT = end - start;
-				DB_RT = Run;
-				//======================================================================================
-				echo "<br>累積後彩池bonus13:".bonus13;
-				echo "<br>累積後彩池bonus14:".bonus14;
-				echo "<br>累積後彩池bonus15:".bonus15;
-				//======================================================================================
-				echo "<br>中獎號碼:".num;
-				
-				//=====================================蝯�=====================================
-				if(isTest == false){
-					
-					echo '<br>真的結算1'.'http://'.openURL.'/v/game-gameopx?g='.casino[gamedata[i][1]][1].'&i='.gamedata[i][2].'&n='.num;
-					ch = curl_init('http://'.openURL.'/v/game-gameopx?g='.casino[gamedata[i][1]][1].'&i='.gamedata[i][2].'&n='.num);
-					curl_setopt(ch, CURLOPT_RETURNTRANSFER, 1);
-					result[] =curl_exec(ch);
-					curl_close(ch);
-					
-					gametype = casino[gamedata[i][1]][1];
-					gameid = casino[gamedata[i][1]][1];
-					gamename = gamedata[i][2];
-					gamenum = num;
-					this->InsertNumber(gametype,gameid,gamename,gamenum);
-					
-					
-				
-					
-					SQL = "INSERT INTO minutesLottoLog( DT,WT, LT, BC, SC, TB,TC, B5, B3, B1, C5, C3, C1, num, Period, PT, RT) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);'";
-					echo "<br>SQL:".SQL;
-					
-					ud = array();
-					ud[0] = DB_DT;
-					ud[1] = DB_WT;
-					ud[2] = DB_LT;
-					ud[3] = DB_BC;
-					ud[4] = DB_SC;
-					ud[5] = DB_TB;
-					ud[6] = DB_TC;
-					ud[7] = DB_B5;
-					ud[8] = DB_B3;
-					ud[9] = DB_B1;
-					ud[10] = DB_C5;
-					ud[11] = DB_C3;
-					ud[12] = DB_C1;
-					ud[13] = DB_num;
-					ud[14] = DB_Period;
-					ud[15] = DB_PT;
-					ud[16] = DB_RT;
-					data = db_pUpdate(SQL,ud );
-					
-					if(data==true){
-						echo "INSERT 成功";
-					}
-					else{
-						echo "INSERT 失敗".	DB_DT." | ".DB_WT." | ".DB_LT." | ".DB_BC." | ".DB_SC." | ".
-											DB_TB." | ".DB_TC." | ".DB_B5." | ".DB_B3." | ".DB_B1." | ".
-											DB_C5." | ".DB_C3." | ".DB_C1." | ".DB_num." | ".DB_Period." | ".
-											DB_PT." | ".DB_RT." | ";
-					}
-					
+				else{
+					console.log( "有人中獎 (彩池送出) 挑選公司賺最少的號碼    扣除被玩家贏走的餘額_累積到彩池 :"+OpenPool_n2);
+					console.log( "送出 :"+OpenPool_tmpwin);
+					//如果超過閥值 但是送出金額要小於 彩池金額
+					//把送出去的獎池 扣掉   (這邊送出去的 是之前慢慢從玩家押注抽成的 )
+					if(gameZone == 111)
+                		bonus111  += OpenPool_n2;
+					else if(gameZone==222)
+                		bonus222 += OpenPool_n2;
+					else if(gameZone==333)
+						bonus333 += OpenPool_n2;
+					num = OpenPoolNumber;
+					DB_WT = 1;
+					DB_SC = OpenPool_tmpwin;
 				}
-				else 
-					echo "<br>測試模是 不真的結算";
-				//==========================================================================
-				sleep(3);
+			}else if(flag==2){
+				console.log( "有人中獎 (自然中獎) 挑選公司賺最少的號碼    扣除被玩家贏走的餘額_累積到彩池 : "+Minimum_n2);
+				console.log( "送出 :"+ Minimum_n2_tmpwin);
+				num = Minimum_n2_Number;
+				if(gameZone == 111)
+            		bonus111  += Minimum_n2;
+				else if(gameZone==222)
+            		bonus222 += Minimum_n2;
+				else if(gameZone==333)
+					bonus333 += Minimum_n2;
+				DB_WT = 2;
+				DB_SC = Minimum_n2_tmpwin;
 			}
 			
-			redis->set('Bonus:13:000',bonus13);
-			redis->set('Bonus:14:000',bonus14);
-			redis->set('Bonus:15:000',bonus15);
-			echo "<br>END<br>";
-			return this->toJson(array('a'=>result));
+			var end = new Date().getTime();
+			if(gameZone == 111){
+                DB_B111 = bonus111;
+                DB_C111 = RedisCommission111;
+            }
+            else if(gameZone==222){
+                DB_B222 = bonus222;
+                DB_C222 = RedisCommission222;
+            }
+            else if(gameZone==333){
+                DB_B333 = bonus333;
+                DB_C333 = RedisCommission333;
+            }
+			DB_B333 = bonus333;
+			DB_B222 = bonus222;
+			DB_B111 = bonus111;
+			
+			DB_C333 = RedisCommission333;
+			DB_C222 = RedisCommission222;
+			DB_C111 = RedisCommission111;
+			DB_num = num;
+			DB_Period =gameID;
+			DB_PT = end - start;
+			DB_RT = Run;
+			//======================================================================================
+			console.log( "累積後彩池bonus111:".bonus111);
+			console.log( "累積後彩池bonus222:".bonus222);
+			console.log( "累積後彩池bonus333:".bonus333);
+			//======================================================================================
+			console.log( "中獎號碼:".num);
+			
+			//=====================================蝯�=====================================
+			if(1){
+				var struct_log = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+                var lib_gameoplog = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("game_open_logs",struct_log);
+                struct_log.params.DT = DB_DT;
+                struct_log.params.WT = DB_WT;
+                struct_log.params.LT = DB_LT;
+                struct_log.params.BC = DB_BC;
+                struct_log.params.SC = DB_SC;
+                struct_log.params.TB = DB_TB;
+                struct_log.params.TC = DB_TC;
+                struct_log.params.B110 = 0;
+                struct_log.params.B105 = DB_B333;
+                struct_log.params.B102 = DB_B222;
+                struct_log.params.B101 = DB_B111;
+                struct_log.params.C110 = 0;
+                struct_log.params.C105 = DB_C333;
+                struct_log.params.C102 = DB_C222;
+                struct_log.params.C101 = DB_C111;
+                struct_log.params.num = DB_num;
+                struct_log.params.Period = gameID;
+                struct_log.params.PT = DB_PT;
+                lib_gameoplog.Insert(function(res){
+                    if(res){
+                        console.log( "INSERT 成功");
+                    }else{
+                        console.log('寫入資料庫失敗');
+                    }
+                });
+				
+			}
+			else 
+				console.log( "測試模是 不真的結算");
+			//==========================================================================
+			
+            redis.hset('GS:Bonus:052', "RedisBonus111", bonus111);
+            redis.hset('GS:Bonus:052', "RedisBonus222", bonus222);
+            redis.hset('GS:Bonus:052', "RedisBonus333", bonus333);
+			console.log( "END");
+			callback({'ErrorCode':0,'ErrorMessage':'','gameNum':num,});
         }
 
 	}

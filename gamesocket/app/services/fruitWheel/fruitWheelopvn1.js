@@ -288,6 +288,7 @@ module.exports = function gameop()
                     for(var i=0 ; i<8 ; i++){
                         var tmpwin = 0;
                         //var item = 0;
+
                         for(var j=0 ; j<gamebetdata.length ; j++){
                             var res = gamePlaybet(gamebetdata[j],i);
                             if(res!=null){
@@ -518,7 +519,7 @@ module.exports = function gameop()
                     redis.hset('GS:Bonus:051', "RedisBonus105", bonus105);
                     redis.hset('GS:Bonus:051', "RedisBonus110", bonus110);
                     //console.log('最後開:'+num+'&'+bonusRate);
-                 callback({'ErrorCode':0,'ErrorMessage':'','gameNum': num,'bonusRate': bonusRate}) ;
+                    callback({'ErrorCode':0,'ErrorMessage':'','gameNum': num,'bonusRate': bonusRate}) ;
                 }
                 
             });
