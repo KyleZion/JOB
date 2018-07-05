@@ -228,7 +228,7 @@ async function transGameNum(gameNum)
 	var gameNumCombo = new Array();
 	var c=0;
 	for(let i=0;i<10;i++){
-		if(gameNum[0].every(checkLine))
+		if(gameNum[0].every(checkLine)){}
 	}
 	if((gameNum[0][0]==gameNum[0][1])&&(gameNum[0][1]==gameNum[0][2])&&(gameNum[0][2]==gameNum[0][0])&&(gameNum[0][0]==0)){
 	    gameNumCombo[c]='8001';

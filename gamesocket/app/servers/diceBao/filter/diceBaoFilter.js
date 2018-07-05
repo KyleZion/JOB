@@ -1,9 +1,4 @@
 //var logger = require('pomelo-logger').getLogger(__filename);
-var pomelo = require('pomelo');
-var dbslave = pomelo.app.get('dbslave');
-var dbmaster = pomelo.app.get('dbmaster');
-var redis = pomelo.app.get('redis');
-var async = require('async');
 module.exports = function() {
   return new Filter();
 }
@@ -27,6 +22,11 @@ var bypass = {
 }
 
 Filter.prototype.before = function (msg, session, next) {
+  const pomelo = require('pomelo');
+  const dbslave = pomelo.app.get('dbslave');
+  const dbmaster = pomelo.app.get('dbmaster');
+  const redis = pomelo.app.get('redis');
+  const async = require('async');
   var ServergameID = 0;
   var checkStatus = false;
   var lockAccount = 0;

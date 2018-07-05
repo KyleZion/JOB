@@ -1,25 +1,26 @@
 //var logger = require('pomelo-logger').getLogger(__filename);
-var pomelo = require('pomelo');
-var dbslave = pomelo.app.get('dbslave');
-var dbmaster = pomelo.app.get('dbmaster');
-var redis = pomelo.app.get('redis');
-var async = require('async');
-var Base_Param = require('../../../consts/Base_Param.js');
-var GPB = new Base_Param();
+
 module.exports = function() {
   return new Filter();
 }
 
 
 var Filter = function() {
-
 };
 
 var bypass = {
-  "T":"Transfer"
+  "T":"Transfer",
+  "E":"Test"
 }
 
 Filter.prototype.before = function (msg, session, next) {
+  var pomelo = require('pomelo');
+  var dbslave = pomelo.app.get('dbslave');
+  var dbmaster = pomelo.app.get('dbmaster');
+  var redis = pomelo.app.get('redis');
+  var async = require('async');
+  var Base_Param = require('../../../consts/Base_Param.js');
+  var GPB = new Base_Param();
   //dosomething
   console.log('轉帳filter');
   redis.hget(GPB.rKey_USER+session.uid, "TRANS_TIME", function (err, obj) {

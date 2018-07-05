@@ -183,13 +183,13 @@ exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone
 					callback(null,data.result);
 				});	
 			}else{
-				callback(null,'n200');
+				callback(null,'200');
 			}
 		}
 	],
 		function(err,value){
 			//console.log("52idWinMoneysResultCallBack:");
-			console.log(value+':'+gameZone);
+			//console.log(value+':'+gameZone);
 			callback_Calculate({'ErrorCode': 0,'ErrorMessage': ''});
 		});
 }

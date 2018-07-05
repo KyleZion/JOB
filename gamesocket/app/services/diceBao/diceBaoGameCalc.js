@@ -16,30 +16,13 @@ module.exports = function diceBaoGameCalc(redis,dbslave,dbmaster,messageService,
 
 		async.waterfall([
 			function(callback) {
-				/*var gameNum = [];
-				gameNum[0] = Math.floor((Math.random() * 6) + 1);
-				gameNum[1] = Math.floor((Math.random() * 6) + 1);
-				gameNum[2] = Math.floor((Math.random() * 6) + 1);
-				var tmp=0;
-				for(var i=0;i<gameNum.length;i++){
-					for(var j=i+1;j<gameNum.length;j++){
-						if(gameNum[i]>gameNum[j]){
-						tmp=gameNum[i];
-						gameNum[i]=gameNum[j];
-						gameNum[j]=tmp;
-						}
-					}
-				}
-				//console.log("52開獎號:"+gameNum);
-				callback(null,gameNum);//將gameNum傳到第二層
-				*/
 				dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g52 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[gameID,0,gameZone],function(data){
 					if(data.ErrorCode==0){
 						gameNumop.gameopvn1(dbmaster,dbslave,redis,gameID,data.rows,gameZone,function(data){
 							if(data.ErrorCode==0){
 								callback(null,data.gameNum);
 							}else{
-								console.log('結算錯誤1');
+								console.log('結算錯誤');
 								callback(data.ErrorCode,data.ErrorMessage);
 							}
 						});

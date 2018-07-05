@@ -38,7 +38,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 				status='O';
 				redis.hset('GS:GAMESERVER:diceBao', "Status"+gameZone, 'O');
 				messageService.broadcast('connector','diceBaoStatus'+gameZone,{'status':status});
-				setTimeout(function(){ 
+				setTimeout(function(){
 					messageService.broadcast('connector','diceBaoStatus'+gameZone,{'status':'C'}); 
 					redis.hset('GS:GAMESERVER:diceBao', "Status"+gameZone, 'C');
 				}, 8000); //總計13秒

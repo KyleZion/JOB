@@ -192,9 +192,9 @@ module.exports = function diceBaoGameOpen()
 		                    resolve (true);
 		                }else{
 		                    if(res!=null){
-		                        bonus111 = Number(res.RedisBonus101);
-		                        bonus222 = Number(res.RedisBonus102);
-		                        bonus333 = Number(res.RedisBonus105);
+		                        bonus111 = Number(res.RedisBonus111);
+		                        bonus222 = Number(res.RedisBonus222);
+		                        bonus333 = Number(res.RedisBonus333);
 		                        resolve (true);
 		                    }
 		                }
@@ -252,31 +252,25 @@ module.exports = function diceBaoGameOpen()
 			ThisTimeBonus = (ordercoins*takePercentage);
 	        Commission = (ordercoins * CommissionPercentage);
 
-	        if(gameZone == 101){
-	            RedisCommission101 += Commission;
-	            redis.hset('GS:Commission:051', "RedisCommission101", RedisCommission101);
+	        if(gameZone == 111){
+	            RedisCommission111 += Commission;
+	            redis.hset('GS:Commission:052', "RedisCommission111", RedisCommission111);
 	        }
-	        else if(gameZone==102){
-	            RedisCommission102 += Commission;
-	            redis.hset('GS:Commission:051', "RedisCommission102", RedisCommission102);
+	        else if(gameZone==222){
+	            RedisCommission222 += Commission;
+	            redis.hset('GS:Commission:052', "RedisCommission222", RedisCommission222);
 	        }
-	        else if(gameZone==105){
-	            RedisCommission105 += Commission;
-	            redis.hset('GS:Commission:051', "RedisCommission105", RedisCommission105);
-	        }
-	        else if(gameZone==110){
-	            RedisCommission110 += Commission;
-	            redis.hset('GS:Commission:051', "RedisCommission110", RedisCommission110);
+	        else if(gameZone==333){
+	            RedisCommission333 += Commission;
+	            redis.hset('GS:Commission:052', "RedisCommission333", RedisCommission333);
 	        }
 
-	        if(gameZone == 101)
-	            RedisBonus = bonus101;
-	        else if(gameZone==102)
-	            RedisBonus = bonus102;
-	        else if(gameZone==105)
-	            RedisBonus = bonus105;
-	        else if(gameZone==110)
-	            RedisBonus = bonus110;
+	        if(gameZone == 111)
+	            RedisBonus = bonus111;
+	        else if(gameZone==222)
+	            RedisBonus = bonus222;
+	        else if(gameZone==333)
+	            RedisBonus = bonus333;
 	        //20180628
 
 			//======================================================================================
@@ -510,50 +504,47 @@ module.exports = function diceBaoGameOpen()
 			DB_C333 = RedisCommission333;
 			DB_C222 = RedisCommission222;
 			DB_C111 = RedisCommission111;
-			DB_num = num;
+			num.pop();
+			DB_num = num.join(',');
 			DB_Period =gameID;
-			DB_PT = end - start;
+			DB_PT = (end - start)/1000;
 			DB_RT = Run;
 			//======================================================================================
-			console.log( "累積後彩池bonus111:".bonus111);
-			console.log( "累積後彩池bonus222:".bonus222);
-			console.log( "累積後彩池bonus333:".bonus333);
+			console.log( "累積後彩池bonus111:"+bonus111);
+			console.log( "累積後彩池bonus222:"+bonus222);
+			console.log( "累積後彩池bonus333:"+bonus333);
 			//======================================================================================
-			console.log( "中獎號碼:".num);
-			
-			//=====================================蝯�=====================================
-			if(1){
-				var struct_log = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
-                var lib_gameoplog = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("game_open_logs",struct_log);
-                struct_log.params.DT = DB_DT;
-                struct_log.params.WT = DB_WT;
-                struct_log.params.LT = DB_LT;
-                struct_log.params.BC = DB_BC;
-                struct_log.params.SC = DB_SC;
-                struct_log.params.TB = DB_TB;
-                struct_log.params.TC = DB_TC;
-                struct_log.params.B110 = 0;
-                struct_log.params.B105 = DB_B333;
-                struct_log.params.B102 = DB_B222;
-                struct_log.params.B101 = DB_B111;
-                struct_log.params.C110 = 0;
-                struct_log.params.C105 = DB_C333;
-                struct_log.params.C102 = DB_C222;
-                struct_log.params.C101 = DB_C111;
-                struct_log.params.num = DB_num;
-                struct_log.params.Period = gameID;
-                struct_log.params.PT = DB_PT;
-                lib_gameoplog.Insert(function(res){
-                    if(res){
-                        console.log( "INSERT 成功");
-                    }else{
-                        console.log('寫入資料庫失敗');
-                    }
-                });
+			console.log( "中獎號碼:"+num);
+			console.log( "彩池開否:"+CanOpenPool);
+			//=====================================寫入LOG=====================================
+			var struct_log = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+            var lib_gameoplog = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("game_open_logs",struct_log);
+            struct_log.params.DT = DB_DT;
+            struct_log.params.WT = DB_WT;
+            struct_log.params.LT = DB_LT;
+            struct_log.params.BC = DB_BC;
+            struct_log.params.SC = DB_SC;
+            struct_log.params.TB = DB_TB;
+            struct_log.params.TC = DB_TC;
+            struct_log.params.B110 = 0;
+            struct_log.params.B105 = DB_B333;
+            struct_log.params.B102 = DB_B222;
+            struct_log.params.B101 = DB_B111;
+            struct_log.params.C110 = 0;
+            struct_log.params.C105 = DB_C333;
+            struct_log.params.C102 = DB_C222;
+            struct_log.params.C101 = DB_C111;
+            struct_log.params.num = DB_num;
+            struct_log.params.Period = gameID;
+            struct_log.params.PT = DB_PT;
+            lib_gameoplog.Insert(function(res){
+                if(res){
+                    console.log( "INSERT 成功");
+                }else{
+                    console.log('寫入資料庫失敗');
+                }
+            });
 				
-			}
-			else 
-				console.log( "測試模是 不真的結算");
 			//==========================================================================
 			
             redis.hset('GS:Bonus:052', "RedisBonus111", bonus111);

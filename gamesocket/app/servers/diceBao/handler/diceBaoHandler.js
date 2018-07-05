@@ -6,6 +6,7 @@ module.exports = function(app) {
 
 var Handler = function(app) {
   this.app = app;
+  this.$id = "Handler";
 };
 //===固定==============================================================
 const handler = Handler.prototype;
@@ -28,6 +29,7 @@ const logger = require('pomelo-logger').getLogger('handler-log',__filename);
 //===固定==============================================================
 
 handler.bet = function(msg,session,next){
+	console.log('321');
 	var betData = (JSON.stringify(JSON.parse(msg.bet).bets).slice(1,-1)).split(','); //將C2傳來的下注內容string轉JSON
 	var gameID=JSON.parse(msg.bet).GamesID;
 	var channelID = JSON.parse(msg.bet).channelID
