@@ -10,6 +10,7 @@ var NND = {};
  * @param {Object} app The app for the server.
  */
 NND.init = function(app){
+
 	_pool = require('./dao-pool.js').createMysqlPool(app);
 };
 
@@ -34,7 +35,7 @@ NND.init = function(app){
 	});
 };*/
 
-NND.SQLQuery = function (sql, args, callback) {
+/*NND.SQLQuery = function (sql, args, callback) {
     const resourcePromise = _pool.acquire();
     resourcePromise.then(function (client) {
         client.query(sql, args, function (err,data) {
@@ -69,7 +70,7 @@ NND.SQLEX = function (sql, args, callback) {
         console.error('[SQLEX Error:]'+ err.stack);
         callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
     });
-};
+};*/
 
 NND.SpQuery = function (sql, args, callback) {
     const resourcePromise = _pool.acquire();
@@ -93,6 +94,37 @@ NND.SpQuery = function (sql, args, callback) {
     });
 };
 
+NND.nSQLQuery = function (sql, args, callback) {
+    _pool.getConnection(function(err,connection){
+        connection.query(sql, args, function (err,data) {
+            console.warn(sql);
+            console.warn(args);
+            if(!err){
+                callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
+            }
+            
+        });
+        connection.release();
+    });
+/*    .catch(function (err) {
+        console.error('[SQLQuery Error:]'+ err.stack);
+        callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
+    });*/
+};
+
+NND.nSQLEX = function (sql, args, callback) {
+    _pool.getConnection(function(err,connection){
+        connection.query(sql, args, function (err,data) {
+            console.log(err)
+            if(!err){
+                //成功err==null
+                callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
+            }
+            connection.release();
+        });
+    });
+};
+
 /**
  * Close connection pool.
  */
@@ -108,11 +140,11 @@ sqlclient.init = function(app) {
 		return sqlclient;
 	} else {
 		NND.init(app);
-		sqlclient.insert = NND.SQLEX; //前端調用client.insert即可
-		sqlclient.update = NND.SQLEX;
-		sqlclient.delete = NND.SQLEX;
-		sqlclient.query = NND.SQLQuery;
-        sqlclient.spquery = NND.SpQuery;
+		sqlclient.insert = NND.nSQLEX; //前端調用client.insert即可
+		sqlclient.update = NND.nSQLEX;
+		sqlclient.delete = NND.nSQLEX;
+		sqlclient.query = NND.nSQLQuery;
+        sqlclient.spquery = NND.nSpQuery;
 		return sqlclient;
 	}
 };

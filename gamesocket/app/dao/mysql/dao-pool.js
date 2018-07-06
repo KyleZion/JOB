@@ -32,7 +32,7 @@ exports.createMysqlPool = createMysqlPool;
  * Create mysql connection pool.
  */
 // lib/mysql/dao-pool.js中的createMysqlPool方法改为：
-var createMysqlPool = function(app){
+/*var createMysqlPool = function(app){
   var mysqlConfig = app.get('mysql');
   return _poolModule.createPool({
     name     : 'mysql',
@@ -60,6 +60,34 @@ var createMysqlPool = function(app){
     idleTimeoutMillis: 30000,
     log: false
   });
-};
+};*/
+
+var pool;//mysql 连接池
+
+var createMysqlPool = function(app){
+  var mysqlConfig = app.get('mysql');
+    return pool =  mysql.createPool({
+        host     : mysqlConfig.host,
+        user     : mysqlConfig.user,
+        password : mysqlConfig.password,
+        database : mysqlConfig.database,
+        port     : mysqlConfig.port
+        //acquireTimeout : conf.acquireTimeout
+    });
+
+    /*pool.getConnection(function(err, connection) {
+        if(err){
+            console.log("mysql初始化失败!");
+        }else{
+            console.log("mysql初始化成功!");
+            connection.release();
+        }
+    });*/
+}
+
+//
+/*exports.createMysqlPool = function(){
+    return pool;
+};*/
 
 exports.createMysqlPool = createMysqlPool;

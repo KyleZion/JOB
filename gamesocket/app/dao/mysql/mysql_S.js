@@ -70,6 +70,39 @@ NND.SQLEX = function (sql, args, callback) {
     });
 };
 
+
+NND.nSQLQuery = function (sql, args, callback) {
+    _pool.getConnection(function(err,connection){
+        connection.query(sql, args, function (err,data) {
+            console.warn(sql);
+            console.warn(args);
+            if(!err){
+                callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
+            }
+            
+        });
+        connection.release();
+    });
+/*    .catch(function (err) {
+        console.error('[SQLQuery Error:]'+ err.stack);
+        callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
+    });*/
+};
+
+NND.nSQLEX = function (sql, args, callback) {
+    _pool.getConnection(function(err,connection){
+        connection.query(sql, args, function (err,data) {
+            console.log(err)
+            if(!err){
+                //成功err==null
+                callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
+            }
+            connection.release();
+        });
+    });
+};
+
+
 /**
  * Close connection pool.
  */

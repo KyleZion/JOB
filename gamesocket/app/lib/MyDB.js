@@ -12,7 +12,7 @@ module.exports = function MyDB(Host, User, PW , DB, Port) {
 		database: sDB,
 		port:sPort
 	});
-	this.Query = function(SQL,callback)	{
+	this.query = function(SQL,callback)	{
 		this.pool.getConnection(function(err, connection) {
 			connection.query( SQL, function(err, rows,fields) {
 			 callback(err, rows,fields);
@@ -20,7 +20,7 @@ module.exports = function MyDB(Host, User, PW , DB, Port) {
 		  });
 		});
 	};
-	this.Query_all = function(SQL,val,callback)	{ //Vic 多筆執行
+	this.insert = function(SQL,val,callback)	{ //Vic 多筆執行
 		this.pool.getConnection(function(err, connection) {
 			connection.query( SQL,[val], function(err, rows,fields) {
 			 callback(err, rows,fields);
