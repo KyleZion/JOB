@@ -93,18 +93,17 @@ NND.SpQuery = function (sql, args, callback) {
         callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
     });
 };
-
+//20180709 連線KEEP問題 改用mysql module getgetc
 NND.nSQLQuery = function (sql, args, callback) {
     _pool.getConnection(function(err,connection){
         connection.query(sql, args, function (err,data) {
-            console.warn(sql);
-            console.warn(args);
+            connection.release();
             if(!err){
                 callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
             }
             
         });
-        connection.release();
+        
     });
 /*    .catch(function (err) {
         console.error('[SQLQuery Error:]'+ err.stack);
@@ -115,12 +114,13 @@ NND.nSQLQuery = function (sql, args, callback) {
 NND.nSQLEX = function (sql, args, callback) {
     _pool.getConnection(function(err,connection){
         connection.query(sql, args, function (err,data) {
+            connection.release();
             console.log(err)
             if(!err){
                 //成功err==null
                 callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
             }
-            connection.release();
+           
         });
     });
 };

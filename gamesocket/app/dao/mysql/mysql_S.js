@@ -74,30 +74,33 @@ NND.SQLEX = function (sql, args, callback) {
 NND.nSQLQuery = function (sql, args, callback) {
     _pool.getConnection(function(err,connection){
         connection.query(sql, args, function (err,data) {
-            console.warn(sql);
-            console.warn(args);
+            /*console.warn(_pool._freeConnections.indexOf(connection)); // -1
+            console.warn(_pool.config.connectionLimit);     // passed in max size of the pool
+            console.warn(_pool._freeConnections.length);    // number of free connections awaiting use
+            console.warn(_pool._allConnections.length);     // number of connections currently created, including ones in use
+            console.warn(_pool._acquiringConnections.length);*/ // number of connections in the process of being acquired
+
+            connection.release();
+
+            //console.log(_pool._freeConnections.indexOf(connection)); // 0
             if(!err){
+                //connection.release();
                 callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
             }
-            
         });
-        connection.release();
     });
-/*    .catch(function (err) {
-        console.error('[SQLQuery Error:]'+ err.stack);
-        callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
-    });*/
+
 };
 
 NND.nSQLEX = function (sql, args, callback) {
     _pool.getConnection(function(err,connection){
         connection.query(sql, args, function (err,data) {
-            console.log(err)
+            //console.log(err)
+            connection.release();
             if(!err){
                 //成功err==null
                 callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
             }
-            connection.release();
         });
     });
 };
@@ -121,7 +124,7 @@ sqlclient.init = function(app) {
 		//sqlclient.insert = NND.SQLEX; //前端調用client.insert即可
 		//sqlclient.update = NND.SQLEX;
 		//sqlclient.delete = NND.SQLEX;
-		sqlclient.query = NND.SQLQuery;
+		sqlclient.query = NND.nSQLQuery;
 		return sqlclient;
 	}
 };

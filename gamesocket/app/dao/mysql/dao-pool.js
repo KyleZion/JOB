@@ -62,7 +62,7 @@ exports.createMysqlPool = createMysqlPool;
   });
 };*/
 
-var pool;//mysql 连接池
+var pool;//mysql 连接池 20180709修正connection
 
 var createMysqlPool = function(app){
   var mysqlConfig = app.get('mysql');

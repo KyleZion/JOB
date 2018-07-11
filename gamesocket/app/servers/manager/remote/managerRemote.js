@@ -98,7 +98,7 @@ module.exports.transMoney = function (msg, uid, cb) {
 		},
 		C: function(callback_C){
 			console.error('callbackC');
-			let sql ="CALL spSelectMemberMem100(?);";
+			/*let sql ="CALL spSelectMemberMem100(?);";
 			dbmaster.spquery(sql,[uid],(data) =>{
 			    //res = data.rows[3][0]['@a'];
 			    console.log(data.rows[0][0]['mem100']);
@@ -106,16 +106,15 @@ module.exports.transMoney = function (msg, uid, cb) {
 			    if (data.ErrorCode!=0) {
 			      return console.warn(data.message);
 			    }
-			});
-			/*var struct_mem100 = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
-			    //var lib_amount = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("member2",struct_sql);
-			    var lib_mem100 = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("users",struct_mem100);
-			    struct_mem100.select.mem100 = "1";
-			    struct_mem100.where.mid = uid;
-			    lib_mem100.Select(function(data){
-			    	console.log('callbackC DB');
-			    	callback_C(null,data[0].mem100);
 			});*/
+			var struct_mem100 = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+			var lib_mem100 = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("users",struct_mem100);
+			struct_mem100.select.mem100 = "1";
+			struct_mem100.where.mid = uid;
+			lib_mem100.Select(function(data){
+				console.log('callbackC DB');
+			    callback_C(null,data[0].mem100);
+			});
 		}
 	},
 	function(err, results)

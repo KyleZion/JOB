@@ -21,8 +21,7 @@ module.exports = function lib_games()
 			    });
 			},
 		  	function(param,cb) {
-			  	if(param.length==0)
-			  	{
+			  	if(param.length==0){
 			  		cb(-1,0);
 			  	}
 			  	else{
