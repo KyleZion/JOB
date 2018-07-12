@@ -93,32 +93,29 @@ NND.SpQuery = function (sql, args, callback) {
         callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
     });
 };
-//20180709 連線KEEP問題 改用mysql module getgetc
+//20180709 連線KEEP問題 改用mysql module getConnection
 NND.nSQLQuery = function (sql, args, callback) {
     _pool.getConnection(function(err,connection){
         connection.query(sql, args, function (err,data) {
             connection.release();
             if(!err){
                 callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
+            }else{
+                callback({'ErrorCode': 1,'ErrorMessage':err,'rows':data}); 
             }
-            
         });
         
     });
-/*    .catch(function (err) {
-        console.error('[SQLQuery Error:]'+ err.stack);
-        callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
-    });*/
 };
 
 NND.nSQLEX = function (sql, args, callback) {
     _pool.getConnection(function(err,connection){
         connection.query(sql, args, function (err,data) {
             connection.release();
-            console.log(err)
-            if(!err){
-                //成功err==null
-                callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
+            if(!err){//成功err==null
+                callback({'ErrorCode': 0,'ErrorMessage':'','rows':data});
+            }else{
+                callback({'ErrorCode': 1,'ErrorMessage':err,'rows':data});
             }
            
         });
@@ -155,9 +152,3 @@ sqlclient.init = function(app) {
 sqlclient.shutdown = function(app) {
 	NND.shutdown(app);
 };
-
-
-
-
-
-

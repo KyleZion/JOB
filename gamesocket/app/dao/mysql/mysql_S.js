@@ -20,58 +20,8 @@ NND.init = function(app){
  * @param {fuction} cb Callback function.
  * 
  */
-//generic-pool最新版是用ES6，使用promise而不再使用function(callback)，這邊也更改使用.then(:39)
-/*NND.query = function(sql, args, cb){
-	_pool.acquire(function(err, client) {
-		if (!!err) {
-			console.error('[sqlqueryErr] '+err.stack);
-			return;
-		}
-		client.query(sql, args, function(err, res) {
-			_pool.release(client);
-			cb(err, res);
-		});
-	});
-};*/
 
 NND.SQLQuery = function (sql, args, callback) {
-    const resourcePromise = _pool.acquire();
-    resourcePromise.then(function (client) {
-        client.query(sql, args, function (err,data) {
-            _pool.release(client);
-            if(!err){
-            	//成功err==null
-            	callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
-            }
-            
-        });
-    })
-    .catch(function (err) {
-        console.error('[SQLQuery Error:]'+ err.stack);
-        callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
-    });
-};
-
-NND.SQLEX = function (sql, args, callback) {
-    const resourcePromise = _pool.acquire();
-    resourcePromise.then(function (client) {
-        client.query(sql, args, function (err) {
-            _pool.release(client);
-            if(!err){
-            	//成功err==null
-            	callback({'ErrorCode': 0,'ErrorMessage':''}); 
-            }
-            
-        });
-    })
-    .catch(function (err) {
-        console.error('[SQLEX Error:]'+ err.stack);
-        callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
-    });
-};
-
-
-NND.nSQLQuery = function (sql, args, callback) {
     _pool.getConnection(function(err,connection){
         connection.query(sql, args, function (err,data) {
             /*console.warn(_pool._freeConnections.indexOf(connection)); // -1
@@ -79,32 +29,16 @@ NND.nSQLQuery = function (sql, args, callback) {
             console.warn(_pool._freeConnections.length);    // number of free connections awaiting use
             console.warn(_pool._allConnections.length);     // number of connections currently created, including ones in use
             console.warn(_pool._acquiringConnections.length);*/ // number of connections in the process of being acquired
-
-            connection.release();
-
             //console.log(_pool._freeConnections.indexOf(connection)); // 0
-            if(!err){
-                //connection.release();
-                callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
-            }
-        });
-    });
-
-};
-
-NND.nSQLEX = function (sql, args, callback) {
-    _pool.getConnection(function(err,connection){
-        connection.query(sql, args, function (err,data) {
-            //console.log(err)
             connection.release();
             if(!err){
-                //成功err==null
                 callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
+            }else{
+                callback({'ErrorCode': 1,'ErrorMessage':err,'rows':data}); 
             }
         });
     });
 };
-
 
 /**
  * Close connection pool.
@@ -121,10 +55,7 @@ sqlclient.init = function(app) {
 		return sqlclient;
 	} else {
 		NND.init(app);
-		//sqlclient.insert = NND.SQLEX; //前端調用client.insert即可
-		//sqlclient.update = NND.SQLEX;
-		//sqlclient.delete = NND.SQLEX;
-		sqlclient.query = NND.nSQLQuery;
+		sqlclient.query = NND.SQLQuery;
 		return sqlclient;
 	}
 };

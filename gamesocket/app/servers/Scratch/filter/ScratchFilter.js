@@ -21,7 +21,7 @@ var bypass = {
 
 Filter.prototype.before = function (msg, session, next) {
   var lockAccount = 0;
-  if(msg.route == "Scratch.ScratchHandler.X"){
+  if(msg.route == "Scratch.ScratchHandler.B"){
     var cost = 0;
     async.series({
       lockAccount: function(callback){ //redis修正
