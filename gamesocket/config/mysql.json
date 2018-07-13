@@ -1,0 +1,17 @@
+{
+	"development": {
+	  "host" : "60.244.116.180",
+		"port" : "23306",
+		"database" : "nsc_04",
+		"user" : "rdvic",
+		"password" : "rdvic"
+	},
+
+	"production": {
+	 	"host" : "60.244.116.180",
+		"port" : "23306",
+		"database" : "nsc_04",
+		"user" : "rdvic",
+		"password" : "rdvic"
+	}
+}

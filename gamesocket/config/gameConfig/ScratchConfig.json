@@ -1,0 +1,14 @@
+{
+	"development": {
+	 	"Id" :53,
+		"CName" : "刮刮乐",
+		"Port" : "6053",
+		"Code" : "052"
+	},
+	"production": {
+	  	"Id" :53,
+		"CName" : "刮刮乐",
+		"Port" : "6053",
+		"Code" : "052"
+	}
+}

@@ -1,0 +1,56 @@
+{
+  "development":{
+    "connector": [
+    {"id": "connector-server-1", "host": "127.0.0.1", "port": 3250, "clientHost": "127.0.0.1", "clientPort": 3010, "frontend": true}
+    ],
+    "transfer": [
+    {"id": "transfer-server-1", "host": "127.0.0.1", "port": 3251}
+    ],
+    "manager": [
+    {"id": "manager-server-1", "host": "127.0.0.1", "port": 3252}
+    ],
+    "public": [
+    {"id": "public-server-1", "host": "127.0.0.1", "port": 3253}
+    ],
+    "fruitWheel": [
+    {"id": "fruitWheel-server-1", "host": "127.0.0.1", "port": 6051}
+    ],
+    "diceBao": [
+      {"id": "diceBao-server-1","host":"127.0.0.1","port":6052}
+    ],
+    "Scratch": [
+      {"id": "Scratch-server-1","host":"127.0.0.1","port":6053}
+    ],
+    "fruitSlot": [
+      {"id": "fruitSlot-server-1","host":"127.0.0.1","port":6054}
+    ]
+
+  },
+  "production":{
+    "connector": [
+    {"id": "connector-server-1", "host": "127.0.0.1", "port": 3250, "clientHost": "127.0.0.1", "clientPort": 3010, "frontend": true}
+    ],
+    "transfer": [
+    {"id": "transfer-server-1", "host": "127.0.0.1", "port": 3251}
+    ],
+    "manager": [
+    {"id": "manager-server-1", "host": "127.0.0.1", "port": 3252}
+    ],
+    "public": [
+    {"id": "public-server-1", "host": "127.0.0.1", "port": 3253}
+    ],
+    "fruitWheel": [
+    {"id": "fruitWheel-server-1", "host": "127.0.0.1", "port": 6051}
+    ],
+    "diceBao": [
+      {"id": "diceBao-server-1","host":"127.0.0.1","port":6052}
+    ],
+    "Scratch": [
+      {"id": "Scratch-server-1","host":"127.0.0.1","port":6053}
+    ],
+    "fruitSlot": [
+      {"id": "fruitSlot-server-1","host":"127.0.0.1","port":6054}
+    ]
+
+  }
+}

@@ -1,0 +1,22 @@
+{
+   "development":{
+        "connector":[
+             {"id":1,"time": "0/5 * * * * *", "action": "loginCron.CheckLogin"}
+        ],
+
+    },
+    "production":{
+        "connector":[
+             {"id":1,"time": "0/5 * * * * *", "action": "loginCron.CheckLogin"}
+        ],
+        "fruitWheel":[
+            {"id": 2, "time": "0/2 * * * * *", "action": "lobbyCron.lobbyMessage"}
+        ],
+        "resetGameSet":[
+            {"id": 3, "time": "* 30 2 * * *", "action": "lobbyCron.resetGameSet"}
+        ],
+        "diceBao":[
+            {"id": 4, "time": "0/2 * * * * *", "action": "lobbyCrondiceBao.lobbyDiceBao"}
+        ]
+  }
+}

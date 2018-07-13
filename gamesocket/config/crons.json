@@ -1,0 +1,12 @@
+{
+   "development":{
+        "connector":[
+             {"id":1,"time": "0/5 * * * * *", "action": "loginCron.CheckLogin"}
+        ]
+    },
+    "production":{
+        "connector":[
+             {"id":1,"time": "0/5 * * * * *", "action": "loginCron.CheckLogin"}
+        ]
+  }
+}

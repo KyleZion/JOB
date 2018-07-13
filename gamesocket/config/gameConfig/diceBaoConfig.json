@@ -1,0 +1,14 @@
+{
+	"development": {
+	 	"Id" :52,
+		"CName" : "骰宝",
+		"Port" : "6052",
+		"Code" : "052"
+	},
+	"production": {
+	  	"Id" :52,
+		"CName" : "骰宝",
+		"Port" : "6052",
+		"Code" : "052"
+	}
+}

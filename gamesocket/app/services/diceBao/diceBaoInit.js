@@ -4,7 +4,7 @@ const messageService = require(pomelo.app.getBase()+'/app/services/messageServic
 const exp = module.exports;
 const maindiceBao = require('./maindiceBao.js');
 
-exp.init = function (gameZone) {
+exp.init = function (gameZone,gameName) {
 	const dbslave =pomelo.app.get('dbslave');
 	const dbmaster =pomelo.app.get('dbmaster');
 	const redis =pomelo.app.get('redis');

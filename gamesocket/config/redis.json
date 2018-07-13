@@ -1,0 +1,12 @@
+{
+	"development": {
+	 	"DBindex" :4,
+		"port" : "6379",
+		"IP" : "60.244.116.180"
+	},
+	"production": {
+	  	"DBindex" :4,
+		"port" : "6379",
+		"IP" : "60.244.116.180"
+	}
+}

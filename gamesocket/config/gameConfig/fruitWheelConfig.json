@@ -1,0 +1,14 @@
+{
+	"development": {
+	 	"Id" :51,
+		"CName" : "水果转盘",
+		"Port" : "6051",
+		"Code" : "051"
+	},
+	"production": {
+	  	"Id" :51,
+		"CName" : "水果转盘",
+		"Port" : "6051",
+		"Code" : "051"
+	}
+}
