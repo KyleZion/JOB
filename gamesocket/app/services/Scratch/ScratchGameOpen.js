@@ -1,7 +1,7 @@
 const async = require('async');
 const pomelo = require('pomelo');
 
-module.exports = function diceBaoGameOpen()
+module.exports = function ScratchGameOpen()
 {   
     this.gameopvn1 =function (dbmaster,dbslave,redis,gameID,gamebetdata,gameZone,callback) {
         const GameOpenSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameOpenFun.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,53,gameZone);
@@ -193,12 +193,14 @@ module.exports = function diceBaoGameOpen()
                             bonus111 = 0;
                             bonus222 = 0;
                             bonus333 = 0;
+                            bonus444 = 0;
                             resolve (true);
                         }else{
                             if(res!=null){
                                 bonus111 = Number(res.RedisBonus111);
                                 bonus222 = Number(res.RedisBonus222);
                                 bonus333 = Number(res.RedisBonus333);
+                                bonus444 = Number(res.RedisBonus444);
                                 resolve (true);
                             }
                         }
@@ -212,12 +214,14 @@ module.exports = function diceBaoGameOpen()
                             RedisCommission111 = 0;
                             RedisCommission222 = 0;
                             RedisCommission333 = 0;
+                            RedisCommission444 = 0;
                             resolve (true);
                         }else{
                             if(res!=null){
                                 RedisCommission111 = Number(res.RedisCommission111);
                                 RedisCommission222 = Number(res.RedisCommission222);
                                 RedisCommission333 = Number(res.RedisCommission333);
+                                RedisCommission444 = Number(res.RedisCommission444);
                                 resolve (true);
                             }
                         }
@@ -248,7 +252,7 @@ module.exports = function diceBaoGameOpen()
                 OpenPoolPercentage = 50;
                 OpenPoolBase = 3000;
                 PoolThresholdMaxPercentage = 0.7;
-            }   
+            }
             //==========================================================================================
             ordercoins = gamebetdata.reduce(function(prev, element){
                return prev + element['bet017'];
@@ -268,6 +272,10 @@ module.exports = function diceBaoGameOpen()
                 RedisCommission333 += Commission;
                 redis.hset('GS:Commission:053', "RedisCommission333", RedisCommission333);
             }
+            else if(gameZone==444){
+                RedisCommission444 += Commission;
+                redis.hset('GS:Commission:053', "RedisCommission444", RedisCommission444);
+            }
 
             if(gameZone == 111)
                 RedisBonus = bonus111;
@@ -275,6 +283,8 @@ module.exports = function diceBaoGameOpen()
                 RedisBonus = bonus222;
             else if(gameZone==333)
                 RedisBonus = bonus333;
+            else if(gameZone==444)
+                RedisBonus = bonus444;
             //20180628
 
             //======================================================================================

@@ -46,8 +46,7 @@ handler.Transfer = function(msg,session,next){
 			struct_amount.params.game_id = 0;
 			struct_amount.params.game_name = 0;
 		    //mid,金額,amountlogSQL
-			lib_games.DeductMoney(session.uid,msg.amount,struct_amount,function(result)
-			{
+			lib_games.DeductMoney(session.uid,msg.amount,struct_amount,function(result){
 			  console.error('callbackA DB');
 			  switch(result)
 			  {
