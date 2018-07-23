@@ -25,22 +25,22 @@ handler.Transfer = function(msg,session,next){
 	const async=require('async');
 	const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 	const dbmaster=pomelo.app.get('dbmaster');
+	const lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
 	var logId=0;
-	var lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入member_amount_log,回傳amount_log Index ID
 
 	async.series({
 		A: function(callback_A){
 			console.error('callbackA');
-			/*var sql ="CALL spModifyAmount(?,?,?,?,?,?,@id); SELECT @id;";
+			var sql ="CALL spModifyAmount(?,?,?,?,?,?,@id); SELECT @id;";
 			dbmaster.spquery(sql,[51,0,0,'',uid,msg.amount,0],(data) =>{
 			    var logId = data.rows[3][0]['@id'];
-			    //console.log(logId);
+			    console.log(logId);
 			    callback_A(0,logId);
 			    if (data.ErrorCode!=0) {
 			      callback_A(-1,logId);
 			    }
 			    //console.log(fields);
-			});*/
+			});
 			var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
 			struct_amount.params.type = 51;
 			struct_amount.params.game_id = 0;

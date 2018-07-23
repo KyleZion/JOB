@@ -53,7 +53,7 @@ module.exports = function ScratchGameOpen()
         var Maximum_n2_ordercoins = 0;
         var n2positive = false;
         var bonusRate = 0;
-            
+
         var Last_tmpwin = 0;
         var Last_ordercoins = 0;
         var n2 = 0; //押分 - 贏分 - 彩池分數 - 佣金  = 可以被中獎的分數(如果都沒有人中 就累積彩池)

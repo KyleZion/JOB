@@ -17,14 +17,14 @@ const md5 = require('md5');
 const messageService = pomelo.app.get('messageService');
 const sessionService = pomelo.app.get('sessionService');
 const casinoId='053';
-const GameName = 'Scratch'
+const GameName = 'Scratch';
 //var channel = pomelo.app.get('channelService').getChannel('connect',false);
 const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
 const lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入amount_log,回傳amount_log Index ID
 const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 const code = require(pomelo.app.getBase()+'/app/consts/code.js');
 const tableHandler = new(require(pomelo.app.getBase()+'/app/lib/lib_TableHandler.js'))(pomelo,async,redis,dbslave,dbmaster,messageService,GameName,casinoId);
-const 
+const gameOp = new(require(pomelo.app.getBase()+'app/services/Scratch/'))
 //const HAN = new(require(pomelo.app.getBase()+'/app/lib/lib_Handler.js'))();
 //===固定==============================================================
 
@@ -153,7 +153,7 @@ handler.bet = function(msg,session,next){
 		const res3 = await getUserMoney();
 		const res4 = await amountSqlInsert(res1,res3);
 		const res5 = await lessUserMoney();
-		reward = await getAward(channelID,1);
+		reward = await getAward(channelID);
 		const res6 = await closeGame(res1,reward);
 		const res7 = await updateBetg(res2,reward,res1,channelID);
 		const res8 = await getUserMoney();

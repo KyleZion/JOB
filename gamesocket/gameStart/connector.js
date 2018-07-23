@@ -15,8 +15,9 @@ module.exports = function SetGame(pomelo,app,gameName)
 	      	connector : pomelo.connectors.sioconnector, //sioconnector -> socketio 通訊
 		      // 'websocket', 'polling-xhr', 'polling-jsonp', 'polling'
 		      transports : ['websocket', 'polling-xhr', 'polling-jsonp', 'polling'],
-		      heartbeats : true,
-		      closeTimeout : 60*1000 ,
+		      heartbeat: 3,
+		      //heartbeats : true,
+		      closeTimeout : 30*1000 ,
 		      heartbeatTimeout : 60*1000 ,
 		      heartbeatInterval : 25*1000
 		});

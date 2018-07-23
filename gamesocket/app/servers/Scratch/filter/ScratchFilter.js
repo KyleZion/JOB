@@ -23,6 +23,7 @@ Filter.prototype.before = function (msg, session, next) {
   var lockAccount = 0;
   if(msg.route == "Scratch.ScratchHandler.B"){
     var cost = 0;
+    var channelID = session.channelID;
     async.series({
       lockAccount: function(callback){ //redis修正
         redis.sismember("GS:lockAccount:Scratch",session.uid,function(err,res){
@@ -55,41 +56,41 @@ Filter.prototype.before = function (msg, session, next) {
         }
       },
       checkBet: function(callback_2){
-        dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
+        dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)
+        {
+          if(data.ErrorCode==0)
           {
-            if(data.ErrorCode==0)
-            {
-              var sessionMoney=data.rows[0].mem100;
-              //計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
-              async.series({
-                A:function(callback_A){
-                  if(total===0 || sessionMoney<total){ //檢查Client下注總金額和下注內容金額有無相同
-                    callback_A(1,'馀额不足或下注错误');
-                  }else if(!channelID){
-                    callback_A(1,'游戏区号错误');
-                  }else if(!lockAccount){
-                    callback_A(1,'请勿连续下注');
-                  }
-                  else{
-                    callback_A(null,200);
-                  }
-                  //=============================================================
+            var sessionMoney=data.rows[0].mem100;
+            //計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
+            async.series({
+              A:function(callback_A){
+                if(total===0 || sessionMoney<total){ //檢查Client下注總金額和下注內容金額有無相同
+                  callback_A(1,'馀额不足或下注错误');
+                }else if(!channelID){
+                  callback_A(1,'游戏区号错误');
+                }else if(!lockAccount){
+                  callback_A(1,'请勿连续下注');
                 }
-              },
-              function(err, results) {
-                if(err){
-                  console.log("下注檢查完成,錯誤");
-                  callback_2(1,results.A);
-                  //next(new Error('BetQuestion'),results.A);
-                }else{
-                  console.log("下注檢查完成");
-                  callback_2(null,200);
+                else{
+                  callback_A(null,200);
                 }
-              });
-            }else{ //取餘額錯誤 
-              callback_2(1,'网路连线异常');
-            }
-          });
+                //=============================================================
+              }
+            },
+            function(err, results) {
+              if(err){
+                console.log("下注檢查完成,錯誤");
+                callback_2(1,results.A);
+                //next(new Error('BetQuestion'),results.A);
+              }else{
+                console.log("下注檢查完成");
+                callback_2(null,200);
+              }
+            });
+          }else{ //取餘額錯誤 
+            callback_2(1,'网路连线异常');
+          }
+        });
       }
     },
     function(err, res)

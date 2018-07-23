@@ -1,9 +1,11 @@
 module.exports = function SetGame(pomelo,app,gameName)
 {
 	const async = app.get('async');
+	const gameConfig = app.get(gameName);
+	console.warn(gameConfig);
 	const gameInit = require(app.getBase()+'/app/services/'+gameName+'/'+gameName+'Init.js');
 	const GameProc_Base = require(app.getBase()+'/app/lib/GameProc_Base.js');
-	const GPB = new GameProc_Base(6051,gameName,"水果转盘");
+	const GPB = new GameProc_Base(gameConfig.port,gameName,gameConfig.CName);
 
 	const ErrorHandler_Base = require(app.getBase()+'/app/lib/ErrorHandler_Base.js');
 	const EHB = new ErrorHandler_Base();
@@ -12,7 +14,6 @@ module.exports = function SetGame(pomelo,app,gameName)
 	app.configure('production|development', gameName, function() {
 
 	    app.set("errorHandler",EHB.errorHandler);//errorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
-	  
 		  app.filter(gameFilter());
 
 		  async.series({

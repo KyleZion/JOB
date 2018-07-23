@@ -22,8 +22,10 @@ const CasinoId = 52;
 const gid='052';
 const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
 const lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))(); //扣款寫入amount_log,回傳amount_log Index ID
+
 const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 const tableHandler = new(require(pomelo.app.getBase()+'/app/lib/lib_TableHandler.js'))(pomelo,async,redis,dbslave,dbmaster,messageService,GameName,CasinoId);
+
 const code = require(pomelo.app.getBase()+'/app/consts/code.js');
 const logger = require('pomelo-logger').getLogger('handler-log',__filename);
 //===固定==============================================================

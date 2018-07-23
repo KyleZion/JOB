@@ -1,10 +1,8 @@
-const pomelo = require('pomelo');
-const async = require('async');
-const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
-const exp = module.exports;
-const maindiceBao = require('./maindiceBao.js');
-
-exp.init = function (gameZone,gameName) {
+module.exports.init = function (gameZone,gameName) {
+	const pomelo = require('pomelo');
+	const async = require('async');
+	const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
+	const maindiceBao = require('./maindiceBao.js');
 	const dbslave =pomelo.app.get('dbslave');
 	const dbmaster =pomelo.app.get('dbmaster');
 	const redis =pomelo.app.get('redis');
