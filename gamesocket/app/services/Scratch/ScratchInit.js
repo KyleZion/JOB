@@ -10,9 +10,10 @@ Date.prototype.addSeconds = function(s){
 }
 
 exp.init = function (gameZone) {
-	var dbslave =pomelo.app.get('dbslave');
-	var dbmaster =pomelo.app.get('dbmaster');
+	/*var dbslave =pomelo.app.get('dbslave');
+	var dbmaster =pomelo.app.get('dbmaster');*/
 	var redis =pomelo.app.get('redis');
+	redis.del('GS:lockAccount:Scratch');//清空下注key值 解開退出再進入遊戲限制
 	//redis.hset('GS:GAMESERVER:Scratch', "GameID"+gameZone, gameID);
 	//redis.hset('GS:GAMESERVER:Scratch', "endTime"+gameZone, endtime);
 	//redis.hset('GS:GAMESERVER:Scratch', "gameHistory"+gameZone, gameHistory);

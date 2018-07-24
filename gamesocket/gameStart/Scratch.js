@@ -18,19 +18,23 @@ module.exports = function SetGame(pomelo,app,gameName)
 		    A:function(callback_A){
 		      GPB.Run();
 		      callback_A(null,0);
-		    }/*,
+		    },
 		    B:function(callback_B){
-		      ScratchInit.init(111);
+		      gameInit.init(111);
 		      callback_B(null,0);
 		    },
 		    C:function(callback_C){
-		      ScratchInit.init(222);
+		      gameInit.init(222);
 		      callback_C(null,0);
 		    },
 		    D:function(callback_D){
-		      ScratchInit.init(333);
+		      gameInit.init(333);
 		      callback_D(null,0);
-		    }*/
+		    },
+		    E:function(callback_D){
+		      gameInit.init(444);
+		      callback_D(null,0);
+		    },
 		  },function(err, results) {
 		    console.log(gameName+"初始化完成");
 		    });

@@ -402,7 +402,7 @@ module.exports = function diceBaoGameOpen()
 			DB_WT = 5;
 			if(flag==0){
 				if (n2positive==false){ 
-					console.log( "50組號碼 每一組都是輸的 找公司輸最少的號碼開");
+					console.log( "10組號碼 每一組都是輸的 找公司輸最少的號碼開");
 					console.log( "送出 :"+Maximum_n2_tmpwin);
 					console.log( "Maximum_n2:"+Maximum_n2);
 					num = Maximum_n2_Number;

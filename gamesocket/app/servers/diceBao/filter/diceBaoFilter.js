@@ -1,4 +1,3 @@
-//var logger = require('pomelo-logger').getLogger(__filename);
 module.exports = function() {
   return new Filter();
 }
@@ -22,11 +21,13 @@ var bypass = {
 }
 
 Filter.prototype.before = function (msg, session, next) {
+  const logger = require('pomelo-logger').getLogger('con-log','diceBaoFilter');
   const pomelo = require('pomelo');
   const dbslave = pomelo.app.get('dbslave');
   const dbmaster = pomelo.app.get('dbmaster');
   const redis = pomelo.app.get('redis');
   const async = require('async');
+  const code = require(pomelo.app.getBase()+'/app/consts/code.js');
   var ServergameID = 0;
   var checkStatus = false;
   var lockAccount = 0;
@@ -36,6 +37,7 @@ Filter.prototype.before = function (msg, session, next) {
     var channelID = JSON.parse(msg.bet).channelID;
     var total = JSON.parse(msg.bet).total
     var ClientgameID = JSON.parse(msg.bet).GamesID;
+    const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,channelID);
     var min =0;
     var max =0;
     async.series({
@@ -47,7 +49,7 @@ Filter.prototype.before = function (msg, session, next) {
             callback(null,200);
           }
           else{
-            callback(1,500);
+            callback(code.ERR_LOCKACCOUNT,'LockAccount未解除');
           }
         });
       },
@@ -66,20 +68,20 @@ Filter.prototype.before = function (msg, session, next) {
           callback(null,200);
         }
         else{
-          callback(1,500);
+          callback(code.ERR_CHANNEL,'下注区错误');
         }
       },
       checkStatus: function(callback_0){
         redis.hget('GS:GAMESERVER:diceBao', "Status"+channelID, function (err, res) {
           if(err){
-            callback_0(1,500);
+            callback_0(code.REDIS_ERROR,'Redis錯誤');
           }else{
             if(!res){
-              callback_0(1,500);
+              callback_0(code.REDIS_ERROR,'Redis錯誤');
             }else{ //success
               if(res!='T'){
                 checkStatus=false;
-                callback_0(0,200);
+                callback_0(code.ERR_GAME_STATUS,'已關盤不可下注,帳號:'+session.uid);
               }else{
                 checkStatus=true;
                 callback_0(null,200);

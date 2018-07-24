@@ -24,7 +24,7 @@ const lib_games = new (require(pomelo.app.getBase()+'/app/lib/lib_games.js'))();
 const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 const code = require(pomelo.app.getBase()+'/app/consts/code.js');
 const tableHandler = new(require(pomelo.app.getBase()+'/app/lib/lib_TableHandler.js'))(pomelo,async,redis,dbslave,dbmaster,messageService,GameName,casinoId);
-const gameOp = new(require(pomelo.app.getBase()+'app/services/Scratch/'))
+const gameOp = new(require(pomelo.app.getBase()+'/app/services/Scratch/ScratchGameOpen.js'))
 //const HAN = new(require(pomelo.app.getBase()+'/app/lib/lib_Handler.js'))();
 //===固定==============================================================
 
@@ -149,9 +149,9 @@ handler.bet = function(msg,session,next){
 
 	async function betProcess() {
 		const res1 = await gameMade(); //回傳期數ID
-		const res2 = await betSqlInsert(res1);
+		const res2 = await betSqlInsert(res1); //注單ID
 		const res3 = await getUserMoney();
-		const res4 = await amountSqlInsert(res1,res3);
+		const res4 = await amountSqlInsert(res1,res3); //amountLogId
 		const res5 = await lessUserMoney();
 		reward = await getAward(channelID);
 		const res6 = await closeGame(res1,reward);
@@ -168,6 +168,8 @@ handler.bet = function(msg,session,next){
 				next(null,{'ErrorCode':code.OK,'ErrorMessage':'','reward':reward,'bet':res});
 			});
 			gameSql.UpdateUserMoneyMaster(session.uid,reward,0,function(res){
+			});
+			redis.srem("GS:lockAccount:Scratch",session.uid,function(err,res){
 			});
 		})
 		.catch(err =>{
