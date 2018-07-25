@@ -85,7 +85,7 @@ Filter.prototype.before = function (msg, session, next) {
           logger.error('ERROR：'+err+'|'+res.checkBet);
           break;
         default:
-        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"ScratchFilter"); //放在最後一行
+          var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"ScratchFilter"); //放在最後一行
       }
     });
   }

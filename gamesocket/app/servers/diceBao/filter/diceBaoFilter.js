@@ -74,10 +74,10 @@ Filter.prototype.before = function (msg, session, next) {
       checkStatus: function(callback_0){
         redis.hget('GS:GAMESERVER:diceBao', "Status"+channelID, function (err, res) {
           if(err){
-            callback_0(code.REDIS_ERROR,'Redis錯誤');
+            callback_0(code.REDIS_ERROR,'Redis ERROR');
           }else{
             if(!res){
-              callback_0(code.REDIS_ERROR,'Redis錯誤');
+              callback_0(code.REDIS_ERROR,'Redis ERROR');
             }else{ //success
               if(res!='T'){
                 checkStatus=false;
@@ -94,10 +94,10 @@ Filter.prototype.before = function (msg, session, next) {
         //betData = (JSON.parse(msg.bet)).data; //將C2傳來的下注內容string轉JSON
         redis.hget('GS:GAMESERVER:diceBao', "GameID"+channelID, function (err, res) {
           if(err){
-            callback_1(1,500);
+            callback_1(code.REDIS_ERROR,'Redis ERROR');
           }else{
             if(res==null){
-              callback_1(1,500);
+              callback_1(code.REDIS_ERROR,'REDIS NULL result');
             }else{
               ServergameID=res;
               callback_1(null,200);
@@ -108,45 +108,27 @@ Filter.prototype.before = function (msg, session, next) {
       checkBet: function(callback_2){
         dbslave.query('SELECT count(*) as c FROM bet_g52 where bet005 = ? and bet009 = ? and betstate = ?  and bet012 = ?',[session.uid,ServergameID,0,channelID],function(data)
         {
-          if(data.ErrorCode==0)
-          {
-            if(data.rows[0].c!=0)
-            {
+          if(data.ErrorCode==0){
+            if(data.rows[0].c!=0){
               callback_2(1,'該局已下注');
             }
-            else
-            {
-              //dbslave.query('SELECT mem100 from member where mem001 = ?',[session.uid],function(data){ //nsc
-              dbslave.query('SELECT mem100 from users where mid = ?',[session.uid],function(data)//duegame
-              {
-                if(data.ErrorCode==0)
-                {
-                  //var sessionMoney=data.rows[0].mem100;
-                  var sessionMoney=data.rows[0].mem100;
-                  //var amount=0;//下注總金額
-                  var betDataCheck=true;
-                  //計算下注總金額以及下注內容轉資料庫格式key0~6為下注號碼
+            else{
+              gameSql.GetUserMoneyMaster(session.uid,function(res){
+                //UserMoney = res;
+                if(res!=null){
+                  var betDataCheck = betData.some(function(value, index,) {
+                      return (value > max && value <min) ? true : false ;
+                  });
                   async.series({
-                    Z: function(callback_Z){
-                      for(var i in betData){
-                        if(betData[i]>max && betData[i]<min){
-                          //amount= amount+betData[i]; //計算下注總金額
-                          betDataCheck=false;
-                        }
-                      }
-                      callback_Z(null,0);
-                    },
                     A:function(callback_A){
                       if(!betDataCheck){
-                        //檢查沒有押注就送出
-                        callback_A(1,'单一下注超出限制或低于限制');
-                      } else if(total===0 || sessionMoney<total){ //檢查Client下注總金額和下注內容金額有無相同
-                        callback_A(1,'馀额不足或下注错误');
+                        //押注超出限制
+                        callback_A(code.ERR_OVER_BET_LIMIT,'单一下注超出限制或低于限制');
+                      } else if(total===0 || res<total){ //檢查Client下注總金額和下注內容金額有無相同
+                        callback_A(code.NOT_ENOUGH_MONEY,'馀额不足或下注错误');
                       }else if(ServergameID!=ClientgameID){
                         //檢查期數
-                        callback_A(1,'下注期数错误');
-                      }else if(!channelID){
-                        callback_A(1,'游戏区号错误');
+                        callback_A(code.ERR_PERIODID,'下注期数错误');
                       }else if(!checkStatus){
                         callback_A(1,'已关盘');
                       }else if(!lockAccount){
@@ -169,7 +151,7 @@ Filter.prototype.before = function (msg, session, next) {
                     }
                   });
                 }else{ //取餘額錯誤 
-                  callback_2(1,'网路连线异常');
+                  callback_2(code.SQL_ERROR,'SQL ERROR');
                 }
               });
             }
@@ -179,19 +161,25 @@ Filter.prototype.before = function (msg, session, next) {
     },
     function(err, res)
     {
-      if(err)
-      {
-        if(res.lockAccount==500 || res.checkStatus==500 || res.checkGameID == 500 || res.checkChannel ==500)
-        {
-          next(new Error('ServerQuestion'),'网路连线异常，代码500');
-        }else{
-          next(new Error('BetQuestion'),res.checkBet);
-        }
-        
-      }else
-      {
-        //console.log(res); //OK
-        var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); //放在最後一行
+      switch(err){
+        case -1: //LockAccount
+          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          logger.error('ERROR：'+err+'|'+res.lockAccount);
+          break;
+        case -2: //ChannelID ERROR
+          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          logger.error('ERROR：'+err+'|'+res.checkChannel);
+          break;
+        case -3: //餘額不足
+          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          logger.error('ERROR：'+err+'|'+res.checkBet);
+          break;
+        case -4: //已關盤
+          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          logger.error('ERROR：'+err+'|'+res.checkStatus);
+          break;
+        default:
+          var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"ScratchFilter"); //放在最後一行
       }
     });//async.series END
   }
@@ -202,7 +190,8 @@ Filter.prototype.before = function (msg, session, next) {
         var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"diceBaoFilter"); 
       }
       else{
-        next(new Error('ClientQuestion'),300); //阻擋下注後退出遊戲再進入遊戲
+        next(new Error('ServerQuestion'),'网路连线异常:'+code.ERR_LOCKACCOUNT);
+        logger.error('ERROR：LOCK_ACCOUNT');
       }
     });
   }
