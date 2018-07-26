@@ -57,15 +57,15 @@ Filter.prototype.before = function (msg, session, next) {
       },
       checkBet: function(callback_2){
         gameSql.GetUserMoneyMaster(session.uid,function(res){
-          if(res){
+          if(res>=0){
             var sessionMoney=res;
             if(total===0 || res<total){
-              callback_2(code.NOT_ENOUGH_MONEY,'馀额不足');
+              callback_2(code.NOT_ENOUGH_MONEY,'下注金額錯誤或是餘額不足');
             }else{
               callback_2(null,200);
             }
           }else{ //取餘額錯誤 
-            callback_2(code.SQLERROR,'资料库错误');
+            callback_2(code.SQL_ERROR,'资料库错误');
           }
         });
       }
@@ -73,16 +73,21 @@ Filter.prototype.before = function (msg, session, next) {
     function(err, res){
       switch(err){
         case -1:
-          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          next(new Error('ServerQuestion'),err);
           logger.error('ERROR：'+err+'|'+res.lockAccount);
           break;
         case -2:
-          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          next(new Error('ServerQuestion'),err);
           logger.error('ERROR：'+err+'|'+res.checkChannel);
           break;
         case -3:
-          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          next(new Error('ServerQuestion'),err);
           logger.error('ERROR：'+err+'|'+res.checkBet);
+          break;
+        case 500:
+        case 501:
+          next(new Error('ServerQuestion'),err);
+          logger.error('ERROR：'+err+'|'+'SQL REDIS ERROR');
           break;
         default:
           var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"ScratchFilter"); //放在最後一行
@@ -106,6 +111,9 @@ Filter.prototype.before = function (msg, session, next) {
 };
 
 Filter.prototype.after = function (err, msg, session, resp, next) {
+  console.error(err,msg,resp);
+  if(resp.ErrorCode!=-1)
+    redis.srem("GS:lockAccount:Scratch",session.uid,function(err,res){});
   next(err, resp);
 };
 

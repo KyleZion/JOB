@@ -29,7 +29,7 @@ Filter.prototype.before = function (msg, session, next) {
   const async = require('async');
   const code = require(pomelo.app.getBase()+'/app/consts/code.js');
   var ServergameID = 0;
-  var checkStatus = false;
+  //var checkStatus = false;
   var lockAccount = 0;
   if(msg.route == "diceBao.diceBaoHandler.B")
   {
@@ -80,10 +80,10 @@ Filter.prototype.before = function (msg, session, next) {
               callback_0(code.REDIS_ERROR,'Redis ERROR');
             }else{ //success
               if(res!='T'){
-                checkStatus=false;
+                //checkStatus=false;
                 callback_0(code.ERR_GAME_STATUS,'已關盤不可下注,帳號:'+session.uid);
               }else{
-                checkStatus=true;
+                //checkStatus=true;
                 callback_0(null,200);
               }
             }
@@ -100,7 +100,11 @@ Filter.prototype.before = function (msg, session, next) {
               callback_1(code.REDIS_ERROR,'REDIS NULL result');
             }else{
               ServergameID=res;
-              callback_1(null,200);
+              if(res==ClientgameID){
+                callback_1(null,200);
+              }else{
+                callback_1(code.ERR_PERIODID,'下注期数错误');
+              }
             }
           }
         });
@@ -110,46 +114,17 @@ Filter.prototype.before = function (msg, session, next) {
         {
           if(data.ErrorCode==0){
             if(data.rows[0].c!=0){
-              callback_2(1,'該局已下注');
+              callback_2(code.ERR_ALREADY_BET,'該局已下注');
             }
             else{
               gameSql.GetUserMoneyMaster(session.uid,function(res){
-                //UserMoney = res;
                 if(res!=null){
-                  var betDataCheck = betData.some(function(value, index,) {
-                      return (value > max && value <min) ? true : false ;
-                  });
-                  async.series({
-                    A:function(callback_A){
-                      if(!betDataCheck){
-                        //押注超出限制
-                        callback_A(code.ERR_OVER_BET_LIMIT,'单一下注超出限制或低于限制');
-                      } else if(total===0 || res<total){ //檢查Client下注總金額和下注內容金額有無相同
-                        callback_A(code.NOT_ENOUGH_MONEY,'馀额不足或下注错误');
-                      }else if(ServergameID!=ClientgameID){
-                        //檢查期數
-                        callback_A(code.ERR_PERIODID,'下注期数错误');
-                      }else if(!checkStatus){
-                        callback_A(1,'已关盘');
-                      }else if(!lockAccount){
-                        callback_A(1,'请勿连续下注');
-                      }
-                      else{
-                        callback_A(null,200);
-                      }
-                      //=============================================================
-                    }
-                  },
-                  function(err, results) {
-                    if(err){
-                      console.log("下注檢查完成,錯誤");
-                      callback_2(1,results.A);
-                      //next(new Error('BetQuestion'),results.A);
-                    }else{
-                      console.log("下注檢查完成");
-                      callback_2(null,200);
-                    }
-                  });
+                  if(total===0 || res<total){ //檢查Client下注總金額和下注內容金額有無相同
+                    callback_2(code.NOT_ENOUGH_MONEY,'馀额不足或下注错误');
+                  }
+                  else{
+                    callback_2(null,200);
+                  }
                 }else{ //取餘額錯誤 
                   callback_2(code.SQL_ERROR,'SQL ERROR');
                 }
@@ -157,16 +132,26 @@ Filter.prototype.before = function (msg, session, next) {
             }
           }
         });
+      },
+      checkBetLimit: function(callback_3){
+        var betDataCheck = betData.some(function(value, index) {
+            return (value > max || value <min) ;
+        });
+        if(betDataCheck){
+          callback_3(code.ERR_OVER_BET_LIMIT,'单一下注超出限制或低于限制');
+        }else{
+          callback_3(null,200);
+        }
       }
     },
     function(err, res)
     {
       switch(err){
-        case -1: //LockAccount
+        case -1: //LockAccount帳戶鎖定
           next(new Error('ServerQuestion'),'网路连线异常:'+err);
           logger.error('ERROR：'+err+'|'+res.lockAccount);
           break;
-        case -2: //ChannelID ERROR
+        case -2: //區號ID錯誤
           next(new Error('ServerQuestion'),'网路连线异常:'+err);
           logger.error('ERROR：'+err+'|'+res.checkChannel);
           break;
@@ -174,9 +159,26 @@ Filter.prototype.before = function (msg, session, next) {
           next(new Error('ServerQuestion'),'网路连线异常:'+err);
           logger.error('ERROR：'+err+'|'+res.checkBet);
           break;
-        case -4: //已關盤
+        case -4: //已下注
+          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          logger.error('ERROR：'+err+'|'+res.checkBet);
+          break;
+        case -5: //已關盤
           next(new Error('ServerQuestion'),'网路连线异常:'+err);
           logger.error('ERROR：'+err+'|'+res.checkStatus);
+          break;
+        case -6: //超出下注限制
+          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          logger.error('ERROR：'+err+'|'+res.checkBetLimit);
+          break;
+        case -7: //期數ID錯誤
+          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          logger.error('ERROR：'+err+'|'+res.checkGameID);
+          break;
+        case 500:
+        case 501:
+          next(new Error('ServerQuestion'),'网路连线异常:'+err);
+          logger.error('ERROR：'+err+'|'+'SQL REDIS ERROR');
           break;
         default:
           var iFilter_Base = new require(pomelo.app.getBase() + "/app/lib/Filter_Base.js")(bypass,msg,next,"ScratchFilter"); //放在最後一行

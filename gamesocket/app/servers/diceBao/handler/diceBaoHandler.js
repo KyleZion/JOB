@@ -242,8 +242,7 @@ handler.bet = function(msg,session,next){
 					}
 				});
 			},*/
-			function(cb)
-			{
+			function(cb){
 				gameDao.getMoney(session.uid, cb);
 			}
 			], 
