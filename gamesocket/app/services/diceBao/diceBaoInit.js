@@ -53,5 +53,3 @@ module.exports.init = function (gameZone,gameName) {
 		}
 	});
 }
-
-

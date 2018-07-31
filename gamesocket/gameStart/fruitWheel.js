@@ -2,7 +2,6 @@ module.exports = function SetGame(pomelo,app,gameName)
 {
 	const async = app.get('async');
 	const gameConfig = app.get(gameName);
-	console.warn(gameConfig);
 	const gameInit = require(app.getBase()+'/app/services/'+gameName+'/'+gameName+'Init.js');
 	const GameProc_Base = require(app.getBase()+'/app/lib/GameProc_Base.js');
 	const GPB = new GameProc_Base(gameConfig.port,gameName,gameConfig.CName);

@@ -10,7 +10,7 @@ module.exports.init = function (gameZone,gameName) {
 	const redis =app.get('redis');
 	const lib_GM = require(pomelo.app.getBase()+'/app/lib/lib_GameMade.js');
 	const GM = new lib_GM(pomelo,app,async,redis,dbslave,dbmaster,messageService,gameName,'水果转盘',51,gameZone);
-	const gameSql = new(require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,app,async,redis,dbslave,dbmaster,51,gameZone);
+	const gameSql = new(require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,app,51,gameZone);
 	const FWC = new (require(app.getBase()+'/app/services/fruitWheel/fruitWheelCalc.js'))(redis,dbslave,dbmaster,messageService,gameZone);
 	gameSql.GetUnOpenGames(function(res){
 		gameID = res;

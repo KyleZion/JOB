@@ -4,7 +4,7 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 	const async =require('async');
 	const code = require(app.getBase()+'/app/consts/code.js');
 	const PUB = new(require(app.getBase()+'/app/lib/public_fun.js'))();
-	const gameSql = new(require(app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,app,async,redis,dbslave,dbmaster,52,gameZone);
+	const gameSql = new(require(app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,app,51,gameZone);
 	const gameService = require('./gameService.js');
 	const gameNumop = new(require('./fruitWheelopvn1.js'))();
 	// ------ games -------------------------------------------------------------

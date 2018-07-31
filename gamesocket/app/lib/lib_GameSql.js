@@ -1,5 +1,9 @@
-module.exports = function lib_GameSql(pomelo,app,async,redis,dbslave,dbmaster,GameID,GameZone){
-	const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
+	const dbslave = app.get('dbslave');
+	const dbmaster = app.get('dbmaster');
+	const redis = app.get('redis');
+	const async = app.get('async');
+	const PUB = new(require(app.getBase()+'/app/lib/public_fun.js'))();
 	const md5 = require('md5');
 	//console.log("lib_OpenGame:"+GameZone);
 	// ------ games -------------------------------------------------------------

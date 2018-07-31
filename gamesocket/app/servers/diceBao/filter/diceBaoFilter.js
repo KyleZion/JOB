@@ -21,7 +21,7 @@ var bypass = {
 }
 
 Filter.prototype.before = function (msg, session, next) {
-  const logger = require('pomelo-logger').getLogger('con-log','diceBaoFilter');
+  const logger = require('pomelo-logger').getLogger('server-error','diceBaoFilter');
   const pomelo = require('pomelo');
   const dbslave = pomelo.app.get('dbslave');
   const dbmaster = pomelo.app.get('dbmaster');
@@ -97,7 +97,7 @@ Filter.prototype.before = function (msg, session, next) {
             callback_1(code.REDIS_ERROR,'Redis ERROR');
           }else{
             if(res==null){
-              callback_1(code.REDIS_ERROR,'REDIS NULL result');
+              callback_1(code.REDIS_ERROR,'Redis NULL result');
             }else{
               ServergameID=res;
               if(res==ClientgameID){
@@ -134,7 +134,8 @@ Filter.prototype.before = function (msg, session, next) {
         });
       },
       checkBetLimit: function(callback_3){
-        var betDataCheck = betData.some(function(value, index) {
+        var arr = Object.values(betData);
+        var betDataCheck = arr.some(function(value, index) {
             return (value > max || value <min) ;
         });
         if(betDataCheck){

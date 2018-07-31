@@ -98,7 +98,7 @@ module.exports = function lib_GameMade(pomelo,app,async,redis,dbslave,dbmaster,m
 				redis.hset('GS:GAMESERVER:'+GameName, "lobbyHistory"+GameZone, lobbyHistory);
 				redis.hset('GS:GAMESERVER:'+GameName, "Status"+GameZone, 'T');
 				redis.hset('GS:GAMESERVER:'+GameName, "NowbetTotal"+GameZone,'0,0,0,0,0,0,0');
-				redis.del('GS:lockAccount:'+GameName);//清空下注key值 解開退出再進入遊戲限制
+				redis.del('GS:lockAccount:'+51);//清空下注key值 解開退出再進入遊戲限制
 				Made_callback(InsertID,endtime);
 			}
 		});

@@ -1,7 +1,7 @@
-const pomelo = require('pomelo');
-const app = pomelo.app;
 module.exports.mainGame = function(gameName,gameID,endtime,dbmaster,dbslave,redis,gameZone)
 {
+	const pomelo = require('pomelo');
+	const app = pomelo.app;
 	const gameService = require('./gameService.js');
 	const messageService = require(app.getBase()+'/app/services/messageService.js');
 	const fruitWheelInit = require('./fruitWheelInit.js');
