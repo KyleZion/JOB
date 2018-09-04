@@ -4,7 +4,8 @@ var sqlclient = module.exports;
 var _pool;
 
 var NND = {};
-
+const pomelo = require('pomelo');
+const code = require(pomelo.app.getBase()+'/app/consts/code.js');
 /*
  * Init sql connection pool
  * @param {Object} app The app for the server.

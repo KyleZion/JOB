@@ -6,7 +6,6 @@ module.exports = function(app) {
 
 var Handler = function(app) {
   this.app = app;
-  this.$id = "Handler";
 };
 //===固定==============================================================
 const handler = Handler.prototype;

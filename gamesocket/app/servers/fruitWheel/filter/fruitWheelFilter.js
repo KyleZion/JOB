@@ -5,29 +5,17 @@ module.exports = function() {
 var Filter = function() {
 };
 
-var bypass = {
-    "B":"bet",
-    "I":"GetGameID", 
-    "M":"GetMoney",
-    "T":"GetTimeZone",
-    "H":"GetHistory",
-    "S":"GetStatus",
-    "O":"GetBetTotal",
-    "A":"AddtoChannel",
-    "L":"LeaveChannel",
-    "G":"GetGameSet"
-}
-
 Filter.prototype.before = function (msg, session, next) {
-  const logger = require('pomelo-logger').getLogger('server-error','fruitWheelFilter');
   const pomelo = require('pomelo');
+  const bypass = (require(pomelo.app.getBase()+'/app/config/Filter_BypassParam.js')).gameFilter;
+  const logger = require('pomelo-logger').getLogger('server-error','fruitWheelFilter');
   const dbslave = pomelo.app.get('dbslave');
   const redis = pomelo.app.get('redis');
-  const config = pomelo.app.get('fruitWheel');
+  const config = pomelo.app.get(pomelo.app.getServerType());
   const async = require('async');
   const code = require(pomelo.app.getBase()+'/app/consts/code.js');
-  const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,51,channelID);
-  const gameRedis = new (require(pomelo.app.getBase()+'/app/lib/lib_GameRedis.js'))(pomelo,pomelo.app,51,channelID);
+  const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,config.EGAMEID,channelID);
+  //const gameRedis = new (require(pomelo.app.getBase()+'/app/lib/lib_GameRedis.js'))(pomelo,pomelo.app,config.EGAMEID,channelID);
   var ServergameID = 0;
   var checkStatus = false;
   var lockAccount = 0;
@@ -37,9 +25,9 @@ Filter.prototype.before = function (msg, session, next) {
     var channelID = betData.channelID;
     async.series({
       lockAccount: function(callback){ //redis修正
-        redis.sismember("GS:lockAccount:"+config.GAMEID,session.uid,function(err,res){
+        redis.sismember("GS:lockAccount:fruitWheel",session.uid,function(err,res){
           if(res==0){
-            redis.sadd("GS:lockAccount:"+config.GAMEID,session.uid);
+            redis.sadd("GS:lockAccount:fruitWheel",session.uid);
             lockAccount = 1;
             callback(null,200);
           }

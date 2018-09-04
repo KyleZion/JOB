@@ -56,8 +56,6 @@ gameDao.getMoney = function(mid,cb){
 		} else {
 			var rs = res.rows;
 			if (rs.length==1) {
-				//console.log(rs[0].mem006);
-				//utils.invokeCallback(cb, null, rs.mem100);//nsc
 				//utils.invokeCallback(cb, null, rs[0].mem006);//egame
 				utils.invokeCallback(cb, null, rs[0].mem100);//duegame
 			} else {

@@ -1,14 +1,12 @@
 {
 	"development": {
-	 	"Id" :51,
-		"CName" : "水果转盘",
-		"Port" : "6051",
-		"Code" : "051"
+	 	"EGAMEID": 51,
+		"CNAME" : "水果转盘",
+		"PORT"	: "6051"
 	},
 	"production": {
-	  	"Id" :51,
-		"CName" : "水果转盘",
-		"Port" : "6051",
-		"Code" : "051"
+	  	"EGAMEID": 51,
+		"CNAME" : "水果转盘",
+		"PORT"	: "6051"
 	}
 }

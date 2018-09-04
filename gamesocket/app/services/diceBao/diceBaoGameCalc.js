@@ -4,7 +4,7 @@ module.exports = function diceBaoGameCalc(redis,dbslave,dbmaster,messageService,
 	const code = require(pomelo.app.getBase()+'/app/consts/code.js');
 	//const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 	//const gameDao = require(pomelo.app.getBase()+'/app/dao/gameDao');
-	const gameSql = new(require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,gameZone);
+	const gameSql = new(require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,52,gameZone);
 	const diceBaoService = require('./diceBaoService.js');
 	const gameNumop = new(require('./diceBaoGameOpen.js'))();
 	// ------ games -------------------------------------------------------------

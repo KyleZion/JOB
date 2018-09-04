@@ -24,13 +24,13 @@ module.exports.init = function (gameZone,gameName) {
 				gameID.forEach(function(item, index, array) {
 					FWC.GameCalc(item.id,1,function(res){
 						if(!res){
-							console.log('OK');
+							console.log(200);
 						}else{
-							console.log('aa');
+							console.log(res);
 						}
 					});
 				});
-				return resolve('OKOK');
+				return resolve(200);
 			});
 			
 			const gameOpen = async() =>{

@@ -1,4 +1,4 @@
-const logger = require('pomelo-logger').getLogger('con-log','ScratchFilter');
+const logger = require('pomelo-logger').getLogger('server-error','ScratchFilter');
 const pomelo = require('pomelo');
 const dbslave = pomelo.app.get('dbslave');
 const dbmaster = pomelo.app.get('dbmaster');
@@ -27,7 +27,7 @@ Filter.prototype.before = function (msg, session, next) {
     var betData = JSON.parse(msg.bet);
     var channelID = betData.channelID;
     var total = betData.total;
-    const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,53,channelID);
+    const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,53,channelID);
     async.series({
       lockAccount: function(callback){ //redis修正
         redis.sismember("GS:lockAccount:Scratch",session.uid,function(err,res){

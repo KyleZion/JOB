@@ -5,8 +5,7 @@ module.exports.mainGame = function(gameID,endtime,dbmaster,dbslave,redis,gameZon
 	const diceBaoInit = require('./diceBaoInit.js');
 	const messageService = require(pomelo.app.getBase()+'/app/services/messageService.js');
 	const async =require('async');
-	const lib_gameSql = require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js');
-	const gameSql = new lib_gameSql(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,gameZone);
+	const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,52,gameZone);
 	const DBGC = new (require(pomelo.app.getBase()+'/app/services/diceBao/diceBaoGameCalc.js'))(redis,dbslave,dbmaster,messageService,gameZone);
 	var status='';
 	//進入流程控制 

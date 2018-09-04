@@ -52,7 +52,7 @@ handler.bet = function(msg,session,next){
 	var reward = 0;
 	var collect = 0;
 	var Period = yyyy+MM+dd+h+m+s+session.uid;
-	const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,null,dbslave,dbmaster,54,channelID);
+	const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,54,channelID);
 
 	async function gameMade(){
 		var GM = await new Promise ((resolve , reject) => { //寫入期數

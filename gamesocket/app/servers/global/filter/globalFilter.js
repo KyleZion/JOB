@@ -1,5 +1,5 @@
-var async = require('async');
-var pomelo = require('pomelo');
+const async = require('async');
+const pomelo = require('pomelo');
 module.exports = function() {
   return new Filter();
 }
@@ -8,20 +8,12 @@ var Filter = function() {
 };
 
 
-var bypass = {
-  "ce":'connector.entryHandler.',
-  "fw":"fruitWheel.fruitWheelHandler.",
-  "tt":"transfer.transferHandler.",
-  "dd":"diceBao.diceBaoHandler.",
-  "mm":"manager.managerHandler.",
-  "sg":"Scratch.ScratchHandler.",
-  "fs":"fruitSlot.fruitSlotHandler."
-}
-
+var bypass = (require(pomelo.app.getBase()+'/app/config/Filter_BypassParam.js')).globalFilter;
 
 //globalfilter---->globalhandle---->routerecord--->gamefilter---->gamehandler
 
 Filter.prototype.before = function (msg, session, next) {
+  const code = require(pomelo.app.getBase()+'/app/consts/code.js');
   var routeFilter=(msg.route).replace(/\./g,"");
   var res1 = routeFilter.substring(0, 2);
   var res2 = routeFilter.substring(2, 3);
@@ -30,7 +22,7 @@ Filter.prototype.before = function (msg, session, next) {
   async.waterfall([
     function(callback_1){
       msg.route = bypass[res1];
-      if( msg.route==null)
+      if(msg.route==null)
           callback_1(1,'cmd error');
 
       msg.route =  msg.route + res2;

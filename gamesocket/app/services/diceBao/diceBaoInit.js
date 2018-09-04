@@ -7,13 +7,17 @@ module.exports.init = function (gameZone,gameName) {
 	const dbmaster =pomelo.app.get('dbmaster');
 	const redis =pomelo.app.get('redis');
 	const DBGC = new (require(pomelo.app.getBase()+'/app/services/diceBao/diceBaoGameCalc.js'))(redis,dbslave,dbmaster,messageService,gameZone);
-	const gameSql = new(require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,gameZone);
+	const gameSql = new(require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,52,gameZone);
 	//先開盤
 	const lib_TI = require(pomelo.app.getBase()+'/app/lib/lib_TableInit.js');
 	const TI = new lib_TI(pomelo,pomelo.app,async,redis,dbslave,dbmaster,messageService,'diceBao','骰宝',52,gameZone);
 	var gameID = new Array();
 	//觸發局數流程控制 Control
-	gameSql.GetUnOpenGames(function(res){
+	gameSql.GetUnOpenGames()
+	.then(results => {
+		console.error(results);
+	});
+	/*gameSql.GetUnOpenGames(function(res){
 		gameID = res;
 		if(res==0){
 			TI.Made(35,20,10,function(insertID,endTime){
@@ -51,5 +55,5 @@ module.exports.init = function (gameZone,gameName) {
 					console.log(err);
 				});
 		}
-	});
+	});*/
 }

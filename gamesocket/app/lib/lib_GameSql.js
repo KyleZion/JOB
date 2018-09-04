@@ -62,13 +62,22 @@ module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
 		});
 	}
 	// 取得所有沒有開獎的期數
-	this.GetUnOpenGames = function(callback){
-		dbslave.query('SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[GameZone],function(data){
+	this.GetUnOpenGames = function(){
+		return new Promise((resolve,reject) => {
+			dbslave.query('SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[GameZone])
+				.then(results => {
+					console.error(results);
+					resolve(results.data
+						);
+				})
+		});
+		
+		/*dbslave.query('SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[GameZone],function(data){
 			if(data.ErrorCode==0)
 				callback(data.rows);
 			else
 				callback(0);
-		});
+		});*/
 	}
 
 	// ------ betg -------------------------------------------------------------

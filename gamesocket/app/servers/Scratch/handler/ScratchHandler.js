@@ -53,7 +53,7 @@ handler.bet = function(msg,session,next){
 	var reward = 0;
 	var collect = 0;
 	var Period = yyyy+MM+dd+h+m+s+session.uid;
-	const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,null,dbslave,dbmaster,53,channelID);
+	const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,53,channelID);
 
 	async function gameMade(){
 		var GM = await new Promise ((resolve , reject) => { //寫入期數
@@ -216,21 +216,21 @@ handler.LeaveChannel = function(msg,session,next){
 
 async function getAward(channelID){
 	switch(channelID){
-                case 111:
-                    var reward = [40000,20000,10000,2000,1000,400,200,120,100,60,40,20,0];
-                    return reward[Math.floor(Math.random()*reward.length)];
-                break;
-                case 222:
-                    var reward = [100000,60000,20000,10000,2000,1000,400,300,200,160,120,100,80,60,40,20,0];
-                    return reward[Math.floor(Math.random()*reward.length)];
-                break;
-                case 333:
-                    var reward = [160000,80000,30000,20000,10000,4000,2000,1400,1000,400,200,160,100,60,40,20,0];
-                    return reward[Math.floor(Math.random()*reward.length)];
-                break;
-                case 444:
-                    var reward = [200000,100000,60000,20000,10000,6000,4000,2000,1600,1000,600,200,120,100,60,40,0];
-                    return reward[Math.floor(Math.random()*reward.length)];
-                break;
-            }
+	    case 111:
+	        var reward = [40000,20000,10000,2000,1000,400,200,120,100,60,40,20,0];
+	        return reward[Math.floor(Math.random()*reward.length)];
+	    break;
+	    case 222:
+	        var reward = [100000,60000,20000,10000,2000,1000,400,300,200,160,120,100,80,60,40,20,0];
+	        return reward[Math.floor(Math.random()*reward.length)];
+	    break;
+	    case 333:
+	        var reward = [160000,80000,30000,20000,10000,4000,2000,1400,1000,400,200,160,100,60,40,20,0];
+	        return reward[Math.floor(Math.random()*reward.length)];
+	    break;
+	    case 444:
+	        var reward = [200000,100000,60000,20000,10000,6000,4000,2000,1600,1000,600,200,120,100,60,40,0];
+	        return reward[Math.floor(Math.random()*reward.length)];
+	    break;
+	}
 }

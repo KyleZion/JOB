@@ -21,14 +21,21 @@ NND.init = function(app){
  * 
  */
 
-NND.SQLQuery = function (sql, args, callback) {
-    _pool.getConnection(function(err,connection){
+NND.SQLQuery = function (sql, args) {
+    return new Promise((resolve,reject) => {
+        _pool.query(sql,args,(err,rows,fields) => {
+            console.warn(rows,sql,args);
+            if(err) reject(err);
+            else resolve({'ErrorCode': 0,'ErrorMessage':'','data':rows});
+        });
+    });
+    /*_pool.getConnection(function(err,connection){
         connection.query(sql, args, function (err,data) {
-            /*console.warn(_pool._freeConnections.indexOf(connection)); // -1
+            console.warn(_pool._freeConnections.indexOf(connection)); // -1
             console.warn(_pool.config.connectionLimit);     // passed in max size of the pool
             console.warn(_pool._freeConnections.length);    // number of free connections awaiting use
             console.warn(_pool._allConnections.length);     // number of connections currently created, including ones in use
-            console.warn(_pool._acquiringConnections.length);*/ // number of connections in the process of being acquired
+            console.warn(_pool._acquiringConnections.length); // number of connections in the process of being acquired
             //console.log(_pool._freeConnections.indexOf(connection)); // 0
             connection.release();
             if(!err){
@@ -37,7 +44,7 @@ NND.SQLQuery = function (sql, args, callback) {
                 callback({'ErrorCode': 1,'ErrorMessage':err,'rows':data}); 
             }
         });
-    });
+    });*/
 };
 
 /**

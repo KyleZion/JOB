@@ -23,7 +23,7 @@ module.exports.mainGame = function(gameName,gameID,endtime,dbmaster,dbslave,redi
 					for(var i in NowBetTotal){
 						NowBetTotal[i]=Math.floor(Math.random() *12+5);
 					}
-					cb(null,NowBetTotal)
+					cb(null,NowBetTotal);
 				}
 			], 
 				function(err,periodBetTotal) {

@@ -4,7 +4,7 @@ module.exports = function SetGame(pomelo,app,gameName)
 	const gameConfig = app.get(gameName);
 	const gameInit = require(app.getBase()+'/app/services/'+gameName+'/'+gameName+'Init.js');
 	const GameProc_Base = require(app.getBase()+'/app/lib/GameProc_Base.js');
-	const GPB = new GameProc_Base(gameConfig.port,gameName,gameConfig.CName);
+	const GPB = new GameProc_Base(gameConfig.PORT,gameName,gameConfig.CNAME);
 
 	const ErrorHandler_Base = require(app.getBase()+'/app/lib/ErrorHandler_Base.js');
 	const EHB = new ErrorHandler_Base();
@@ -17,6 +17,7 @@ module.exports = function SetGame(pomelo,app,gameName)
 
 		  async.series({
 		    A:function(callback_A){
+		    	
 		      GPB.Run();
 		      callback_A(null,0);
 		    },

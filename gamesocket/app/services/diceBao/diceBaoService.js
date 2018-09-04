@@ -8,7 +8,7 @@ const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
 const lib_gameSql = require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js');
 exp.CalculateBet=function(dbmaster,dbslave,gamesID,gameNum,numSum,opBet,gameZone,twoSameCount,threeSameCount,callback_Calculate)
 {
-	const gameSql = new lib_gameSql(pomelo,pomelo.app,async,null,dbslave,dbmaster,52,gameZone);
+	const gameSql = new lib_gameSql(pomelo,pomelo.app,52,gameZone);
 	async.waterfall([
 		function(callback){
 			var winResult = new Array();

@@ -1,17 +1,17 @@
 //'use strict';
-var co = require('co');
-var thunkify = require('thunkify');
-var pomelo = require('pomelo');
-var logger = require('pomelo-logger').getLogger(__filename);
-var Base_Param = require('../../../consts/Base_Param.js');
-var GPB = new Base_Param();
-var sessions=[];
-var iasync = require('async');
-var sessionService = pomelo.app.get('sessionService');
+const co = require('co');
+const thunkify = require('thunkify');
+const pomelo = require('pomelo');
+const logger = require('pomelo-logger').getLogger('server-error',__filename);
+const Base_Param = require('../../../consts/Base_Param.js');
+const GPB = new Base_Param();
+const iasync = require('async');
+const sessionService = pomelo.app.get('sessionService');
 //var channel = pomelo.app.get('channelService').getChannel('connect',true);
-var messageService = require('../../../services/messageService.js');
-var gameDao = require('../../../dao/gameDao');
-var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+const messageService = require('../../../services/messageService.js');
+const gameDao = require('../../../dao/gameDao');
+const PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
+const redis=pomelo.app.get('redis');
 /////////////////////////////////////////////////////////////////////
 
 module.exports = function (app) {
@@ -21,8 +21,6 @@ module.exports = function (app) {
 var Handler = function (app) {
     this.app = app;
 };
- 
-var redis=pomelo.app.get('redis');
 /**
  * New client entry.
  *
@@ -67,7 +65,6 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 	var Token = msg.Token;
 	var GameName = msg.GameType;
 	var gameCode = GameTypeToGameCode(GameName);
-	var iasync = require('async');
 	var userdata;
 	var uid = null;
 		iasync.series({
@@ -148,16 +145,16 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 					}
 				});
 			},
-			/*
-			B: function(MLcallback){
-				session.redis.hgetall(GPB.rKey_USER+userdata.id, function(err,res){   
+			
+			/*B: function(MLcallback){
+				redis.hgetall(GPB.rKey_USER+userdata.id, function(err,res){   
 					ShowLog(0,"所有玩家參數:");	
 					ShowLog(0,res);
 					MLcallback(null,0);
 				});
 			},
 			C: function(MLcallback){
-				session.redis.smembers(GPB.rKey_USER_List, function(err,res){  
+				redis.smembers(GPB.rKey_USER_List, function(err,res){  
 					ShowLog(0,"所有玩家:"+res);	
 					MLcallback(null,0);
 				});
@@ -385,7 +382,7 @@ Handler.prototype.CSLogin = function(msg,session,next){
 				}else if(results.F!=0){
 					next(null,{'ErrorCode':1,'ErrorMessage':results.F});
 					Close(session);
-				}				
+				}
 			}else{
 				next(null,{'ErrorCode':0,'ErrorMessage':'','userdata':userdata});
 			}

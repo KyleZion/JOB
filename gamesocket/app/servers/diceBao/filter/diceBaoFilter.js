@@ -37,7 +37,7 @@ Filter.prototype.before = function (msg, session, next) {
     var channelID = JSON.parse(msg.bet).channelID;
     var total = JSON.parse(msg.bet).total
     var ClientgameID = JSON.parse(msg.bet).GamesID;
-    const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,async,redis,dbslave,dbmaster,52,channelID);
+    const gameSql = new (require(pomelo.app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,pomelo.app,52,channelID);
     var min =0;
     var max =0;
     async.series({
