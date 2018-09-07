@@ -1,12 +1,16 @@
 {
 	"development": {
-	 	"EGAMEID": 51,
+		"EGAMEID": 51,
+		"CASINOID":"051", 
 		"CNAME" : "水果转盘",
-		"PORT"	: "6051"
+		"PORT"	: "6051",
+		"BETG_TABLE" :"bet_g51"
 	},
 	"production": {
-	  	"EGAMEID": 51,
+		"EGAMEID": 51,
+		"CASINOID":"051",
 		"CNAME" : "水果转盘",
-		"PORT"	: "6051"
+		"PORT"	: "6051",
+		"BETG_TABLE" :"bet_g51"
 	}
 }

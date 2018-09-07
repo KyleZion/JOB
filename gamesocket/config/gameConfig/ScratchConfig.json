@@ -1,14 +1,16 @@
 {
 	"development": {
-	 	"Id" :53,
+		"Id" :53,
+		"CASINOID":"053",
 		"CName" : "刮刮乐",
 		"Port" : "6053",
-		"Code" : "052"
+		"BETG_TABLE" :"bet_g53"
 	},
 	"production": {
-	  	"Id" :53,
+		"Id" :53,
+		"CASINOID":"053",
 		"CName" : "刮刮乐",
 		"Port" : "6053",
-		"Code" : "052"
+		"BETG_TABLE" :"bet_g53"
 	}
 }

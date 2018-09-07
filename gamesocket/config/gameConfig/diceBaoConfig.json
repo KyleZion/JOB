@@ -1,14 +1,16 @@
 {
 	"development": {
-	 	"Id" :52,
+		"Id" :52,
+		"CASINOID":"052",
 		"CName" : "骰宝",
 		"Port" : "6052",
-		"Code" : "052"
+		"BETG_TABLE" :"bet_g52"
 	},
 	"production": {
-	  	"Id" :52,
+		"Id" :52,
+		"CASINOID":"052",
 		"CName" : "骰宝",
 		"Port" : "6052",
-		"Code" : "052"
+		"BETG_TABLE" :"bet_g52"
 	}
 }
