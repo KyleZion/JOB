@@ -24,12 +24,13 @@ NND.init = function(app){
 NND.SQLQuery = function (sql, args) {
     return new Promise((resolve,reject) => {
         _pool.query(sql,args,(err,rows,fields) => {
-            console.warn(rows,sql,args);
+            //console.log(rows,sql,args);
             if(err) reject(err);
             else resolve({'ErrorCode': 0,'ErrorMessage':'','data':rows});
         });
     });
-    /*_pool.getConnection(function(err,connection){
+    /* No async
+    _pool.getConnection(function(err,connection){
         connection.query(sql, args, function (err,data) {
             console.warn(_pool._freeConnections.indexOf(connection)); // -1
             console.warn(_pool.config.connectionLimit);     // passed in max size of the pool

@@ -1,5 +1,5 @@
-var async = require('async');
-var pomelo = require('pomelo');
+const async = require('async');
+const pomelo = require('pomelo');
 
 module.exports = function gameop()
 {

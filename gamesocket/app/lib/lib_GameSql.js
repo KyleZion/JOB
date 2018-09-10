@@ -62,22 +62,10 @@ module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
 		});
 	}
 	// 取得所有沒有開獎的期數
-	this.GetUnOpenGames = function(){
-		return new Promise((resolve,reject) => {
-			dbslave.query('SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[GameZone])
-				.then(results => {
-					console.error(results);
-					resolve(results.data
-						);
-				})
-		});
-		
-		/*dbslave.query('SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[GameZone],function(data){
-			if(data.ErrorCode==0)
-				callback(data.rows);
-			else
-				callback(0);
-		});*/
+	this.GetUnOpenGames = async function(){
+		let result = await dbslave.query('SELECT id FROM games_'+GameID+' where gas004 = ? and gas012 = 0 ',[GameZone]);
+		//console.log(result);
+		if(result.ErrorCode==0) return result.data;
 	}
 
 	// ------ betg -------------------------------------------------------------
@@ -132,15 +120,12 @@ module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
 		});
 	}
 	// 	依照期數取得所有注單
-	this.GetBets= function(PeriodID,callback){
-		dbslave.query('SELECT betkey,bet002,bet005,bet014,bet016,bet017 FROM bet_g'+GameID+' where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,GameZone],function(data){
-			if(data.ErrorCode==0)
-				callback(data.rows);
-			else
-				callback(null);
-		});
+	this.GetBetsByPeriodID= async function(PeriodID,callback){
+		let result = await dbslave.query('SELECT betkey,bet002,bet005,bet014,bet016,bet017 FROM bet_g'+GameID+' where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,GameZone]);
+		console.log(result);
+		if(result.ErrorCode==0) return result.data;
 	}
-	// 取得所有為開獎注單
+	// 取得所有未開獎注單
 	this.GetUnOpenBets = function(callback){
 		dbslave.query('SELECT bet002,bet005,bet014,bet016,bet017 FROM bet_g'+GameID+' where bet012 = ? order by id',[0],function(data){
 			if(data.ErrorCode==0)
@@ -149,7 +134,7 @@ module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
 				callback(null);
 		});
 	}
-	// 設定注單為中獎
+	// 設定注單中獎
 	this.SetBetsToWin = function(AutoIndexID,WinRate,WinMoney,WinBets,callback){
 		var struct_betgop = GetStruct_SQL();
 		var lib_gameop = GetLibSQL_betg(struct_betgop);

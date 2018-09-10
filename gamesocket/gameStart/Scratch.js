@@ -13,8 +13,9 @@ module.exports = function SetGame(pomelo,app,gameName)
 
 	    app.set("errorHandler",EHB.errorHandler);//errorHandler 名稱固定 參數在底層 D:\GIT\gamesocket\node_modules\pomelo\lib\util\constants.js
 			app.filter(gameFilter());
-			app.set("BETG_TABLE",gameConfig.BETG_TABLE);
-			app.set("CASINOID",gameConfig.CASINOID);
+			// app.set("BETG_TABLE",gameConfig.BETG_TABLE);
+			// app.set("CASINOID",gameConfig.CASINOID);
+			// app.set("GAMES_TABLE",gameConfig.GAMES_TABLE);
 		  async.series({
 		    A:function(callback_A){
 		      GPB.Run();

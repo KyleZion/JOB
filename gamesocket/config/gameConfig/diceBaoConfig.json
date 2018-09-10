@@ -1,16 +1,18 @@
 {
 	"development": {
-		"Id" :52,
+		"EGAMEID" :52,
 		"CASINOID":"052",
-		"CName" : "骰宝",
-		"Port" : "6052",
-		"BETG_TABLE" :"bet_g52"
+		"CNAME" : "骰宝",
+		"PORT" : "6052",
+		"BETG_TABLE" :"bet_g52",
+		"GAMES_TABLE" :"games_52"
 	},
 	"production": {
-		"Id" :52,
+		"EGAMEID" :52,
 		"CASINOID":"052",
-		"CName" : "骰宝",
-		"Port" : "6052",
-		"BETG_TABLE" :"bet_g52"
+		"CNAME" : "骰宝",
+		"PORT" : "6052",
+		"BETG_TABLE" :"bet_g52",
+		"GAMES_TABLE" :"games_52"
 	}
 }

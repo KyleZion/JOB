@@ -1,16 +1,18 @@
 {
 	"development": {
-		"Id" :53,
+		"EGAMEID" :53,
 		"CASINOID":"053",
-		"CName" : "刮刮乐",
-		"Port" : "6053",
-		"BETG_TABLE" :"bet_g53"
+		"CNAME" : "刮刮乐",
+		"PORT" : "6053",
+		"BETG_TABLE" :"bet_g53",
+		"GAMES_TABLE" :"games_53"
 	},
 	"production": {
-		"Id" :53,
+		"EGAMEID" :53,
 		"CASINOID":"053",
-		"CName" : "刮刮乐",
-		"Port" : "6053",
-		"BETG_TABLE" :"bet_g53"
+		"CNAME" : "刮刮乐",
+		"PORT" : "6053",
+		"BETG_TABLE" :"bet_g53",
+		"GAMES_TABLE" :"games_53"
 	}
 }

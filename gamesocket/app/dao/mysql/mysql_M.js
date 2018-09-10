@@ -142,7 +142,7 @@ sqlclient.init = function(app) {
 		sqlclient.update = NND.nSQLEX;
 		sqlclient.delete = NND.nSQLEX;
 		sqlclient.query = NND.nSQLQuery;
-        sqlclient.spquery = NND.nSpQuery;
+        //sqlclient.spquery = NND.nSpQuery;
 		return sqlclient;
 	}
 };
