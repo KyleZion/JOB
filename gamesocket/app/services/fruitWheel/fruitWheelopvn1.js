@@ -1,6 +1,6 @@
 const async = require('async');
 const pomelo = require('pomelo');
-
+const app = pomelo.app;
 module.exports = function gameop()
 {
     this.gameopvn1 =function (dbmaster,dbslave,redis,gameID,gamebetdata,gameZone,callback) {
@@ -361,7 +361,7 @@ module.exports = function gameop()
                     else if(gameZone==105)
                         bonus105 += ThisTimeBonus;
                     else if(gameZone==110)
-                        bonus110 += ThisTimeBonus;
+                        bonus110 += ThisTimeBonus; 
                     var DB_ordercoins = 0;
                     var DB_DT = PUB.formatDate()+" "+PUB.formatDateTime();
                     var DB_LT = '51'

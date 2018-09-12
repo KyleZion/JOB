@@ -1,4 +1,3 @@
-
 module.exports = function lib_SQL(tablename,struct_amountlog)
 {
 	var logger = require('pomelo-logger').getLogger(__filename);
@@ -7,44 +6,15 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 	var translate_sql = new (require(pomelo.app.getBase()+'/app/lib/translate_sql.js'))(tablename,struct_amountlog);
 	var dbmaster=pomelo.app.get('dbmaster');
 	var dbslave=pomelo.app.get('dbslave');
-	this.Insert = function(callback)
+	this.Insert = function()
 	{
 		//console.warn(translate_sql.GetInsertSQL());
 		//console.warn(translate_sql.GetValues());
 		var sql = translate_sql.GetInsertSQL();
 		var values = translate_sql.GetValues();
-		async.waterfall([
-			function(cb) {
-				dbmaster.insert(sql,values,function(data){
-					cb(null,data);
-				});
-			},
-			function(data,cb) {
-				if(data.ErrorCode==0)
-				{
-					logId=data.rows.insertId
-					cb(null,logId);
-				}else{
-					logger.error('Insert  error');
-					cb(1,data.ErrorMessage);
-				}
-				
-			}
-		],
-		function(err,resDao) {
-			if(err==null)
-			{
-				//insert成功
-				//console.log('insert  success:'+resDao);
-				callback(resDao);
-			}
-			else
-			{
-				//insert失敗
-				console.log(resDao);
-				callback(-1);
-			}
-		});
+		let result = await dbmaster.insert(sql,values);
+		if(result.ErrorCode==0) 
+			return result.data.insertId
 	}
 
 	this.Update = function(callback)
@@ -92,48 +62,20 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 
 	}
 
-	this.Update2 = function(callback)
+	this.Update2 = async function()
 	{
 		//console.warn(translate_sql.GetUpdateSQL2());
 		//console.error(translate_sql.GetValues());
 
-		var sql = translate_sql.GetUpdateSQL2();
-		var values = [];
-
-
-		async.waterfall([
-			function(cb) {
-				dbmaster.update(sql,values,function(data){
-					cb(null,data);
-				});
-			},
-			function(data,cb) {
-				if(data.ErrorCode==0)
-				{
-					logId=data.rows.insertId
-					cb(null,logId);
-				}else{
-					logger.error('Update error');
-					cb(1,data.ErrorMessage);
-				}
-				
-			}
-		],
-		function(err,resDao) {
-			if(err==null)
-			{
-				//insert成功
-				//console.log('Update success:'+resDao);
-				callback(resDao);
-			}
-			else
-			{
-				//insert失敗
-				console.log(resDao);
-				callback(-1);
-			}
-		});
-
+		var sql = translate_sql.GetUpdateSQL();
+		var values = translate_sql.GetValues();
+		let result = await dbmaster.update2(sql,values);
+		//console.log(result.data.affectedRows);
+		if(result.ErrorCode==0 && result.data.affectedRows!=0){
+			return true;
+		}else{
+			return false;
+		}
 	}
 	this.Select = function(callback)
 	{

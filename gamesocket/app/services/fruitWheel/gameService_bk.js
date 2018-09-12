@@ -5,44 +5,11 @@ const dbmaster =app.get('dbmaster');
 const dbslave = app.get('dbslave');
 var async = require('async');
 var asyncLoop = require('node-async-loop');
-const gameSql = new(require(app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,app,app.get('EGAMEID'),gameZone);
 var logger = require('pomelo-logger').getLogger('Service-log',__filename);
 var serverIP='127.0.0.1';
 
-module.exports.CalculateBet= async function(gamesID,gameNum,opBet,gameZone,bonusRate){
+module.exports.CalculateBet=async function(gamesID,gameNum,opBet,gameZone,bonusRate,callback_Calculate){
 	//console.log(opBet);
-	if(gameNum==7 && bonusRate!==0){
-		let res = await gameSql.UpdateBetStatusToOpened(gamesID,gameZone);
-		let res2 = await idWinMoneysResult(opBet,bonusRate,gamesID,gameZone,-1);
-		return {'ErrorCode': 0,'ErrorMessage': '','result':results}
-	}else{
-		let multiple = getMultiple(gameNum);
-		let Odds = getOdds(gameZone);
-		var winResult=[];
-			var item=0;
-			for(var i=0;i<opBet.length;i++)
-			{
-				var betValue = opBet[i].bet014.split(",");
-					for(var key in betValue)
-					{
-						if(betValue[key]!=0)
-						{
-							if(key==gameNum)
-							{
-								winResult[item]=opBet[i];//此處不可用winResult[i]
-								winResult[item].Val=betValue[key];
-								item++;
-							}
-						}
-					}
-			}
-		await gameSql.UpdateBetStatusToOpened(gamesID,gameZone);
-		if(winResult.length!=0){
-			await idWinMoneysResult(winResult,multiple,gamesID,gameZone,Odds);
-		}else{
-
-		}
-	}
 	if(gameNum==7 && bonusRate!==0){
 		async.series({
 			A: function(callback_A){
@@ -99,7 +66,7 @@ module.exports.CalculateBet= async function(gamesID,gameNum,opBet,gameZone,bonus
 						break;
 					case 6:
 						multiple=2;
-						break;
+						break;7
 				}
 				callback(null,multiple);
 			},
@@ -182,7 +149,7 @@ module.exports.CalculateBet= async function(gamesID,gameNum,opBet,gameZone,bonus
 	}
 }
 
-async function idWinMoneysResult(winResult,multiple,gamesID,gameZone,Odds)
+async function idWinMoneysResult(dbmaster,dbslave,winResult,multiple,gamesID,gameZone,Odds,callback_Win)
 {
 	var award =0;
 	asyncLoop(winResult, function (item, next)
@@ -192,102 +159,119 @@ async function idWinMoneysResult(winResult,multiple,gamesID,gameZone,Odds)
 		}else{
 			award=(Number(item.bet017) * multiple);
 		}
+		async.waterfall([
+			//先更新注單並寫入中獎金額
+			function(callback)
+			{
+				var struct_betgop = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))();
+				var lib_gameop = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("bet_g51",struct_betgop);
+				struct_betgop.params.betstate = 1;
+				struct_betgop.params.betwin = 1;
+				struct_betgop.params.bet018 = multiple;
+				struct_betgop.params.bet032 = award;
+				if(Odds>0){
+					struct_betgop.params.bet033 = item.Val;
+				}else{
+					struct_betgop.params.bet033 = item.bet017;
+				}
+				struct_betgop.where.bet002 = item.bet002;
+				struct_betgop.where.bet003 = 0;
+				struct_betgop.where.bet012 = gameZone;
+				lib_gameop.Update(function(res){
+					if(!res){
+						callback(null,award);
+					}else{
+						callback(1,res);
+					}
+				});
+				/*var args=[1,1,award,item.Val,0,item.bet002,gameZone]
+				dbmaster.update('UPDATE bet_g51 SET betstate = ?, betwin = ?, bet032 = ?,bet033 = ? where bet003 = ? and bet002 = ? and bet012 = ?',args,function(data){
+	    			if(data.ErrorCode==0){
+	    				//console.log("資料庫派獎betg更新成功");
+	    				callback(null,award);
+	    			}else{
+	    				callback(500,'派獎betg錯誤');
+	    			}
+	  	 		});*/
+			},
+			//取得中獎注單帳號餘額
+			function(award, callback)
+			{
+				dbmaster.query('SELECT mem100 FROM users where mid = ?',[item.bet005],function(data){ //duegame
+					if(data.ErrorCode==0){//開始結算
+						callback(null,data.rows[0].mem100,award); //duegame
+					}else{
+						callback(501,'取得中獎注單帳號餘額錯誤');
+					}
+				});
+			},
+			//寫入amount_log
+			function(memmoney, award, callback){
+				var struct_amount = new (require(pomelo.app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
+				struct_amount.params.type = 4;
+				struct_amount.params.game_id = '51';
+				struct_amount.params.game_name = gamesID;
+				struct_amount.params.transfer_no = item.bet002;
+				struct_amount.params.mid = item.bet005;
+				struct_amount.params.money = award;
+				struct_amount.params.balance = memmoney;
+				struct_amount.params.created_at = formatDate()+" "+formatDateTime();
+				struct_amount.params.updated_at = formatDate()+" "+formatDateTime();
+				var lib_amount = new (require(pomelo.app.getBase()+'/app/lib/lib_SQL.js'))("amount_log",struct_amount);
+				lib_amount.Insert(function(id){
+					if(!!id){
+						//amountlogid = id;
+				    	//console.log('insert amount_log_new success');
+				      	callback(null,award);
+					}else{
+						//console.log('insert amount_log_ fail');
+				      	callback(502,'insert amount_log fail');
+					}
+			    	
+			    });
+				/*var amountlogSqls=[];
+				amountlogSqls=[22,item.bet002, 0,'CTL',0,item.bet005,'MAIN',memmoney,award,0,serverIP,'c','51',formatDate()];
+				var sql="INSERT INTO member_amount_log (transfer_type, transfer_no, from_mid, from_gkey, from_balance, to_mid, to_gkey, to_balance, amount, operator, uip, otype, gameid, bydate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				dbmaster.insert(sql,amountlogSqls,function(data){
+					if(data.ErrorCode==0){
+					//console.log('insert amount_log success');
+					callback(null,award);
+					//console.log(amountlogSqls);
+					}else{
+						callback(1,'派獎amount_log錯誤');
+					}
+				});*/
+			},
+			//最後再更新帳號餘額
+			function(award, callback){
+			 	dbmaster.update('UPDATE users SET mem100 = mem100 + ? where mid = ?',[award,item.bet005],function(data){  //egame
+	 		 		if(data.ErrorCode==0){
+	   		 			callback(null,200);
+	   		 		}else{
+	   		 			callback(503,'更新member餘額發生DB錯誤');
+	   		 		}
+	   		 	});
+			}
+			//錯誤則顯示沒有則返回
+		],function (err, result) 
+		{
+			if(err){
+				next(err); //有錯誤則終止派獎
+			}else{
+				next(null);//沒有錯誤繼續派獎
+			}
 
-		var struct_betgop = new (require(app.getBase()+'/app/lib/struct_sql.js'))();
-		var lib_gameop = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("bet_g51",struct_betgop);
-		struct_betgop.params.betstate = 1;
-		struct_betgop.params.betwin = 1;
-		struct_betgop.params.bet018 = multiple;
-		struct_betgop.params.bet032 = award;
-		if(Odds>0){
-			struct_betgop.params.bet033 = item.Val;
-		}else{
-			struct_betgop.params.bet033 = item.bet017;
-		}
-		struct_betgop.where.bet002 = item.bet002;
-		struct_betgop.where.bet003 = 0;
-		struct_betgop.where.bet012 = gameZone;
-		let res1 = await lib_gameop.Update2();
-		let res2 = await gameSql.GetUserMoneyMaster(item.bet005);
-
-		var struct_amount = new (require(app.getBase()+'/app/lib/struct_sql.js'))(); //amount_log SQL
-		struct_amount.params.type = 4;
-		struct_amount.params.game_id = '51';
-		struct_amount.params.game_name = gamesID;
-		struct_amount.params.transfer_no = item.bet002;
-		struct_amount.params.mid = item.bet005;
-		struct_amount.params.money = award;
-		struct_amount.params.balance = memmoney;
-		struct_amount.params.created_at = formatDate()+" "+formatDateTime();
-		struct_amount.params.updated_at = formatDate()+" "+formatDateTime();
-		var lib_amount = new (require(app.getBase()+'/app/lib/lib_SQL.js'))("amount_log",struct_amount);
-		let res3 = await lib_amount.Insert();
-		let res4 = await gameSql.UpdateUserMoneyMaster(item.bet005,award,0);
-		if(res1 && res2 && res3 && res4)
-			next(null)
-		else
-			next(err);
-	 	//-------------------------------------------------------------------------------------------------
-
+		});
 		//console.log(item.Val);
 	    // Get object key with: item.key 
 	    // Get associated value with: item.value 
 	}, function (err)
 	{
 		if(err){
-			return ({'ErrorCode': err,'ErrorMessage': err});
+			callback_Win({'ErrorCode': err,'ErrorMessage': err});
 		}else{
-			return ({'ErrorCode': 0,'ErrorMessage': '','result': 200});}
+			callback_Win({'ErrorCode': 0,'ErrorMessage': '','result': 200});}
 	});
-}
-
-function getMultiple(gameNum){
-	let multiple=1;
-	switch(gameNum)
-	{
-		case 0:
-			multiple=58;
-			break;
-		case 1:
-			multiple=28;
-			break;
-		case 2:
-			multiple=14;
-			break;
-		case 3:
-			multiple=11;
-			break;
-		case 4:
-			multiple=7;
-			break;
-		case 5:
-			multiple=3;
-			break;
-		case 6:
-			multiple=2;
-			break;
-	}
-	return multiple;
-}
-
-function getOdds(gameZone){
-	let Odds = 1;
-	switch(gameZone)
-	{
-		case 101:
-			Odds = 1
-			break;
-		case 102:
-			Odds = 2
-			break;
-		case 105:
-			Odds = 5
-			break;
-		case 110:
-			Odds = 10
-			break;
-	}
-	return Odds;
 }
 
 function formatDate() {

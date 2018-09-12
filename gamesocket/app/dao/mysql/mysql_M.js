@@ -23,55 +23,6 @@ NND.init = function(app){
  * 
  */
 //generic-pool最新版是用ES6，使用promise而不再使用function(callback)，這邊也更改使用.then(:39)
-/*NND.query = function(sql, args, cb){
-	_pool.acquire(function(err, client) {
-		if (!!err) {
-			console.error('[sqlqueryErr] '+err.stack);
-			return;
-		}
-		client.query(sql, args, function(err, res) {
-			_pool.release(client);
-			cb(err, res);
-		});
-	});
-};*/
-
-/*NND.SQLQuery = function (sql, args, callback) {
-    const resourcePromise = _pool.acquire();
-    resourcePromise.then(function (client) {
-        client.query(sql, args, function (err,data) {
-            console.log(err);
-            _pool.release(client);
-            if(!err){
-            	//成功err==null
-            	callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
-            }
-            
-        });
-    })
-    .catch(function (err) {
-        console.error('[SQLQuery Error:]'+ err.stack);
-        callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
-    });
-};
-
-NND.SQLEX = function (sql, args, callback) {
-    const resourcePromise = _pool.acquire();
-    resourcePromise.then(function (client) {
-        client.query(sql, args, function (err,data) {
-            _pool.release(client);
-            if(!err){
-            	//成功err==null
-            	callback({'ErrorCode': 0,'ErrorMessage':'','rows':data}); 
-            }
-            
-        });
-    })
-    .catch(function (err) {
-        console.error('[SQLEX Error:]'+ err.stack);
-        callback({'ErrorCode': 1,'ErrorMessage':err.stack}); 
-    });
-};*/
 
 NND.SpQuery = function (sql, args, callback) {
     const resourcePromise = _pool.acquire();
@@ -123,6 +74,26 @@ NND.nSQLEX = function (sql, args, callback) {
     });
 };
 
+NND.SQLQuery = function (sql, args, callback) {
+    return new Promise((resolve,reject) => {
+        _pool.query(sql,args,(err,rows,fields) => {
+            //console.log(rows,sql,args);
+            if(err) reject(err);
+            else resolve({'ErrorCode': 0,'ErrorMessage':'','data':rows});
+        });
+    });
+};
+
+NND.SQLEX = function (sql, args, callback) {
+    return new Promise((resolve,reject) => {
+        _pool.query(sql,args,(err,rows,fields) => {
+            //console.log(rows,sql,args);
+            if(err) reject(err);
+            else resolve({'ErrorCode': 0,'ErrorMessage':'','data':rows});
+        });
+    });
+};
+
 /**
  * Close connection pool.
  */
@@ -141,7 +112,11 @@ sqlclient.init = function(app) {
 		sqlclient.insert = NND.nSQLEX; //前端調用client.insert即可
 		sqlclient.update = NND.nSQLEX;
 		sqlclient.delete = NND.nSQLEX;
-		sqlclient.query = NND.nSQLQuery;
+        sqlclient.query = NND.nSQLQuery;
+        sqlclient.insert2 = NND.SQLEX; //前端調用client.insert即可
+		sqlclient.update2 = NND.SQLEX;
+		sqlclient.delete2 = NND.SQLEX;
+		sqlclient.query2 = NND.SQLQuery;
         //sqlclient.spquery = NND.nSpQuery;
 		return sqlclient;
 	}

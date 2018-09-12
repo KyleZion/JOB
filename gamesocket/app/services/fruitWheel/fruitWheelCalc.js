@@ -8,13 +8,12 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 	const gameService = require('./gameService.js');
 	const gameNumop = new(require('./fruitWheelopvn1.js'))();
 	// ------ private -----------------------------------------------------------------------
-	let 
 	this.GameCalc = async function(PeriodID,reCalc){
 		gameSql.GetBetsByPeriodID().then(function(result){
 			console.warn(result);
-			gameNumop.gameopvn1(dbmaster,dbslave,redis,gameID,result,gameZone,function(data){
+			gameNumop.gameopvn1(dbmaster,dbslave,redis,PeriodID,result,gameZone,function(data){
 				if(data.ErrorCode==0){
-					return (null,data.gameNum,data.bonusRate);
+					return (data.gameNum,data.bonusRate);
 					console.log('結算完成');
 				}else{
 					console.log('結算錯誤1');
@@ -22,9 +21,35 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 				}
 			});
 		}).then((gameNum,bonusRate) => {
+			let res = await gameSql.InsertNumber(PeriodID,gameNum);
+    		if(res){
+				if(!reCalc){
+					setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum,'BonusRate':bonusRate});}, 5000);
+				}
+				return (gameNum,bonusRate);
+			}else{
 
+			}
 		}).then((gameNum,bonusRate) => {
-
+			let data = await dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,gameZone]);
+			if(data.ErrorCode==0){
+				gameService.CalculateBet(PeriodID,gameNum,data.rows,gameZone,bonusRate)
+			}
+			// dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,gameZone],function(data){
+			// 	if(data.ErrorCode==0){
+			// 		//開始結算
+			// 		//var opBet =data.rows;
+			// 		gameService.CalculateBet(dbmaster,dbslave,PeriodID,gameNum,data.rows,gameZone,bonusRate,function(data){
+			// 			if(data.ErrorCode==0){
+			// 				callback(null,gameNum);
+			// 				//console.log('結算完成');
+			// 			}else{
+			// 				console.log('結算錯誤');
+			// 				callback(data.ErrorCode,data.ErrorMessage);
+			// 			}
+			// 		});
+			// 	}
+			// });
 		}).then((gameNum)=>{
 
 		})
@@ -84,7 +109,7 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 							}
 						});
 					}
-					});
+				});
 			},
 			function(gameNum,callback){
 				//更新games gas012 已結算

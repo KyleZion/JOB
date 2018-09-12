@@ -48,18 +48,14 @@ module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
 		});
 	}
 	// 新增開獎號碼
-	this.InsertNumber= function(AutoIndex,gameNum,callback){
+	this.InsertNumber= async function(AutoIndex,gameNum){
 		var struct_gameop = GetStruct_SQL();
 		var lib_gameop = GetLibSQL_games(struct_gameop);
 		struct_gameop.params.gas008 = gameNum;
 		struct_gameop.where.gas004 = GameZone;
 		struct_gameop.where.id = AutoIndex;
-		lib_gameop.Update(function(res){
-			if(!res)
-				callback(true);
-			else
-				callback(false);
-		});
+		let result = await lib_gameop.Update2();
+		return result;
 	}
 	// 取得所有沒有開獎的期數
 	this.GetUnOpenGames = async function(){
@@ -101,14 +97,9 @@ module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
 		});
 	}
 	// 	設定betg 注單 狀態 為已經 開獎
-	this.UpdateBetStatusToOpened= function(PeriodID,GameZone,callback){
-		dbmaster.update('UPDATE bet_g'+GameID+' SET betstate = 1 where bet009 = ? and bet003 = ? and bet012= ? ',[PeriodID,0,GameZone],function(data){
-			if(data.ErrorCode==0){
-				callback(true);
-			}else{
-				callback(false);
-			}
-		});
+	this.UpdateBetStatusToOpened= async function(PeriodID,GameZone){
+		let result =await dbmaster.update2('UPDATE bet_g'+GameID+' SET betstate = 1 where bet009 = ? and bet003 = ? and bet012= ? ',[PeriodID,0,GameZone]);
+		return result;
 	}
 	this.UpdateBetStatusToOpenedById= function(PeriodID,GameZone,AutoIndexID,callback){
 		dbmaster.update('UPDATE bet_g'+GameID+' SET betstate = 1 where bet009 = ? and bet003 = ? and bet012= ? and id= ?',[PeriodID,0,GameZone,AutoIndexID],function(data){
@@ -120,7 +111,7 @@ module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
 		});
 	}
 	// 	依照期數取得所有注單
-	this.GetBetsByPeriodID= async function(PeriodID,callback){
+	this.GetBetsByPeriodID= async function(PeriodID){
 		let result = await dbslave.query('SELECT betkey,bet002,bet005,bet014,bet016,bet017 FROM bet_g'+GameID+' where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,GameZone]);
 		console.log(result);
 		if(result.ErrorCode==0) return result.data;
@@ -155,34 +146,22 @@ module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
 	}
 
 	// ------ Money & Log -------------------------------------------------------------
-	this.GetUserMoneyMaster = function(mid,callback){
-		dbmaster.query('SELECT mem100 FROM users where mid = ?',[mid],function(data){ //duegame
-			if(data.ErrorCode==0){
-				callback(data.rows[0].mem100); 
-			}else{
-				callback(null);
-			}
-		});
+	this.GetUserMoneyMaster = function(mid){
+		let result = await dbmaster.query('SELECT mem100 FROM users where mid = ?',[mid]); //duegame
+		if(result.ErrorCode==0) 
+			return result.data;
 	}
-	this.UpdateUserMoneyMaster = function(mid,shiftMoney,type,callback){//type 0 加錢 type1 扣錢
+	this.UpdateUserMoneyMaster = function(mid,shiftMoney,type){//type 0 加錢 type1 扣錢
 		if(type == 0){
-			dbmaster.update('UPDATE users SET mem100 = mem100 + ? where mid = ?',[shiftMoney,mid],function(data){
-		 		if(data.ErrorCode==0){
-		 			callback(true);
-		 		}else{
-		 			callback(false);
-		 		}
-		 	});
+			let result = await dbmaster.update2('UPDATE users SET mem100 = mem100 + ? where mid = ?',[shiftMoney,mid]);
+			if(result.ErrorCode==0) 
+				return true;
 		}else if(type == 1){
-			dbmaster.update('UPDATE users SET mem100 = mem100 - ? where mid = ?',[shiftMoney,mid],function(data){
-		 		if(data.ErrorCode==0){
-		 			callback(true);
-		 		}else{
-		 			callback(false);
-		 		}
-		 	});
+			let result = await dbmaster.update2('UPDATE users SET mem100 = mem100 - ? where mid = ?',[shiftMoney,mid]);
+			if(result.ErrorCode==0)
+				return true;
 		}else{
-			callback(false);
+			return(false);
 		}
 	}
 	this.InsertBetsAmountLog = function(type,PeriodID,transfer_no,mid,shiftMoney,balance,callback){
