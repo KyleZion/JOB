@@ -1,9 +1,11 @@
-const async = require('async');
-const pomelo = require('pomelo');
-const app = pomelo.app;
 module.exports = function gameop()
 {
-    this.gameopvn1 =function (dbmaster,dbslave,redis,gameID,gamebetdata,gameZone,callback) {
+    this.gameopvn1 =async function (redis,gameID,gamebetdata,gameZone) {
+        //const async = require('async');
+        const pomelo = require('pomelo');
+        const app = pomelo.app;
+        const dbmaster = app.get('dbmaster');
+        const dbslave = app.get('dbslave');
         var PUB = new(require(pomelo.app.getBase()+'/app/lib/public_fun.js'))();
         var bonus101 = 0;
         var bonus102 = 0;
@@ -62,7 +64,7 @@ module.exports = function gameop()
         if(gamebetdata.length==0){
             //console.log('沒有注單不需要算');
             var gameNum = getOpenNum();
-            callback({'ErrorCode':0,'ErrorMessage':'','gameNum': gameNum,'bonusRate':bonusRate}) ;
+            return ({'ErrorCode':0,'ErrorMessage':'','gameNum': gameNum,'bonusRate':bonusRate});
         }else{
             async.series({
                 Z: function(callback_Z){ //初始化
@@ -75,15 +77,14 @@ module.exports = function gameop()
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
                                         var args = ['CommissionPercentage','51',gameZone];
-                                        dbslave.query(sql,args,function(data){
-                                            if(data.ErrorCode==0){
-                                                CommissionPercentage = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "CommissionPercentage"+gameZone,data.rows[0].value);
-                                                callback_AA(null,0);
-                                            }else{
-                                                CommissionPercentage = 0.15;
-                                            }
-                                        });
+                                        let data = dbslave.query(sql,args);
+                                        if(data.ErrorCode==0){
+                                            CommissionPercentage = data.data[0].value;
+                                            redis.hset('GS:GAMESERVER:GAMECONTROL:051', "CommissionPercentage"+gameZone,data.data[0].value);
+                                            callback_AA(null,0);
+                                        }else{
+                                            CommissionPercentage = 0.15;
+                                        }
                                     }else{
                                         CommissionPercentage = Number(res);
                                         callback_AA(null,0);
@@ -99,15 +100,14 @@ module.exports = function gameop()
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
                                         var args = ['takePercentage','51',gameZone];
-                                        dbslave.query(sql,args,function(data){
-                                            if(data.ErrorCode==0){
-                                                takePercentage = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "takePercentage"+gameZone,data.rows[0].value);
-                                                callback_BB(null,0);
-                                            }else{
-                                                takePercentage = 0.01;
-                                            }
-                                        });
+                                        let data = dbslave.query(sql,args);
+                                        if(data.ErrorCode==0){
+                                            takePercentage = data.data[0].value;
+                                            redis.hset('GS:GAMESERVER:GAMECONTROL:051', "takePercentage"+gameZone,data.data[0].value);
+                                            callback_BB(null,0);
+                                        }else{
+                                            takePercentage = 0.01;
+                                        }
                                     }else{
                                         takePercentage = Number(res) ; 
                                         callback_BB(null,0);
@@ -123,15 +123,14 @@ module.exports = function gameop()
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
                                         var args = ['OpenPoolPercentage','51',gameZone];
-                                        dbslave.query(sql,args,function(data){
-                                            if(data.ErrorCode==0){
-                                                OpenPoolPercentage = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolPercentage"+gameZone, data.rows[0].value);
-                                                callback_CC(null,0);
-                                            }else{
-                                                OpenPoolPercentage = 50;
-                                            }
-                                        });
+                                        let data = dbslave.query(sql,args);
+                                        if(data.ErrorCode==0){
+                                            OpenPoolPercentage = data.data[0].value;
+                                            redis.hset('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolPercentage"+gameZone, data.data[0].value);
+                                            callback_CC(null,0);
+                                        }else{
+                                            OpenPoolPercentage = 50;
+                                        }
                                     }else{
                                         OpenPoolPercentage = Number(res);
                                         callback_CC(null,0);
@@ -147,15 +146,14 @@ module.exports = function gameop()
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
                                         var args = ['OpenPoolBase','51',gameZone];
-                                        dbslave.query(sql,args,function(data){
-                                            if(data.ErrorCode==0){
-                                                OpenPoolBase = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolBase"+gameZone, data.rows[0].value);
-                                                callback_DD(null,0);
-                                            }else{
-                                                OpenPoolBase = 3000;
-                                            }
-                                        });
+                                        let data = dbslave.query(sql,args);
+                                        if(data.ErrorCode==0){
+                                            OpenPoolBase = data.data[0].value;
+                                            redis.hset('GS:GAMESERVER:GAMECONTROL:051', "OpenPoolBase"+gameZone, data.data[0].value);
+                                            callback_DD(null,0);
+                                        }else{
+                                            OpenPoolBase = 3000;
+                                        }
                                     }else{
                                         OpenPoolBase = Number(res);
                                         callback_DD(null,0);
@@ -171,15 +169,14 @@ module.exports = function gameop()
                                     if(res==null){ //redis 無資料
                                         var sql = "SELECT value FROM game_controls where name = ? and gametype = ? and playtype = ?";
                                         var args = ['PoolThresholdMaxPercentage','51',gameZone];
-                                        dbslave.query(sql,args,function(data){
-                                            if(data.ErrorCode==0){
-                                                PoolThresholdMaxPercentage = data.rows[0].value;
-                                                redis.hset('GS:GAMESERVER:GAMECONTROL:051', "PoolThresholdMaxPercentage"+gameZone, data.rows[0].value);
-                                                callback_EE(null,0);
-                                            }else{
-                                                PoolThresholdMaxPercentage = 0.7;
-                                            }
-                                        });
+                                        let data = dbslave.query(sql,args);
+                                        if(data.ErrorCode==0){
+                                            PoolThresholdMaxPercentage = data.data[0].value;
+                                            redis.hset('GS:GAMESERVER:GAMECONTROL:051', "PoolThresholdMaxPercentage"+gameZone, data.data[0].value);
+                                            callback_EE(null,0);
+                                        }else{
+                                            PoolThresholdMaxPercentage = 0.7;
+                                        }
                                     }else{
                                         PoolThresholdMaxPercentage = Number(res);
                                         callback_EE(null,0);
@@ -501,15 +498,20 @@ module.exports = function gameop()
                     struct_log.params.num = DB_num;
                     struct_log.params.Period = gameID;
                     struct_log.params.PT = DB_PT;
-                    lib_gameoplog.Insert(function(res){
-                        if(res){
-                            //console.log('wintype'+DB_WT);
-                            callback_D(null,0);
-                        }else{
-                            console.log('寫入資料庫失敗');
-                            callback_D(1,0);
-                        }
-                    });
+                    let openLog = lib_gameoplog.Insert();
+                    if(openLog)
+                        callback_D(null,0);
+                    else
+                        callback_D(1,0);
+                    // lib_gameoplog.Insert(function(res){
+                    //     if(res){
+                    //         //console.log('wintype'+DB_WT);
+                    //         callback_D(null,0);
+                    //     }else{
+                    //         console.log('寫入資料庫失敗');
+                    //         callback_D(1,0);
+                    //     }
+                    // });
                 }
             },
             function(err, results) {
@@ -519,7 +521,7 @@ module.exports = function gameop()
                     redis.hset('GS:Bonus:051', "RedisBonus105", bonus105);
                     redis.hset('GS:Bonus:051', "RedisBonus110", bonus110);
                     //console.log('最後開:'+num+'&'+bonusRate);
-                    callback({'ErrorCode':0,'ErrorMessage':'','gameNum': num,'bonusRate': bonusRate}) ;
+                    return({'ErrorCode':0,'ErrorMessage':'','gameNum': num,'bonusRate': bonusRate}) ;
                 }
                 
             });

@@ -7,33 +7,34 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 	const gameSql = new(require(app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,app,app.get('EGAMEID'),gameZone);
 	const gameService = require('./gameService.js');
 	const gameNumop = new(require('./fruitWheelopvn1.js'))();
+	var gameNum = 0;
+	var bonusRate = 0;
 	// ------ private -----------------------------------------------------------------------
 	this.GameCalc = async function(PeriodID,reCalc){
-		gameSql.GetBetsByPeriodID().then(function(result){
-			console.warn(result);
-			gameNumop.gameopvn1(dbmaster,dbslave,redis,PeriodID,result,gameZone,function(data){
-				if(data.ErrorCode==0){
-					return (data.gameNum,data.bonusRate);
-					console.log('結算完成');
-				}else{
-					console.log('結算錯誤1');
-					return(data.ErrorCode,data.ErrorMessage);
-				}
-			});
-		}).then((gameNum,bonusRate) => {
+		gameSql.GetBetsByPeriodID(PeriodID).then(async function(result){
+			//console.warn(result);
+			let GameOpenData = await gameNumop.gameopvn1(redis,PeriodID,result,gameZone);
+			if(data.ErrorCode==0){
+				gameNum = data.gameNum;
+				bonusRate = data.bonusRate;
+				console.log('結算完成');
+			}else{
+				console.log('結算錯誤1');
+				return(data.ErrorCode,data.ErrorMessage);
+			}
 			let res = await gameSql.InsertNumber(PeriodID,gameNum);
     		if(res){
 				if(!reCalc){
 					setTimeout(function(){ messageService.broadcast('connector','gameop'+gameZone,{'gameNum':gameNum,'BonusRate':bonusRate});}, 5000);
 				}
-				return (gameNum,bonusRate);
 			}else{
 
 			}
-		}).then((gameNum,bonusRate) => {
+		}).then(async(gameNum,bonusRate) => {
 			let data = await dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,gameZone]);
 			if(data.ErrorCode==0){
-				gameService.CalculateBet(PeriodID,gameNum,data.rows,gameZone,bonusRate)
+				await gameService.CalculateBet(PeriodID,gameNum,data.rows,gameZone,bonusRate);
+				console.log('aaaaaaaaaaaaa');
 			}
 			// dbslave.query('SELECT bet002,bet005,bet014,bet017 FROM bet_g51 where bet009 = ? and bet003 = ? and bet012 = ? order by id',[PeriodID,0,gameZone],function(data){
 			// 	if(data.ErrorCode==0){
@@ -54,7 +55,7 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 
 		})
 	}
-	this.GameCalc = function(gameID,reCalc,callback_gameOpen){
+	/*this.GameCalc = function(gameID,reCalc,callback_gameOpen){
 		async.waterfall([
 			function(callback) {
 				gameSql.GetBetsByPeriodID().then(function(result){
@@ -130,5 +131,5 @@ module.exports = function fruitWheelCalc(redis,dbslave,dbmaster,messageService,g
 				callback_gameOpen(code.OK);
 			}
 		});
-	}
+	}*/
 }

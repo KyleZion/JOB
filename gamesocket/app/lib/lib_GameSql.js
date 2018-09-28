@@ -146,12 +146,12 @@ module.exports = function lib_GameSql(pomelo,app,GameID,GameZone){
 	}
 
 	// ------ Money & Log -------------------------------------------------------------
-	this.GetUserMoneyMaster = function(mid){
+	this.GetUserMoneyMaster = async function(mid){
 		let result = await dbmaster.query('SELECT mem100 FROM users where mid = ?',[mid]); //duegame
 		if(result.ErrorCode==0) 
 			return result.data;
 	}
-	this.UpdateUserMoneyMaster = function(mid,shiftMoney,type){//type 0 加錢 type1 扣錢
+	this.UpdateUserMoneyMaster =async function(mid,shiftMoney,type){//type 0 加錢 type1 扣錢
 		if(type == 0){
 			let result = await dbmaster.update2('UPDATE users SET mem100 = mem100 + ? where mid = ?',[shiftMoney,mid]);
 			if(result.ErrorCode==0) 

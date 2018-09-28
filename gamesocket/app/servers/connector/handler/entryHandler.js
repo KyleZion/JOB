@@ -202,7 +202,7 @@ Handler.prototype.MemberLogin = function(msg,session,next){
 							if (!uid) {
 							    return next(null, {ErrorCode: 1 });
 							}
-							var onDo = function* () { //匿名generator函數
+							var onDo = function* () { //匿名generator函數 es6寫法
 							    // 踢掉用户
 							    yield thunkify(sessionService.kick)(uid);
 

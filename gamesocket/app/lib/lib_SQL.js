@@ -6,15 +6,17 @@ module.exports = function lib_SQL(tablename,struct_amountlog)
 	var translate_sql = new (require(pomelo.app.getBase()+'/app/lib/translate_sql.js'))(tablename,struct_amountlog);
 	var dbmaster=pomelo.app.get('dbmaster');
 	var dbslave=pomelo.app.get('dbslave');
-	this.Insert = function()
+	this.Insert = async function()
 	{
 		//console.warn(translate_sql.GetInsertSQL());
 		//console.warn(translate_sql.GetValues());
 		var sql = translate_sql.GetInsertSQL();
 		var values = translate_sql.GetValues();
-		let result = await dbmaster.insert(sql,values);
+		let result = await dbmaster.insert2(sql,values);
 		if(result.ErrorCode==0) 
-			return result.data.insertId
+			return result.data.insertId;
+		else
+			return 0;
 	}
 
 	this.Update = function(callback)

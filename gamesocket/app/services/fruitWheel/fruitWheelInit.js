@@ -36,6 +36,7 @@ module.exports.init = function (gameZone,gameName) {
 				const result = await reCalc;
 				return result;
 			}
+			
 			gameOpen()
 			.then(result =>{
 				GM.Made(25,function(insertID,endTime){

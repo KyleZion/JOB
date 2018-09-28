@@ -3,13 +3,12 @@ const pomelo = require('pomelo');
 const app = pomelo.app;
 const dbmaster =app.get('dbmaster');
 const dbslave = app.get('dbslave');
-var async = require('async');
-var asyncLoop = require('node-async-loop');
-const gameSql = new(require(app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,app,app.get('EGAMEID'),gameZone);
-var logger = require('pomelo-logger').getLogger('Service-log',__filename);
-var serverIP='127.0.0.1';
+const async = require('async');
+const asyncLoop = require('node-async-loop');
+const logger = require('pomelo-logger').getLogger('Service-log',__filename);
 
 module.exports.CalculateBet= async function(gamesID,gameNum,opBet,gameZone,bonusRate){
+	const gameSql = new(require(app.getBase()+'/app/lib/lib_GameSql.js'))(pomelo,app,app.get('EGAMEID'),gameZone);
 	//console.log(opBet);
 	if(gameNum==7 && bonusRate!==0){
 		let res = await gameSql.UpdateBetStatusToOpened(gamesID,gameZone);
@@ -38,12 +37,14 @@ module.exports.CalculateBet= async function(gamesID,gameNum,opBet,gameZone,bonus
 			}
 		await gameSql.UpdateBetStatusToOpened(gamesID,gameZone);
 		if(winResult.length!=0){
-			await idWinMoneysResult(winResult,multiple,gamesID,gameZone,Odds);
+			let WinResult = await idWinMoneysResult(winResult,multiple,gamesID,gameZone,Odds);
+				if(WinResult.result ==200)
+					return ({'ErrorCode': 0,'ErrorMessage': '','result':200});
 		}else{
-
+			return 0;
 		}
 	}
-	if(gameNum==7 && bonusRate!==0){
+	/*if(gameNum==7 && bonusRate!==0){
 		async.series({
 			A: function(callback_A){
 				dbmaster.update('UPDATE bet_g51 SET betstate=1 where bet009 = ? and bet003 = ? and bet012= ? ',[gamesID,0,gameZone],function(data){
@@ -179,13 +180,13 @@ module.exports.CalculateBet= async function(gamesID,gameNum,opBet,gameZone,bonus
 				}
 
 		});
-	}
+	}*/
 }
 
 async function idWinMoneysResult(winResult,multiple,gamesID,gameZone,Odds)
 {
 	var award =0;
-	asyncLoop(winResult, function (item, next)
+	asyncLoop(winResult,async function (item, next)
 	{
 		if(Odds>0){
 			award=(Number(item.Val) * Odds * multiple);
